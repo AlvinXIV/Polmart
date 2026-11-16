@@ -29,9 +29,24 @@ services:
       POSTGRES_USER: polmart_user
       POSTGRES_PASSWORD: secretpassword
     ports:
-      - "5433:5432"   
+      - "5433:5432"
     volumes:
       - polmart_pgdata:/var/lib/postgresql/data
+
+  # --- TAMBAHKAN BAGIAN INI ---
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: polmart_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@polmart.local
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+    ports:
+      - "5050:80"
+    volumes:
+      - polmart_pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - db
+  # ----------------------------
 
   scheduler:
     build:
@@ -47,3 +62,4 @@ services:
 
 volumes:
   polmart_pgdata:
+  polmart_pgadmin_data:   # <-- Tambahkan volume ini juga
