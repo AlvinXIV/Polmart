@@ -1,6 +1,10 @@
 <?php
 
+use App\Http\Controllers\Admin\ManualOrderController;
+use App\Http\Controllers\Admin\OrderImportController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*

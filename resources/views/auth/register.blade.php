@@ -16,11 +16,25 @@
     <form method="POST" action="{{ route('register') }}" style="display: flex; flex-direction: column; gap: 16px;">
         @csrf
 
+        <!-- Nomor Anggota / NIM / NIK -->
+        <div>
+            <x-input-label for="member_code" :value="__('Nomor Anggota / NIM / NIK')" />
+            <x-text-input id="member_code" class="block mt-1 w-full" type="text" name="member_code" :value="old('member_code')" required autofocus />
+            <x-input-error :messages="$errors->get('member_code')" class="mt-2" />
+        </div>
+
         <!-- Name -->
         <div>
             <label for="name" class="polmart-label">Nama Lengkap</label>
             <input id="name" class="polmart-input" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name" placeholder="Contoh: Budi Santoso" />
             <x-input-error :messages="$errors->get('name')" style="margin-top: 5px; color: #ef4444; font-size: 12px;" />
+        </div>
+
+        <!-- Nomor WhatsApp -->
+        <div class="mt-4">
+            <x-input-label for="phone" :value="__('Nomor WhatsApp')" />
+            <x-text-input id="phone" class="block mt-1 w-full" type="text" name="phone" :value="old('phone')" placeholder="08xxxxxxxxxx" required />
+            <x-input-error :messages="$errors->get('phone')" class="mt-2" />
         </div>
 
         <!-- Email Address -->
