@@ -6,7 +6,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-extrabold text-slate-900">Validasi Loket & Pengambilan Barang</h1>
-                <p class="text-sm text-slate-500 mt-1">Verifikasi kode pengambilan 4-digit dari anggota untuk menyelesaikan status pesanan (SIAP_DIAMBIL → SELESAI).</p>
+                <p class="text-sm text-slate-500 mt-1">Verifikasi kode pengambilan 4-digit dari anggota untuk menyelesaikan status pesanan (SIAP DIAMBIL → SELESAI).</p>
             </div>
             <a href="{{ route('admin.transactions.index') }}" class="polmart-btn polmart-btn-secondary">
                 ▧ Riwayat Transaksi
@@ -89,9 +89,9 @@
                            placeholder="Cari kode pesanan, kode ambil, atau nama..."
                            class="polmart-input sm:w-72">
                     <select name="status" class="polmart-select sm:w-48">
-                        <option value="SIAP_DIAMBIL" {{ $statusFilter === 'SIAP_DIAMBIL' ? 'selected' : '' }}>SIAP_DIAMBIL (Antrean)</option>
+                        <option value="SIAP_DIAMBIL" {{ $statusFilter === 'SIAP_DIAMBIL' ? 'selected' : '' }}>SIAP DIAMBIL (Antrean)</option>
                         <option value="SELESAI" {{ $statusFilter === 'SELESAI' ? 'selected' : '' }}>SELESAI</option>
-                        <option value="MENUNGGU_BAYAR" {{ $statusFilter === 'MENUNGGU_BAYAR' ? 'selected' : '' }}>MENUNGGU_BAYAR</option>
+                        <option value="MENUNGGU_BAYAR" {{ $statusFilter === 'MENUNGGU_BAYAR' ? 'selected' : '' }}>MENUNGGU BAYAR</option>
                         <option value="DIBATALKAN" {{ $statusFilter === 'DIBATALKAN' ? 'selected' : '' }}>DIBATALKAN</option>
                         <option value="all" {{ $statusFilter === 'all' ? 'selected' : '' }}>Semua Status</option>
                     </select>
@@ -128,7 +128,7 @@
                                 </td>
                                 <td>
                                     <div class="font-semibold text-slate-900">{{ $order->customer_name }}</div>
-                                    <div class="text-xs text-slate-400">{{ $order->user?->member_code ?? strtoupper($order->source) }}</div>
+                                    <div class="text-xs text-slate-400">{{ $order->user?->member_code ?? str_replace('_', ' ', strtoupper($order->source)) }}</div>
                                 </td>
                                 <td class="text-xs text-slate-600">
                                     @foreach ($order->items as $item)
@@ -144,7 +144,7 @@
                                 <td class="text-right font-bold">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                                 <td class="text-center">
                                     <span class="polmart-badge {{ $order->status === 'SELESAI' ? 'polmart-badge-green' : ($order->status === 'SIAP_DIAMBIL' ? 'polmart-badge-blue' : ($order->status === 'MENUNGGU_BAYAR' ? 'polmart-badge-amber' : 'polmart-badge-red')) }}">
-                                        {{ $order->status }}
+                                        {{ str_replace('_', ' ', $order->status) }}
                                     </span>
                                 </td>
                                 <td class="text-right">

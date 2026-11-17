@@ -5,8 +5,7 @@
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <span class="text-xs font-bold uppercase tracking-wider text-blue-600">PORTAL ANGGOTA</span>
-                <h1 class="text-2xl font-extrabold text-slate-900 mt-1">Keranjang Belanja 🧺</h1>
+                <h1 class="text-2xl font-extrabold text-slate-900">Keranjang Belanja 🧺</h1>
                 <p class="text-sm text-slate-500 mt-1">Periksa kembali daftar barang dan kuantitas sebelum melakukan checkout.</p>
             </div>
             @if (! empty($items))
@@ -71,12 +70,26 @@
                                 </p>
 
                                 <div class="flex flex-wrap items-center gap-3 mt-3">
-                                    <form method="POST" action="{{ route('anggota.keranjang.update', $product) }}" class="flex items-center gap-2">
+                                    <form method="POST" action="{{ route('anggota.keranjang.update', $product) }}"
+                                          x-data="{ qty: {{ (int) $item['qty'] }}, max: {{ (int) $product->stock }} }"
+                                          class="flex items-center gap-2">
                                         @csrf
                                         @method('PATCH')
                                         <label class="text-xs font-semibold text-slate-500">Qty:</label>
-                                        <input type="number" name="qty" value="{{ $item['qty'] }}" min="1" max="{{ $product->stock }}"
-                                               class="w-20 px-2 py-1.5 text-sm border border-slate-300 rounded-lg text-center">
+                                        <div class="inline-flex items-center border border-slate-300 rounded-lg overflow-hidden bg-white">
+                                            <button type="button"
+                                                    @click="qty = Math.max(1, qty - 1)"
+                                                    class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+                                                −
+                                            </button>
+                                            <input type="number" name="qty" x-model.number="qty" min="1" max="{{ $product->stock }}" readonly
+                                                   class="w-12 h-8 text-sm font-bold text-center border-0 focus:ring-0 p-0 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                            <button type="button"
+                                                    @click="qty = Math.min(max, qty + 1)"
+                                                    class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+                                                +
+                                            </button>
+                                        </div>
                                         <button type="submit" class="polmart-btn polmart-btn-secondary polmart-btn-sm">
                                             Perbarui
                                         </button>

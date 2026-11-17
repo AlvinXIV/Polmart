@@ -17,9 +17,10 @@ class PolmartFlowTest extends TestCase
         $response = $this->get('/');
 
         $response->assertOk();
-        $response->assertSee('Katalog Belanja Anggota');
         $response->assertSee(route('login'));
         $response->assertSee(route('register'));
+        $response->assertDontSee('Katalog Belanja Anggota');
+        $response->assertDontSee('Siap Berbelanja di Polmart?');
         $response->assertDontSee('Panel Admin & Pengurus');
         $response->assertDontSee('Dashboard Admin');
     }

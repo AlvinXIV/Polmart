@@ -215,29 +215,14 @@
         </a>
 
         <div class="auth-hero-content">
-            <div class="auth-badge">
-                ★ Smart Cooperative System
-            </div>
-
             <h1 class="auth-hero-title">
-                Koperasi Modern,<br>
-                Belanja Praktis & Cepat.
+                Belanja Mudah & Praktis<br>
+                di Polman Bandung.
             </h1>
 
             <p class="auth-hero-desc">
-                Kelola inventaris barang koperasi, input transaksi loket walk-in, dan nikmati kemudahan katalog belanja online bagi seluruh anggota.
+                Cek stok real-time, pesan kebutuhan lewat QRIS, dan ambil di loket cukup dengan kode 4-digit.
             </p>
-
-            <div class="auth-features">
-                <div class="auth-feature-card">
-                    <h4>📦 Inventaris Akurat</h4>
-                    <p>Pencatatan stok otomatis dan audit mutasi barang.</p>
-                </div>
-                <div class="auth-feature-card">
-                    <h4>💳 Pembayaran QRIS</h4>
-                    <p>Dukungan pembayaran digital instan dan verifikasi loket.</p>
-                </div>
-            </div>
         </div>
 
         <div class="auth-hero-footer">

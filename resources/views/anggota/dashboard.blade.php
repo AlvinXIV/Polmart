@@ -12,16 +12,9 @@
         <!-- Banner Sambutan Anggota -->
         <section class="polmart-banner flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div class="relative z-10 max-w-2xl">
-                <span class="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-bold tracking-wider uppercase mb-3">
-                    ✦ PORTAL ANGGOTA POLMART
-                </span>
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
                     Halo, {{ Auth::user()->name }}!
                 </h1>
-                <p class="text-blue-100 text-sm mt-2">
-                    Nomor Anggota / NIM / NIK: <strong class="text-white font-mono">{{ Auth::user()->member_code ?? '-' }}</strong>
-                    • Pantau pesanan aktif, kode pengambilan 4-digit, dan belanja kebutuhan koperasi langsung dari portal anggota.
-                </p>
                 <div class="flex flex-wrap gap-3 mt-5">
                     <a href="{{ route('anggota.katalog') }}" class="px-4 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-lg shadow hover:bg-blue-50 transition">
                         🛍️ Belanja di Katalog
@@ -136,73 +129,48 @@
             </section>
         @endif
 
-        <!-- Katalog Produk Unggulan & Pesanan Terakhir -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="polmart-card">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 class="text-base font-extrabold text-slate-900">Produk Tersedia di Katalog</h2>
-                        <p class="text-xs text-slate-500">Barang aktif dengan stok siap dipesan</p>
-                    </div>
-                    <a href="{{ route('anggota.katalog') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Lihat Semua →
-                    </a>
+        <!-- Riwayat Pesanan Terakhir -->
+        <section class="polmart-card">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h2 class="text-lg font-extrabold text-slate-900">Riwayat Pesanan Terakhir</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Pantau status transaksi, item yang dibeli, dan kode pengambilan Anda</p>
                 </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    @forelse ($featuredProducts as $product)
-                        <div class="p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between gap-2">
-                            <div>
-                                <span class="polmart-badge polmart-badge-blue">{{ $product->category }}</span>
-                                <h3 class="font-bold text-sm text-slate-900 mt-2">{{ $product->name }}</h3>
-                                <p class="text-xs text-slate-400">Stok: {{ $product->stock }} pcs</p>
-                            </div>
-                            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                                <span class="font-extrabold text-sm text-blue-700">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
-                                <form method="POST" action="{{ route('anggota.keranjang.add') }}">
-                                    @csrf
-                                    <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                    <input type="hidden" name="qty" value="1">
-                                    <button type="submit" class="px-2.5 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700">
-                                        + Keranjang
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="col-span-2 text-center text-sm text-slate-400 py-6">Belum ada produk tersedia.</p>
-                    @endforelse
-                </div>
+                <a href="{{ route('anggota.pesanan') }}" class="text-sm font-bold text-blue-600 hover:underline">
+                    Lihat Semua →
+                </a>
             </div>
 
-            <div class="polmart-card">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 class="text-base font-extrabold text-slate-900">Riwayat Pesanan Terakhir</h2>
-                        <p class="text-xs text-slate-500">Pantau status transaksi Anda</p>
-                    </div>
-                    <a href="{{ route('anggota.pesanan') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Semua →
+            <div class="space-y-3">
+                @forelse ($recentOrders as $order)
+                    <a href="{{ route('anggota.pesanan', ['order_code' => $order->order_code]) }}"
+                       class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-300 transition">
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="font-mono text-sm font-bold text-blue-700">{{ $order->order_code }}</span>
+                                @if ($order->status === 'SIAP_DIAMBIL' && $order->pickup_code)
+                                    <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs font-extrabold">
+                                        Kode Ambil: #{{ $order->pickup_code }}
+                                    </span>
+                                @endif
+                            </div>
+                            <div class="text-xs text-slate-500 mt-1">
+                                {{ $order->transaction_date?->format('d/m/Y H:i') }} • {{ $order->items->sum('qty') }} item
+                                @if ($order->items->isNotEmpty())
+                                    ({{ $order->items->map(fn ($i) => ($i->product?->name ?? 'Barang') . ' ×' . $i->qty)->take(3)->implode(', ') }}{{ $order->items->count() > 3 ? ', ...' : '' }})
+                                @endif
+                            </div>
+                        </div>
+                        <div class="flex sm:flex-col items-center sm:items-end justify-between gap-2 shrink-0">
+                            <div class="font-extrabold text-base text-slate-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
+                            <span class="polmart-badge {{ $order->status === 'SELESAI' ? 'polmart-badge-green' : ($order->status === 'SIAP_DIAMBIL' ? 'polmart-badge-blue' : ($order->status === 'MENUNGGU_BAYAR' ? 'polmart-badge-amber' : 'polmart-badge-red')) }}">
+                                {{ str_replace('_', ' ', $order->status) }}
+                            </span>
+                        </div>
                     </a>
-                </div>
-                <div class="space-y-3">
-                    @forelse ($recentOrders as $order)
-                        <a href="{{ route('anggota.pesanan', ['order_code' => $order->order_code]) }}"
-                           class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-blue-300 transition">
-                            <div>
-                                <div class="font-mono text-xs font-bold text-blue-700">{{ $order->order_code }}</div>
-                                <div class="text-xs text-slate-500 mt-0.5">{{ $order->transaction_date?->format('d/m/Y H:i') }} • {{ $order->items->sum('qty') }} item</div>
-                            </div>
-                            <div class="text-right">
-                                <div class="font-bold text-sm text-slate-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
-                                <span class="polmart-badge {{ $order->status === 'SELESAI' ? 'polmart-badge-green' : ($order->status === 'SIAP_DIAMBIL' ? 'polmart-badge-blue' : ($order->status === 'MENUNGGU_BAYAR' ? 'polmart-badge-amber' : 'polmart-badge-red')) }}">
-                                    {{ $order->status }}
-                                </span>
-                            </div>
-                        </a>
-                    @empty
-                        <p class="text-center text-sm text-slate-400 py-6">Anda belum memiliki riwayat pesanan.</p>
-                    @endforelse
-                </div>
+                @empty
+                    <p class="text-center text-sm text-slate-400 py-8">Anda belum memiliki riwayat pesanan.</p>
+                @endforelse
             </div>
         </section>
     </div>

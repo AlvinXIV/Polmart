@@ -5,7 +5,7 @@
     <div class="space-y-6" x-data="walkinCashier({{ $products->toJson() }}, {{ $members->toJson() }})">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-extrabold text-slate-900">Kasir Transaksi Walk-in (FR-09)</h1>
+                <h1 class="text-2xl font-extrabold text-slate-900">Kasir Transaksi Walk-in</h1>
                 <p class="text-sm text-slate-500 mt-1">Input pembelian langsung di loket koperasi. Status otomatis SELESAI dan stok fisik langsung berkurang.</p>
             </div>
             <a href="{{ route('admin.manual-orders.index') }}" class="polmart-btn polmart-btn-secondary">
@@ -31,25 +31,47 @@
                     <section class="polmart-card space-y-4">
                         <div>
                             <h2 class="text-base font-extrabold text-slate-900">1. Informasi Pembeli</h2>
-                            <p class="text-xs text-slate-500">Pilih anggota terdaftar atau ketik nama pelanggan walk-in.</p>
+                            <p class="text-xs text-slate-500">Cari dan pilih anggota terdaftar, atau kosongkan untuk pelanggan walk-in.</p>
                         </div>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label for="user_id" class="polmart-label">Anggota Terdaftar (Opsional)</label>
-                                <select id="user_id" name="user_id" x-model="selectedUserId" @change="onMemberChange()" class="polmart-select">
-                                    <option value="">-- Walk-in / Non-Akun --</option>
-                                    @foreach ($members as $member)
-                                        <option value="{{ $member->id }}" {{ old('user_id') == $member->id ? 'selected' : '' }}>
-                                            {{ $member->member_code }} - {{ $member->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
+                        <div class="relative" @click.away="memberDropdownOpen = false">
+                            <label for="member_search" class="polmart-label">Anggota Terdaftar</label>
+                            <input type="hidden" name="user_id" :value="selectedUserId">
+                            <div class="relative">
+                                <input id="member_search" type="text" x-model="memberSearch"
+                                       @focus="memberDropdownOpen = true"
+                                       @input="memberDropdownOpen = true; if (!memberSearch.trim()) { selectedUserId = ''; }"
+                                       placeholder="Cari nama atau nomor anggota (kosongkan untuk Walk-in)..."
+                                       autocomplete="off"
+                                       class="polmart-input pr-9">
+                                <button type="button" x-show="selectedUserId || memberSearch"
+                                        @click="clearMember()"
+                                        title="Reset ke Walk-in / Non-Akun"
+                                        class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-rose-600 font-bold text-sm">
+                                    ✕
+                                </button>
                             </div>
-                            <div>
-                                <label for="customer_name" class="polmart-label">Nama Pemesan</label>
-                                <input id="customer_name" name="customer_name" type="text" x-model="customerName"
-                                       class="polmart-input" placeholder="Isi jika tidak memilih akun anggota">
+
+                            <div x-show="memberDropdownOpen" x-transition
+                                 class="absolute z-30 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-y-auto divide-y divide-slate-100">
+                                <button type="button" @click="clearMember(); memberDropdownOpen = false"
+                                        class="w-full text-left px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center justify-between">
+                                    <span>-- Walk-in / Non-Akun --</span>
+                                    <span x-show="!selectedUserId" class="text-blue-600 font-bold">✓</span>
+                                </button>
+                                <template x-for="member in filteredMembers()" :key="member.id">
+                                    <button type="button" @click="selectMember(member)"
+                                            class="w-full text-left px-3.5 py-2.5 text-sm hover:bg-blue-50 flex items-center justify-between gap-2 transition">
+                                        <div>
+                                            <span class="font-semibold text-slate-900" x-text="member.name"></span>
+                                            <span class="font-mono text-xs text-slate-500 ml-1.5" x-text="'(' + member.member_code + ')'"></span>
+                                        </div>
+                                        <span x-show="String(selectedUserId) === String(member.id)" class="text-blue-600 font-bold text-xs">✓</span>
+                                    </button>
+                                </template>
+                                <div x-show="filteredMembers().length === 0" class="px-3.5 py-3 text-xs text-slate-400 text-center">
+                                    Anggota tidak ditemukan.
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -124,9 +146,21 @@
                                     <div class="flex items-center justify-between gap-3">
                                         <div class="flex items-center gap-2">
                                             <label class="text-xs font-semibold text-slate-500">Qty:</label>
-                                            <input type="number" :name="`items[${index}][qty]`" x-model.number="row.qty"
-                                                   min="1" :max="row.stock" required
-                                                   class="w-20 px-2 py-1 text-sm border border-slate-300 rounded-lg text-center">
+                                            <div class="inline-flex items-center border border-slate-300 rounded-lg overflow-hidden bg-white">
+                                                <button type="button"
+                                                        @click="row.qty = Math.max(1, (Number(row.qty) || 1) - 1)"
+                                                        class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+                                                    −
+                                                </button>
+                                                <input type="number" :name="`items[${index}][qty]`" x-model.number="row.qty"
+                                                       min="1" :max="row.stock" required readonly
+                                                       class="w-12 h-8 text-sm font-bold text-center border-0 focus:ring-0 p-0 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                                <button type="button"
+                                                        @click="row.qty = Math.min(row.stock, (Number(row.qty) || 1) + 1)"
+                                                        class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+                                                    +
+                                                </button>
+                                            </div>
                                         </div>
                                         <div class="font-extrabold text-sm text-blue-700" x-text="formatRupiah(row.price * (row.qty || 0))"></div>
                                     </div>
@@ -164,14 +198,33 @@
                 products,
                 members,
                 selectedUserId: @json(old('user_id', '')),
-                customerName: @json(old('customer_name', '')),
+                memberSearch: '',
+                memberDropdownOpen: false,
                 searchQuery: '',
                 rows: [],
-                onMemberChange() {
-                    const member = this.members.find(m => String(m.id) === String(this.selectedUserId));
-                    if (member) {
-                        this.customerName = member.name;
+                init() {
+                    if (this.selectedUserId) {
+                        const m = this.members.find(item => String(item.id) === String(this.selectedUserId));
+                        if (m) {
+                            this.memberSearch = m.member_code + ' - ' + m.name;
+                        }
                     }
+                },
+                filteredMembers() {
+                    const q = this.memberSearch.toLowerCase().trim();
+                    if (!q) return this.members;
+                    return this.members.filter(m =>
+                        m.name.toLowerCase().includes(q) || (m.member_code && m.member_code.toLowerCase().includes(q))
+                    );
+                },
+                selectMember(member) {
+                    this.selectedUserId = member.id;
+                    this.memberSearch = member.member_code + ' - ' + member.name;
+                    this.memberDropdownOpen = false;
+                },
+                clearMember() {
+                    this.selectedUserId = '';
+                    this.memberSearch = '';
                 },
                 filteredProducts() {
                     const q = this.searchQuery.toLowerCase().trim();

@@ -70,7 +70,7 @@
                             QRIS
                         </div>
                         <div class="flex-1">
-                            <p class="font-bold text-slate-900 text-sm">QRIS Dinamis Polmart</p>
+                            <p class="font-bold text-slate-900 text-sm">QRIS</p>
                             <p class="text-xs text-slate-600 mt-0.5">Kode QR unik dibuat otomatis dengan batas pembayaran 15 menit.</p>
                         </div>
                         <span class="text-blue-700 font-extrabold">✓</span>
@@ -94,18 +94,18 @@
                 </div>
 
                 <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 leading-relaxed">
-                    <strong>Perhatian (FR-06):</strong> Saat pesanan dibuat, stok langsung direservasi dan Anda memiliki waktu <strong>15 menit</strong> untuk menyelesaikan pembayaran QRIS.
+                    <strong>Perhatian:</strong> Saat pesanan dibuat, stok langsung direservasi dan Anda memiliki waktu <strong>15 menit</strong> untuk menyelesaikan pembayaran QRIS.
                 </div>
 
                 <form method="POST" action="{{ route('anggota.checkout.store') }}">
                     @csrf
                     <button type="submit" class="polmart-btn polmart-btn-primary w-full py-3">
-                        Buat Pesanan & Bayar QRIS →
+                        Buat Pesanan & Bayar QRIS
                     </button>
                 </form>
 
                 <a href="{{ route('anggota.keranjang') }}" class="block text-center text-sm font-semibold text-slate-500 hover:text-blue-700">
-                    ← Kembali ke Keranjang
+                    Kembali ke Keranjang
                 </a>
             </aside>
         </div>

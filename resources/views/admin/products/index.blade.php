@@ -7,7 +7,7 @@
         <section class="polmart-banner flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="relative z-10">
                 <h1 class="text-2xl font-extrabold">Master Barang & Inventaris 📦</h1>
-                <p class="text-blue-100 text-sm mt-1">Kelola katalog master barang, SKU, harga satuan, status aktif, restock, dan mutasi stok (FR-03 & FR-04).</p>
+                <p class="text-blue-100 text-sm mt-1">Kelola katalog master barang, SKU, harga satuan, status aktif, restock, dan mutasi stok.</p>
             </div>
             <div class="relative z-10 flex flex-wrap gap-2">
                 <a href="{{ route('admin.stock-mutations.index') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white rounded-lg text-sm font-semibold hover:bg-white/25">
@@ -104,7 +104,7 @@
                         <th class="text-right">Harga Satuan</th>
                         <th class="text-center">Stok</th>
                         <th class="text-center">Status</th>
-                        <th>Restock Cepat (FR-04)</th>
+                        <th>Restock Cepat</th>
                         <th class="text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -141,10 +141,25 @@
                                 </span>
                             </td>
                             <td>
-                                <form method="POST" action="{{ route('admin.products.restock', $product) }}" class="flex items-center gap-1.5">
+                                <form method="POST" action="{{ route('admin.products.restock', $product) }}"
+                                      x-data="{ qty: 1 }"
+                                      class="flex items-center gap-1.5">
                                     @csrf
-                                    <input type="number" name="qty" min="1" placeholder="+Qty" required class="w-20 px-2 py-1 text-xs border border-slate-300 rounded-md">
-                                    <input type="text" name="notes" placeholder="Catatan" class="w-28 px-2 py-1 text-xs border border-slate-300 rounded-md">
+                                    <div class="inline-flex items-center border border-slate-300 rounded-md overflow-hidden bg-white">
+                                        <button type="button"
+                                                @click="qty = Math.max(1, qty - 1)"
+                                                class="w-6 h-7 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                                            −
+                                        </button>
+                                        <input type="number" name="qty" x-model.number="qty" min="1" required readonly
+                                               class="w-10 h-7 text-xs font-bold text-center border-0 focus:ring-0 p-0 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                        <button type="button"
+                                                @click="qty = qty + 1"
+                                                class="w-6 h-7 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                                            +
+                                        </button>
+                                    </div>
+                                    <input type="text" name="notes" placeholder="Catatan" class="w-24 px-2 py-1 text-xs border border-slate-300 rounded-md">
                                     <button type="submit" class="polmart-btn polmart-btn-success polmart-btn-sm">Tambah</button>
                                 </form>
                             </td>

@@ -44,18 +44,25 @@ class Order extends Model
     public static function generateOrderCode(): string
     {
         $prefix = 'PLM-' . now()->format('Ymd') . '-';
+        $prefixLength = strlen($prefix);
 
-        $latestOrder = static::where('order_code', 'like', $prefix . '%')
-            ->orderByDesc('order_code')
-            ->first();
+        $maxSequence = static::where('order_code', 'like', $prefix . '%')
+            ->pluck('order_code')
+            ->map(function (string $code) use ($prefixLength): int {
+                $suffix = substr($code, $prefixLength);
 
-        $nextNumber = 1;
-        if ($latestOrder) {
-            $lastSequence = (int) substr($latestOrder->order_code, strlen($prefix));
-            $nextNumber = $lastSequence + 1;
-        }
+                return ctype_digit($suffix) ? (int) $suffix : 0;
+            })
+            ->max() ?? 0;
 
-        return $prefix . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
+        $nextNumber = $maxSequence + 1;
+
+        do {
+            $code = $prefix . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
+            $nextNumber++;
+        } while (static::where('order_code', $code)->exists());
+
+        return $code;
     }
 
     /**

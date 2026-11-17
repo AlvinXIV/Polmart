@@ -6,11 +6,7 @@
         <!-- Header Katalog -->
         <section class="polmart-banner flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="relative z-10">
-                <span class="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-bold uppercase tracking-wider mb-2">
-                    PORTAL BELANJA ANGGOTA
-                </span>
                 <h1 class="text-2xl sm:text-3xl font-extrabold">Katalog Produk Polmart 🛍️</h1>
-                <p class="text-blue-100 text-sm mt-1">Pilih barang aktif dengan stok tersedia secara real-time dan masukkan ke keranjang belanja Anda.</p>
             </div>
             <div class="relative z-10">
                 <a href="{{ route('anggota.keranjang') }}" class="px-5 py-3 bg-white text-blue-700 font-extrabold text-sm rounded-xl shadow hover:bg-blue-50 transition inline-flex items-center gap-2">
@@ -109,12 +105,26 @@
                     </div>
 
                     <div class="p-4 pt-0">
-                        <form method="POST" action="{{ route('anggota.keranjang.add') }}" class="flex items-center gap-2">
+                        <form method="POST" action="{{ route('anggota.keranjang.add') }}"
+                              x-data="{ qty: 1, max: {{ max(1, $maxAddable) }} }"
+                              class="flex items-center gap-2">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            <input type="number" name="qty" value="1" min="1" max="{{ max(1, $maxAddable) }}"
-                                   {{ $maxAddable < 1 ? 'disabled' : '' }}
-                                   class="w-16 px-2 py-2 text-sm text-center border border-slate-300 rounded-lg">
+                            <div class="inline-flex items-center border border-slate-300 rounded-lg overflow-hidden bg-white {{ $maxAddable < 1 ? 'opacity-50' : '' }}">
+                                <button type="button" {{ $maxAddable < 1 ? 'disabled' : '' }}
+                                        @click="qty = Math.max(1, qty - 1)"
+                                        class="w-8 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition disabled:cursor-not-allowed">
+                                    −
+                                </button>
+                                <input type="number" name="qty" x-model.number="qty" min="1" max="{{ max(1, $maxAddable) }}"
+                                       {{ $maxAddable < 1 ? 'disabled' : '' }} readonly
+                                       class="w-10 h-9 text-sm font-bold text-center border-0 focus:ring-0 p-0 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                <button type="button" {{ $maxAddable < 1 ? 'disabled' : '' }}
+                                        @click="qty = Math.min(max, qty + 1)"
+                                        class="w-8 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition disabled:cursor-not-allowed">
+                                    +
+                                </button>
+                            </div>
                             <button type="submit" {{ $maxAddable < 1 ? 'disabled' : '' }}
                                     class="flex-1 py-2 px-3 rounded-lg text-xs font-bold transition {{ $maxAddable < 1 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white' }}">
                                 {{ $maxAddable < 1 ? 'Maks. Stok' : '+ Keranjang' }}

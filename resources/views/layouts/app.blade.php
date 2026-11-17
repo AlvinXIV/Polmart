@@ -73,6 +73,7 @@
             z-index: 100;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: auto;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -122,6 +123,7 @@
             flex: 1;
             padding-top: 16px;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .menu-label {
@@ -151,7 +153,6 @@
         .menu-link:hover {
             background: #eff6ff;
             color: #2563eb;
-            transform: translateX(2px);
         }
 
         .menu-link.active {
@@ -631,12 +632,14 @@
             </div>
 
             <div class="topbar-right">
-                <!-- Search Box -->
-                <div class="search-box">
-                    <span class="search-box-icon">🔍</span>
-                    <input type="text" id="globalSearchInput" placeholder="{{ $isAdmin ? 'Cari SKU atau nama barang...' : 'Cari barang di katalog...' }}" onkeyup="handleGlobalSearch(event)">
-                    <span class="search-box-kbd">⌘K</span>
-                </div>
+                @if ($isAdmin)
+                    <!-- Search Box -->
+                    <div class="search-box">
+                        <span class="search-box-icon">🔍</span>
+                        <input type="text" id="globalSearchInput" placeholder="Cari SKU atau nama barang..." onkeyup="handleGlobalSearch(event)">
+                        <span class="search-box-kbd">⌘K</span>
+                    </div>
+                @endif
 
                 @if ($isAdmin)
                     <a href="{{ route('admin.manual-orders.create') }}" class="portal-switch-pill">

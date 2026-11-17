@@ -23,9 +23,6 @@
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
                     Halo, {{ Auth::user()->name }}!
                 </h1>
-                <p class="text-blue-100 text-sm mt-2 leading-relaxed">
-                    Kelola master inventaris barang, transaksi walk-in kasir, validasi kode pengambilan 4-digit, impor riwayat Excel, dan laporan berkala koperasi dalam satu dashboard terintegrasi.
-                </p>
 
                 <div class="flex flex-wrap gap-3 mt-5">
                     <a href="{{ route('admin.products.index') }}" class="px-4 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-lg shadow hover:bg-blue-50 transition">
@@ -40,30 +37,6 @@
                 </div>
             </div>
             <div class="hidden lg:block text-7xl relative z-10 select-none">📊</div>
-        </section>
-
-        <!-- Quick Menu -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a href="{{ route('admin.products.index') }}" class="polmart-card block hover:border-blue-300">
-                <div class="polmart-stat-icon blue mb-3">📦</div>
-                <h3 class="font-bold text-slate-900">Master Barang (FR-03)</h3>
-                <p class="text-xs text-slate-500 mt-1">CRUD barang, harga, status aktif, restock & mutasi stok.</p>
-            </a>
-            <a href="{{ route('admin.manual-orders.create') }}" class="polmart-card block hover:border-blue-300">
-                <div class="polmart-stat-icon green mb-3">🛒</div>
-                <h3 class="font-bold text-slate-900">Kasir Walk-in (FR-09)</h3>
-                <p class="text-xs text-slate-500 mt-1">Input pesanan langsung di loket berstatus SELESAI.</p>
-            </a>
-            <a href="{{ route('admin.order-imports.index') }}" class="polmart-card block hover:border-blue-300">
-                <div class="polmart-stat-icon purple mb-3">📊</div>
-                <h3 class="font-bold text-slate-900">Impor Excel (FR-10)</h3>
-                <p class="text-xs text-slate-500 mt-1">Migrasi transaksi lama tanpa memotong stok fisik.</p>
-            </a>
-            <a href="{{ route('admin.reports.index') }}" class="polmart-card block hover:border-blue-300">
-                <div class="polmart-stat-icon amber mb-3">📑</div>
-                <h3 class="font-bold text-slate-900">Laporan & Ekspor (FR-12)</h3>
-                <p class="text-xs text-slate-500 mt-1">Rekap harian–tahunan & export .xlsx multi-sheet.</p>
-            </a>
         </section>
 
         <!-- Ringkasan Statistik -->
@@ -109,7 +82,7 @@
         <section class="polmart-card">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                 <div>
-                    <h2 class="text-lg font-extrabold text-slate-900">Antrean Validasi Loket (SIAP_DIAMBIL)</h2>
+                    <h2 class="text-lg font-extrabold text-slate-900">Antrean Validasi Loket (SIAP DIAMBIL)</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Masukkan kode pengambilan 4-digit dari anggota untuk menyelesaikan pesanan.</p>
                 </div>
 
@@ -300,13 +273,13 @@
                                 <div class="font-mono text-xs font-bold text-blue-700">{{ $order->order_code }}</div>
                                 <div class="text-sm font-semibold text-slate-900">{{ $order->customer_name }}</div>
                                 <div class="text-xs text-slate-400">
-                                    {{ $order->transaction_date?->format('d/m/Y H:i') }} • {{ strtoupper($order->source) }}
+                                    {{ $order->transaction_date?->format('d/m/Y H:i') }} • {{ str_replace('_', ' ', strtoupper($order->source)) }}
                                 </div>
                             </div>
                             <div class="text-right">
                                 <div class="font-bold text-sm text-slate-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
                                 <span class="polmart-badge {{ $order->status === 'SELESAI' ? 'polmart-badge-green' : ($order->status === 'SIAP_DIAMBIL' ? 'polmart-badge-blue' : ($order->status === 'MENUNGGU_BAYAR' ? 'polmart-badge-amber' : 'polmart-badge-red')) }}">
-                                    {{ $order->status }}
+                                    {{ str_replace('_', ' ', $order->status) }}
                                 </span>
                             </div>
                         </div>

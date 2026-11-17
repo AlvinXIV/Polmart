@@ -4,7 +4,7 @@
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Riwayat Pesanan Manual / Walk-in (FR-09)</h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Riwayat Pesanan Manual / Walk-in</h2>
             <a href="{{ route('admin.manual-orders.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-semibold">+ Input Pesanan Walk-in</a>
         </div>
     </x-slot>
@@ -42,7 +42,7 @@
                                 <td class="px-4 py-3 text-center">{{ $order->items->sum('qty') }}</td>
                                 <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                                 <td class="px-4 py-3 text-center">
-                                    <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800 font-semibold">{{ $order->status }}</span>
+                                    <span class="px-2 py-1 text-xs rounded bg-green-100 text-green-800 font-semibold">{{ str_replace('_', ' ', $order->status) }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-right">
                                     <a href="{{ route('admin.manual-orders.show', $order) }}" class="text-indigo-600 hover:underline">Struk</a>

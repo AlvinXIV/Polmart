@@ -5,7 +5,7 @@
     <div class="space-y-6" x-data="{ period: '{{ $period }}' }">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-extrabold text-slate-900">Laporan Berkala & Export Excel (FR-12)</h1>
+                <h1 class="text-2xl font-extrabold text-slate-900">Laporan Berkala & Export Excel</h1>
                 <p class="text-sm text-slate-500 mt-1">Rekap omzet, transaksi berstatus SELESAI, dan barang terlaris beserta ekspor .xlsx multi-sheet.</p>
             </div>
             <a href="{{ route('admin.reports.export', request()->query()) }}"

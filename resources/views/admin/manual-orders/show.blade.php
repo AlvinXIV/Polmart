@@ -18,7 +18,7 @@
 
                 <div class="grid grid-cols-2 gap-2 text-sm border-b pb-4">
                     <div><span class="text-gray-500">Kode Pesanan:</span> <strong class="font-mono">{{ $order->order_code }}</strong></div>
-                    <div><span class="text-gray-500">Status:</span> <strong class="text-green-700">{{ $order->status }}</strong></div>
+                    <div><span class="text-gray-500">Status:</span> <strong class="text-green-700">{{ str_replace('_', ' ', $order->status) }}</strong></div>
                     <div><span class="text-gray-500">Pemesan:</span> <strong>{{ $order->customer_name }}</strong></div>
                     <div><span class="text-gray-500">Waktu:</span> <strong>{{ $order->transaction_date->format('d/m/Y H:i') }}</strong></div>
                 </div>

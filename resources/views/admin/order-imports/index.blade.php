@@ -4,7 +4,7 @@
 
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Impor Riwayat Pesanan Excel (FR-10)</h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Impor Riwayat Pesanan Excel</h2>
             <a href="{{ route('admin.order-imports.template') }}" class="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-semibold">
                 ↓ Download Template Excel (.xlsx)
             </a>
@@ -129,7 +129,7 @@
                                 <td class="px-4 py-3 text-center">{{ $order->items->sum('qty') }}</td>
                                 <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
                                 <td class="px-4 py-3 text-center">
-                                    <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 font-semibold">{{ $order->status }}</span>
+                                    <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-800 font-semibold">{{ str_replace('_', ' ', $order->status) }}</span>
                                 </td>
                             </tr>
                         @empty
