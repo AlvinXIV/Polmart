@@ -1,18 +1,19 @@
-
 <x-app-layout>
+    @section('title', 'Dashboard - Polmart')
+    @section('page_title', 'Dashboard')
 
     <style>
         .dashboard {
             display: flex;
             flex-direction: column;
-            gap: 27px;
+            gap: 28px;
         }
 
         /* WELCOME BANNER */
         .welcome-banner {
-            background: linear-gradient(115deg, #1764df, #438cf5);
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
             border-radius: 20px;
-            padding: 30px 35px;
+            padding: 34px 38px;
             color: white;
             position: relative;
             overflow: hidden;
@@ -20,27 +21,28 @@
             justify-content: space-between;
             align-items: center;
             min-height: 185px;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.35);
         }
 
         .welcome-banner::after {
             content: '';
             position: absolute;
-            width: 230px;
-            height: 230px;
+            width: 250px;
+            height: 250px;
             border-radius: 50%;
             background: rgba(255,255,255,.09);
-            right: 100px;
+            right: 120px;
             top: -100px;
         }
 
         .welcome-banner::before {
             content: '';
             position: absolute;
-            width: 160px;
-            height: 160px;
+            width: 180px;
+            height: 180px;
             border-radius: 50%;
-            background: rgba(255,255,255,.08);
-            right: -30px;
+            background: rgba(255,255,255,.07);
+            right: -40px;
             bottom: -90px;
         }
 
@@ -51,54 +53,59 @@
 
         .welcome-tag {
             display: inline-block;
-            padding: 6px 12px;
+            padding: 6px 14px;
             border-radius: 20px;
             background: rgba(255,255,255,.18);
-            font-size: 10px;
+            backdrop-filter: blur(4px);
+            font-size: 10.5px;
             font-weight: 700;
             letter-spacing: 1px;
-            margin-bottom: 13px;
+            margin-bottom: 14px;
+            text-transform: uppercase;
         }
 
         .welcome-content h1 {
-            font-size: 27px;
+            font-size: 28px;
             font-weight: 800;
             margin: 0 0 10px;
-            letter-spacing: -.8px;
+            letter-spacing: -.6px;
         }
 
         .welcome-content p {
             color: #e0edff;
-            font-size: 13px;
-            margin: 0 0 20px;
-            line-height: 1.7;
+            font-size: 13.5px;
+            margin: 0 0 22px;
+            line-height: 1.6;
+            max-width: 520px;
         }
 
         .welcome-button {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 17px;
+            padding: 10px 20px;
             background: white;
             color: #2563eb;
             text-decoration: none;
-            border-radius: 9px;
-            font-size: 12px;
+            border-radius: 10px;
+            font-size: 13px;
             font-weight: 700;
-            transition: .2s;
+            transition: all .2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .welcome-button:hover {
             background: #eff6ff;
             transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
         }
 
         .banner-illustration {
             position: relative;
             z-index: 2;
-            font-size: 95px;
-            margin-right: 35px;
-            transform: rotate(-8deg);
+            font-size: 88px;
+            margin-right: 30px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
         }
 
         /* SECTION TITLE */
@@ -106,101 +113,117 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             gap: 10px;
         }
 
         .section-heading h3 {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 800;
-            color: #172033;
+            color: #0f172a;
             margin: 0;
+            letter-spacing: -0.3px;
         }
 
         .section-heading p {
-            color: #94a3b8;
-            font-size: 11px;
-            margin: 5px 0 0;
+            color: #64748b;
+            font-size: 12px;
+            margin: 4px 0 0;
         }
 
         .see-all {
             color: #2563eb;
             text-decoration: none;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: gap 0.2s;
+        }
+
+        .see-all:hover {
+            gap: 8px;
+            color: #1d4ed8;
         }
 
         /* QUICK MENU */
         .quick-menu {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            gap: 16px;
         }
 
         .quick-card {
             background: white;
-            border: 1px solid #edf0f5;
-            border-radius: 15px;
-            padding: 20px 15px;
+            border: 1px solid #edf2f7;
+            border-radius: 16px;
+            padding: 22px 18px;
             text-decoration: none;
-            transition: .25s;
+            transition: all .25s ease;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
         }
 
         .quick-card:hover {
+            transform: translateY(-3px);
             border-color: #bfdbfe;
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(37,99,235,.08);
+            box-shadow: 0 10px 25px -3px rgba(37, 99, 235, 0.1);
         }
 
         .quick-icon {
-            width: 45px;
-            height: 45px;
+            width: 48px;
+            height: 48px;
+            border-radius: 13px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 13px;
-            font-size: 21px;
+            font-size: 22px;
             margin-bottom: 14px;
         }
 
-        .icon-blue { background: #eaf2ff; }
-        .icon-green { background: #e8f9f0; }
-        .icon-orange { background: #fff3e6; }
-        .icon-purple { background: #f3eefe; }
+        .icon-blue { background: #eff6ff; color: #2563eb; }
+        .icon-green { background: #f0fdf4; color: #16a34a; }
+        .icon-orange { background: #fff7ed; color: #ea580c; }
+        .icon-purple { background: #faf5ff; color: #9333ea; }
 
         .quick-card h4 {
-            font-size: 12px;
+            font-size: 15px;
             font-weight: 700;
-            color: #172033;
-            margin: 0 0 5px;
+            color: #0f172a;
+            margin: 0 0 4px;
         }
 
         .quick-card p {
-            font-size: 10px;
-            color: #94a3b8;
+            font-size: 12px;
+            color: #64748b;
             margin: 0;
+            line-height: 1.5;
         }
 
         /* STATISTICS */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+            gap: 16px;
         }
 
         .stat-card {
             background: white;
-            border: 1px solid #edf0f5;
-            border-radius: 15px;
-            padding: 19px;
-            transition: .2s;
+            border: 1px solid #edf2f7;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.2s;
         }
 
         .stat-card:hover {
-            box-shadow: 0 8px 20px rgba(15,23,42,.05);
+            border-color: #cbd5e1;
             transform: translateY(-2px);
         }
 
@@ -208,125 +231,143 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 17px;
-        }
-
-        .stat-icon {
-            width: 38px;
-            height: 38px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 11px;
-            font-size: 18px;
+            margin-bottom: 12px;
         }
 
         .stat-label {
-            font-size: 11px;
-            color: #94a3b8;
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
         }
 
         .stat-value {
-            font-size: 25px;
+            font-size: 28px;
             font-weight: 800;
-            color: #172033;
-            letter-spacing: -.7px;
-            margin-bottom: 7px;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
         }
 
         .stat-description {
-            font-size: 10px;
+            font-size: 12px;
             color: #94a3b8;
+            margin-top: 8px;
         }
 
         /* CONTENT GRID */
         .content-grid {
             display: grid;
-            grid-template-columns: 1.5fr 1fr;
-            gap: 18px;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 20px;
         }
 
         .content-card {
             background: white;
-            border: 1px solid #edf0f5;
-            border-radius: 15px;
-            padding: 21px;
-            min-width: 0;
+            border: 1px solid #edf2f7;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
         }
 
         /* TABLE */
         .product-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            font-size: 13px;
+            margin-top: 8px;
         }
 
-        .product-table th {
+        .product-table thead th {
             text-align: left;
-            font-size: 10px;
-            color: #94a3b8;
-            font-weight: 600;
-            padding: 12px 9px;
+            padding: 12px 14px;
             background: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #edf2f7;
         }
 
-        .product-table td {
-            font-size: 11px;
-            padding: 14px 9px;
+        .product-table thead th:first-child { border-radius: 8px 0 0 8px; }
+        .product-table thead th:last-child { border-radius: 0 8px 8px 0; }
+
+        .product-table tbody td {
+            padding: 13px 14px;
             border-bottom: 1px solid #f1f5f9;
-            color: #475569;
+            color: #334155;
+            vertical-align: middle;
+        }
+
+        .product-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .product-table tbody tr:hover {
+            background: #f8faff;
         }
 
         .product-name {
             font-weight: 700;
-            color: #172033 !important;
+            color: #0f172a;
         }
 
         .stock-badge {
-            padding: 5px 9px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
             border-radius: 20px;
-            font-size: 9px;
+            font-size: 11px;
             font-weight: 700;
-            display: inline-block;
         }
 
-        .stock-safe {
-            background: #e8f9f0;
-            color: #16a34a;
-        }
-
-        .stock-warning {
-            background: #fff4e5;
-            color: #d97706;
-        }
-
-        .stock-danger {
-            background: #feecec;
-            color: #dc2626;
-        }
+        .stock-safe { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+        .stock-warning { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+        .stock-danger { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
 
         /* ACTIVITY */
         .activity-list {
             display: flex;
             flex-direction: column;
-            margin-top: 15px;
+            gap: 14px;
+            margin-top: 8px;
         }
 
         .activity-item {
             display: flex;
-            gap: 12px;
-            padding: 14px 0;
-            border-bottom: 1px solid #f1f5f9;
+            align-items: center;
+            gap: 14px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s;
+        }
+
+        .activity-item:hover {
+            background: #f0f7ff;
+            border-color: #dbeafe;
         }
 
         .activity-icon {
-            width: 37px;
-            height: 37px;
-            border-radius: 11px;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             font-size: 16px;
             flex-shrink: 0;
         }
@@ -336,81 +377,35 @@
         }
 
         .activity-info h4 {
-            font-size: 11px;
-            color: #172033;
+            font-size: 13px;
             font-weight: 700;
-            margin: 2px 0 5px;
-        }
-
-        .activity-info p {
-            font-size: 10px;
-            color: #94a3b8;
+            color: #0f172a;
             margin: 0;
         }
 
+        .activity-info p {
+            font-size: 11.5px;
+            color: #64748b;
+            margin: 2px 0 0;
+        }
+
         .activity-time {
-            font-size: 9px;
+            font-size: 11px;
             color: #94a3b8;
-            white-space: nowrap;
+            font-weight: 600;
         }
 
-        /* RESPONSIVE */
-        @media(max-width: 1100px) {
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .content-grid {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 1024px) {
+            .quick-menu { grid-template-columns: repeat(2, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .content-grid { grid-template-columns: 1fr; }
         }
 
-        @media(max-width: 650px) {
-            .welcome-banner {
-                padding: 25px 20px;
-                min-height: 170px;
-            }
-
-            .welcome-content h1 {
-                font-size: 21px;
-            }
-
-            .banner-illustration {
-                font-size: 55px;
-                margin-right: 0;
-            }
-
-            .quick-menu {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-
-            .stats-grid {
-                gap: 10px;
-            }
-
-            .stat-card {
-                padding: 14px;
-            }
-
-            .stat-value {
-                font-size: 21px;
-            }
-
-            .content-card {
-                padding: 14px;
-                overflow-x: auto;
-            }
-
-            .product-table {
-                min-width: 420px;
-            }
-        }
-
-        @media(max-width: 380px) {
-            .banner-illustration {
-                display: none;
-            }
+        @media (max-width: 640px) {
+            .welcome-banner { flex-direction: column; text-align: center; padding: 24px; gap: 20px; }
+            .banner-illustration { margin-right: 0; font-size: 60px; }
+            .quick-menu { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
 
@@ -418,173 +413,138 @@
 
         <!-- WELCOME BANNER -->
         <section class="welcome-banner">
-
             <div class="welcome-content">
-
                 <div class="welcome-tag">
-                    ✦ POLMART ADMIN PANEL
+                    ✦ POLMART MANAGEMENT PANEL
                 </div>
 
-                <h1>Halo, {{ Auth::user()->name ?? 'Pengurus' }}! 👋</h1>
+                <h1>Halo, {{ Auth::user()->name ?? 'Pengurus Polmart' }}! 👋</h1>
 
                 <p>
-                    Selamat datang kembali di Polmart.<br>
-                    Kelola inventaris dan aktivitas koperasi<br>
-                    dengan lebih mudah dalam satu tempat.
+                    Selamat datang di sistem manajemen koperasi terintegrasi.<br>
+                    Kelola stok barang, transaksi loket, validasi pesanan, dan laporan keuangan dalam satu dashboard.
                 </p>
 
-                <a href="#" class="welcome-button">
-                    Jelajahi Inventaris <span>→</span>
-                </a>
-
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <a href="{{ route('inventaris') }}" class="welcome-button">
+                        📦 Kelola Inventaris <span>→</span>
+                    </a>
+                    <a href="{{ route('transaksi.walkin') }}" class="welcome-button" style="background: rgba(255,255,255,0.18); color: #ffffff; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(4px);">
+                        🛒 Buka Kasir Loket
+                    </a>
+                </div>
             </div>
 
             <div class="banner-illustration">
                 🛍️
             </div>
-
         </section>
 
-
-        <!-- QUICK MENU -->
+        <!-- QUICK ACCESS MENU -->
         <section>
-
             <div class="section-heading">
                 <div>
-                    <h3>Akses Cepat</h3>
-                    <p>Pilih fitur yang ingin kamu kelola</p>
+                    <h3>Akses Cepat Fitur Utama</h3>
+                    <p>Pilih modul operasional yang ingin Anda kelola</p>
                 </div>
             </div>
 
             <div class="quick-menu">
-
-                <a href="#" class="quick-card">
+                <a href="{{ route('inventaris') }}" class="quick-card">
                     <div class="quick-icon icon-blue">📦</div>
-                    <h4>Inventaris Barang</h4>
-                    <p>Kelola stok dan produk</p>
+                    <h4>Master Inventaris</h4>
+                    <p>Kelola stok, harga, dan SKU produk</p>
                 </a>
 
-                <a href="#" class="quick-card">
+                <a href="{{ route('transaksi.walkin') }}" class="quick-card">
                     <div class="quick-icon icon-green">🛒</div>
                     <h4>Transaksi Walk-in</h4>
-                    <p>Input pesanan langsung</p>
+                    <p>Input penjualan langsung di kasir loket</p>
                 </a>
 
-                <a href="#" class="quick-card">
+                <a href="{{ route('validasi.loket') }}" class="quick-card">
                     <div class="quick-icon icon-orange">🔍</div>
                     <h4>Validasi Loket</h4>
-                    <p>Periksa kode pengambilan</p>
+                    <p>Verifikasi kode pengambilan barang</p>
                 </a>
 
-                <a href="#" class="quick-card">
+                <a href="{{ route('impor.excel') }}" class="quick-card">
                     <div class="quick-icon icon-purple">📊</div>
-                    <h4>Impor Excel</h4>
-                    <p>Kelola data transaksi lama</p>
+                    <h4>Impor Data Excel</h4>
+                    <p>Unggah massal & riwayat transaksi lama</p>
                 </a>
-
             </div>
-
         </section>
 
-
-        <!-- STATISTICS -->
+        <!-- SUMMARY STATISTICS -->
         <section>
-
             <div class="section-heading">
                 <div>
-                    <h3>Ringkasan Inventaris</h3>
-                    <p>Pantau kondisi koperasi hari ini</p>
+                    <h3>Ringkasan Operasional</h3>
+                    <p>Status inventaris dan transaksi koperasi terkini</p>
                 </div>
 
-                <span style="font-size:10px;color:#94a3b8;">
-                    Overview
-                </span>
+                <a href="{{ route('laporan') }}" class="see-all">
+                    Lihat Laporan Lengkap →
+                </a>
             </div>
 
             <div class="stats-grid">
-
                 <div class="stat-card">
-
                     <div class="stat-top">
                         <span class="stat-label">Total Barang</span>
                         <div class="stat-icon icon-blue">📦</div>
                     </div>
-
                     <div class="stat-value">1.240</div>
-
-                    <div class="stat-description">
-                        Seluruh produk terdaftar
-                    </div>
-
+                    <div class="stat-description">Produk terdaftar di gudang</div>
                 </div>
 
                 <div class="stat-card">
-
                     <div class="stat-top">
                         <span class="stat-label">Barang Aktif</span>
                         <div class="stat-icon icon-green">✓</div>
                     </div>
-
                     <div class="stat-value">1.180</div>
-
-                    <div class="stat-description">
-                        Produk tersedia di katalog
-                    </div>
-
+                    <div class="stat-description">Tersedia di katalog belanja</div>
                 </div>
 
                 <div class="stat-card">
-
                     <div class="stat-top">
                         <span class="stat-label">Stok Menipis</span>
                         <div class="stat-icon icon-orange">⚠</div>
                     </div>
-
                     <div class="stat-value">24</div>
-
-                    <div class="stat-description">
-                        Perlu segera diperiksa
-                    </div>
-
+                    <div class="stat-description">Perlu restock segera</div>
                 </div>
 
                 <div class="stat-card">
-
                     <div class="stat-top">
-                        <span class="stat-label">Kategori</span>
+                        <span class="stat-label">Kategori Produk</span>
                         <div class="stat-icon icon-purple">▦</div>
                     </div>
-
                     <div class="stat-value">12</div>
-
-                    <div class="stat-description">
-                        Kategori barang terdaftar
-                    </div>
-
+                    <div class="stat-description">Kategori barang aktif</div>
                 </div>
-
             </div>
-
         </section>
 
-
-        <!-- PRODUCT AND ACTIVITY -->
+        <!-- PRODUCT AND ACTIVITY GRID -->
         <section class="content-grid">
 
-            <!-- PRODUCT TABLE -->
+            <!-- PRODUCT MONITOR -->
             <div class="content-card">
-
                 <div class="section-heading">
                     <div>
-                        <h3>Stok Barang</h3>
-                        <p>Pantau ketersediaan produk</p>
+                        <h3>Monitoring Stok Kritis</h3>
+                        <p>Daftar barang dengan kuantitas yang perlu dipantau</p>
                     </div>
 
-                    <a href="#" class="see-all">Lihat Semua →</a>
+                    <a href="{{ route('inventaris') }}" class="see-all">
+                        Semua Barang →
+                    </a>
                 </div>
 
                 <table class="product-table">
-
                     <thead>
                         <tr>
                             <th>PRODUK</th>
@@ -593,130 +553,94 @@
                             <th>STATUS</th>
                         </tr>
                     </thead>
-
                     <tbody>
-
                         <tr>
-                            <td class="product-name">Buku Tulis</td>
-                            <td>ATK</td>
+                            <td class="product-name">Buku Tulis Sinar Dunia 58</td>
+                            <td>Alat Tulis</td>
                             <td>120</td>
-                            <td>
-                                <span class="stock-badge stock-safe">
-                                    Tersedia
-                                </span>
-                            </td>
+                            <td><span class="stock-badge stock-safe">Tersedia</span></td>
                         </tr>
-
                         <tr>
-                            <td class="product-name">Pulpen Hitam</td>
-                            <td>ATK</td>
+                            <td class="product-name">Pulpen Gel Faster Hitam</td>
+                            <td>Alat Tulis</td>
                             <td>8</td>
-                            <td>
-                                <span class="stock-badge stock-warning">
-                                    Menipis
-                                </span>
-                            </td>
+                            <td><span class="stock-badge stock-warning">Menipis</span></td>
                         </tr>
-
                         <tr>
-                            <td class="product-name">Air Mineral</td>
+                            <td class="product-name">Air Mineral Le Minerale 600ml</td>
                             <td>Minuman</td>
                             <td>45</td>
-                            <td>
-                                <span class="stock-badge stock-safe">
-                                    Tersedia
-                                </span>
-                            </td>
+                            <td><span class="stock-badge stock-safe">Tersedia</span></td>
                         </tr>
-
                         <tr>
-                            <td class="product-name">Penghapus</td>
-                            <td>ATK</td>
+                            <td class="product-name">Penghapus Joyko B40</td>
+                            <td>Alat Tulis</td>
                             <td>3</td>
-                            <td>
-                                <span class="stock-badge stock-danger">
-                                    Kritis
-                                </span>
-                            </td>
+                            <td><span class="stock-badge stock-danger">Kritis</span></td>
                         </tr>
-
+                        <tr>
+                            <td class="product-name">Kertas HVS A4 PaperOne 75gr</td>
+                            <td>Alat Tulis</td>
+                            <td>14</td>
+                            <td><span class="stock-badge stock-warning">Menipis</span></td>
+                        </tr>
                     </tbody>
-
                 </table>
-
             </div>
 
-
-            <!-- RECENT ACTIVITY -->
+            <!-- RECENT ACTIVITIES -->
             <div class="content-card">
-
                 <div class="section-heading">
                     <div>
-                        <h3>Aktivitas Terbaru</h3>
-                        <p>Ringkasan aktivitas koperasi</p>
+                        <h3>Aktivitas Terkini</h3>
+                        <p>Catatan transaksi & perubahan sistem terbaru</p>
                     </div>
+
+                    <a href="{{ route('riwayat.transaksi') }}" class="see-all">
+                        Semua →
+                    </a>
                 </div>
 
                 <div class="activity-list">
-
                     <div class="activity-item">
-
                         <div class="activity-icon icon-green">🛒</div>
-
                         <div class="activity-info">
-                            <h4>Transaksi Walk-in</h4>
-                            <p>Pesanan baru berhasil dicatat</p>
+                            <h4>Transaksi Kasir Walk-in</h4>
+                            <p>Pesanan #TRX-20261117-001 sukses dicatat</p>
                         </div>
-
-                        <span class="activity-time">10:30</span>
-
+                        <span class="activity-time">Baru saja</span>
                     </div>
 
                     <div class="activity-item">
-
                         <div class="activity-icon icon-blue">📦</div>
-
                         <div class="activity-info">
-                            <h4>Stok Ditambahkan</h4>
-                            <p>Penambahan stok produk</p>
+                            <h4>Restock Barang Masuk</h4>
+                            <p>Penambahan 50 pcs Buku Tulis</p>
                         </div>
-
-                        <span class="activity-time">09:45</span>
-
+                        <span class="activity-time">10:30</span>
                     </div>
 
                     <div class="activity-item">
-
                         <div class="activity-icon icon-purple">📊</div>
-
                         <div class="activity-info">
-                            <h4>Data Excel</h4>
-                            <p>Riwayat transaksi berhasil diimpor</p>
+                            <h4>Impor Data Transaksi</h4>
+                            <p>54 baris riwayat Excel berhasil divalidasi</p>
                         </div>
-
                         <span class="activity-time">09:15</span>
-
                     </div>
 
                     <div class="activity-item">
-
                         <div class="activity-icon icon-orange">✓</div>
-
                         <div class="activity-info">
-                            <h4>Pesanan Selesai</h4>
-                            <p>Pengambilan barang divalidasi</p>
+                            <h4>Pengambilan Loket Selesai</h4>
+                            <p>Pesanan QR-9912 telah diserahkan ke anggota</p>
                         </div>
-
-                        <span class="activity-time">08:50</span>
-
+                        <span class="activity-time">08:45</span>
                     </div>
-
                 </div>
-
             </div>
 
         </section>
 
     </div>
-
 </x-app-layout>

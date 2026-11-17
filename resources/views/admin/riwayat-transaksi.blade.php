@@ -1,5 +1,8 @@
 
 <x-app-layout>
+    @section('title', 'Riwayat Transaksi - Polmart')
+    @section('page_title', 'Riwayat Transaksi')
+
     <div class="history-page">
         <div class="page-heading">
             <div>

@@ -1,5 +1,8 @@
 
 <x-app-layout>
+    @section('title', 'Impor Data Excel - Polmart')
+    @section('page_title', 'Impor Data Excel')
+
     <x-slot name="header">
         <h1>Impor Data Excel</h1>
         <p>Tambahkan data inventaris Polmart secara massal menggunakan file Excel.</p>

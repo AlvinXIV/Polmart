@@ -1,5 +1,7 @@
 
 <x-app-layout>
+    @section('title', 'Inventaris & Master Barang - Polmart')
+    @section('page_title', 'Master Inventaris')
 
 <style>
     .inventory-page {
@@ -10,13 +12,14 @@
     }
 
     .inventory-hero {
-        background: linear-gradient(110deg, #2563eb, #60a5fa);
-        padding: 27px 30px;
+        background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+        padding: 30px 34px;
         border-radius: 18px;
         color: white;
         display: flex;
         justify-content: space-between;
         align-items: center;
+        box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3);
     }
 
     .inventory-hero h1 {

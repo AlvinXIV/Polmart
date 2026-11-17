@@ -1,5 +1,8 @@
 
 <x-app-layout>
+    @section('title', 'Transaksi Walk-in / Kasir - Polmart')
+    @section('page_title', 'Kasir Walk-in')
+
     <x-slot name="header">
         <h1>Transaksi Walk-in</h1>
         <p>Catat transaksi pembelian langsung di koperasi Polmart.</p>

@@ -1,5 +1,8 @@
 
 <x-app-layout>
+    @section('title', 'Validasi Loket Pengambilan - Polmart')
+    @section('page_title', 'Validasi Loket')
+
     <x-slot name="header">
         <h1>Validasi Loket</h1>
         <p>Periksa dan kelola transaksi yang membutuhkan validasi petugas.</p>

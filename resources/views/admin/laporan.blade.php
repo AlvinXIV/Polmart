@@ -1,5 +1,8 @@
 
 <x-app-layout>
+    @section('title', 'Laporan Koperasi - Polmart')
+    @section('page_title', 'Laporan Koperasi')
+
     <div class="report-page">
         <div class="report-heading">
             <div>
