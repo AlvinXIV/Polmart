@@ -170,5 +170,33 @@ class PolmartFlowTest extends TestCase
         $this->assertSame('DIBATALKAN', $order->fresh()->status);
         $this->assertSame(10, $product->fresh()->stock);
     }
+
+    public function test_database_seeder_populates_expected_tables(): void
+    {
+        $this->seed(\Database\Seeders\SupermarketSeeder::class);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'admin@polmart.test',
+            'role' => 'admin',
+            'member_code' => 'ADM-001',
+        ]);
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'anggota@polmart.test',
+            'role' => 'member',
+            'member_code' => '224443001',
+        ]);
+
+        $this->assertDatabaseHas('products', [
+            'sku' => 'MNM-001',
+        ]);
+
+        $this->assertGreaterThanOrEqual(18, Order::count());
+        $this->assertDatabaseHas('orders', ['source' => 'web']);
+        $this->assertDatabaseHas('orders', ['source' => 'manual_admin']);
+        $this->assertDatabaseHas('orders', ['source' => 'import_excel']);
+        $this->assertDatabaseHas('orders', ['status' => 'MENUNGGU_BAYAR']);
+        $this->assertDatabaseHas('orders', ['status' => 'SIAP_DIAMBIL']);
+    }
 }
 

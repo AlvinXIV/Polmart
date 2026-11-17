@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace Database\Seeders;
 
@@ -42,6 +42,12 @@ class SupermarketSeeder extends Seeder
         foreach ($usersData as $u) {
             $existing = DB::table('users')->where('email', $u['email'])->first();
             if ($existing) {
+                if (Schema::hasColumn('users', 'member_code') && empty($existing->member_code)) {
+                    DB::table('users')->where('id', $existing->id)->update([
+                        'member_code' => $u['member_number'],
+                        'phone' => $u['phone'],
+                    ]);
+                }
                 $userIds[] = $existing->id;
                 continue;
             }
@@ -51,6 +57,7 @@ class SupermarketSeeder extends Seeder
                 'email' => $u['email'],
                 'password' => $defaultPassword,
                 'role' => $u['role'],
+                'member_code' => $u['member_number'],
                 'member_number' => $u['member_number'],
                 'nomor_anggota' => $u['member_number'],
                 'phone' => $u['phone'],
@@ -149,24 +156,24 @@ class SupermarketSeeder extends Seeder
         }
 
         $sampleOrders = [
-            ['code' => 'PLM-20261101-001', 'days_ago' => 16, 'source' => 'walk_in', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['MNM-001', 2], ['SNK-001', 1], ['ATK-002', 2]]],
-            ['code' => 'PLM-20261102-002', 'days_ago' => 15, 'source' => 'online', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['MIE-001', 5], ['MNM-003', 2]]],
-            ['code' => 'PLM-20261103-003', 'days_ago' => 14, 'source' => 'walk_in', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['ATK-001', 3], ['ATK-003', 2], ['ATK-004', 1]]],
-            ['code' => 'PLM-20261104-004', 'days_ago' => 13, 'source' => 'online', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['SNK-005', 1], ['MNM-006', 2]]],
+            ['code' => 'PLM-20261101-001', 'days_ago' => 16, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['MNM-001', 2], ['SNK-001', 1], ['ATK-002', 2]]],
+            ['code' => 'PLM-20261102-002', 'days_ago' => 15, 'source' => 'web', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['MIE-001', 5], ['MNM-003', 2]]],
+            ['code' => 'PLM-20261103-003', 'days_ago' => 14, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['ATK-001', 3], ['ATK-003', 2], ['ATK-004', 1]]],
+            ['code' => 'PLM-20261104-004', 'days_ago' => 13, 'source' => 'web', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['SNK-005', 1], ['MNM-006', 2]]],
             ['code' => 'PLM-20261105-005', 'days_ago' => 12, 'source' => 'import_excel', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['MNM-002', 4], ['SNK-008', 6]]],
-            ['code' => 'PLM-20261106-006', 'days_ago' => 11, 'source' => 'walk_in', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['MIE-003', 2], ['MNM-008', 2]]],
-            ['code' => 'PLM-20261107-007', 'days_ago' => 10, 'source' => 'online', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['SNK-007', 2], ['MNM-005', 2], ['KSH-001', 1]]],
-            ['code' => 'PLM-20261108-008', 'days_ago' => 9, 'source' => 'walk_in', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['KSH-002', 3], ['MNM-010', 2]]],
-            ['code' => 'PLM-20261109-009', 'days_ago' => 8, 'source' => 'online', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['SNK-003', 2], ['SNK-004', 2], ['MNM-007', 2]]],
-            ['code' => 'PLM-20261110-010', 'days_ago' => 7, 'source' => 'walk_in', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['ATK-005', 1], ['ATK-006', 4], ['ATK-002', 3]]],
-            ['code' => 'PLM-20261111-011', 'days_ago' => 6, 'source' => 'online', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['MIE-001', 4], ['MIE-002', 4], ['MIE-005', 1]]],
-            ['code' => 'PLM-20261112-012', 'days_ago' => 5, 'source' => 'walk_in', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['SNK-002', 3], ['MNM-009', 3]]],
-            ['code' => 'PLM-20261113-013', 'days_ago' => 4, 'source' => 'online', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['KSH-003', 1], ['MNM-001', 3], ['SNK-006', 2]]],
-            ['code' => 'PLM-20261114-014', 'days_ago' => 3, 'source' => 'walk_in', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['SNK-009', 2], ['MNM-004', 4]]],
-            ['code' => 'PLM-20261115-015', 'days_ago' => 2, 'source' => 'online', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['MIE-004', 3], ['MNM-008', 2], ['KSH-005', 2]]],
-            ['code' => 'PLM-20261116-016', 'days_ago' => 1, 'source' => 'walk_in', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['ATK-001', 2], ['SNK-001', 2], ['MNM-005', 1]]],
-            ['code' => 'PLM-20261117-017', 'days_ago' => 0, 'source' => 'online', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['SNK-005', 1], ['MNM-006', 1], ['SNK-007', 1]]],
-            ['code' => 'PLM-20261117-018', 'days_ago' => 0, 'source' => 'online', 'method' => 'qris', 'status' => 'MENUNGGU_PEMBAYARAN', 'items' => [['MNM-003', 2], ['SNK-008', 4]]],
+            ['code' => 'PLM-20261106-006', 'days_ago' => 11, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['MIE-003', 2], ['MNM-008', 2]]],
+            ['code' => 'PLM-20261107-007', 'days_ago' => 10, 'source' => 'web', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['SNK-007', 2], ['MNM-005', 2], ['KSH-001', 1]]],
+            ['code' => 'PLM-20261108-008', 'days_ago' => 9, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['KSH-002', 3], ['MNM-010', 2]]],
+            ['code' => 'PLM-20261109-009', 'days_ago' => 8, 'source' => 'web', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['SNK-003', 2], ['SNK-004', 2], ['MNM-007', 2]]],
+            ['code' => 'PLM-20261110-010', 'days_ago' => 7, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['ATK-005', 1], ['ATK-006', 4], ['ATK-002', 3]]],
+            ['code' => 'PLM-20261111-011', 'days_ago' => 6, 'source' => 'web', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['MIE-001', 4], ['MIE-002', 4], ['MIE-005', 1]]],
+            ['code' => 'PLM-20261112-012', 'days_ago' => 5, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['SNK-002', 3], ['MNM-009', 3]]],
+            ['code' => 'PLM-20261113-013', 'days_ago' => 4, 'source' => 'web', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['KSH-003', 1], ['MNM-001', 3], ['SNK-006', 2]]],
+            ['code' => 'PLM-20261114-014', 'days_ago' => 3, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['SNK-009', 2], ['MNM-004', 4]]],
+            ['code' => 'PLM-20261115-015', 'days_ago' => 2, 'source' => 'web', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['MIE-004', 3], ['MNM-008', 2], ['KSH-005', 2]]],
+            ['code' => 'PLM-20261116-016', 'days_ago' => 1, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['ATK-001', 2], ['SNK-001', 2], ['MNM-005', 1]]],
+            ['code' => 'PLM-20261117-017', 'days_ago' => 0, 'source' => 'web', 'method' => 'qris', 'status' => 'SIAP_DIAMBIL', 'items' => [['SNK-005', 1], ['MNM-006', 1], ['SNK-007', 1]]],
+            ['code' => 'PLM-20261117-018', 'days_ago' => 0, 'source' => 'web', 'method' => 'qris', 'status' => 'MENUNGGU_BAYAR', 'items' => [['MNM-003', 2], ['SNK-008', 4]]],
         ];
 
         $codeColumn = Schema::hasColumn('orders', 'order_code') ? 'order_code' : (Schema::hasColumn('orders', 'invoice_number') ? 'invoice_number' : null);
@@ -198,10 +205,14 @@ class SupermarketSeeder extends Seeder
             $memberId = $memberIds[$idx % count($memberIds)];
             $memberName = $usersData[($idx % count($memberIds)) + 1]['name'];
             $orderTime = $now->copy()->subDays($ord['days_ago'])->subHours($idx % 6);
+            $isPaid = in_array($ord['status'], ['SELESAI', 'SIAP_DIAMBIL'], true);
+            $pickupCode = $isPaid ? sprintf('%04d', (($idx * 377 + 1234) % 9000) + 1000) : null;
+            $expiresAt = $ord['status'] === 'MENUNGGU_BAYAR' ? $now->copy()->addMinutes(15) : null;
 
             $orderId = DB::table('orders')->insertGetId($this->filterCols('orders', [
                 'order_code' => $ord['code'],
                 'invoice_number' => $ord['code'],
+                'pickup_code' => $pickupCode,
                 'user_id' => $memberId,
                 'customer_name' => $memberName,
                 'total_amount' => $total,
@@ -209,8 +220,10 @@ class SupermarketSeeder extends Seeder
                 'status' => $ord['status'],
                 'source' => $ord['source'],
                 'payment_method' => $ord['method'],
-                'payment_status' => $ord['status'] === 'SELESAI' ? 'paid' : 'unpaid',
-                'paid_at' => $ord['status'] === 'SELESAI' ? $orderTime : null,
+                'payment_status' => $isPaid ? 'paid' : 'unpaid',
+                'paid_at' => $isPaid ? $orderTime : null,
+                'expires_at' => $expiresAt,
+                'transaction_date' => $orderTime,
                 'ordered_at' => $orderTime,
                 'created_at' => $orderTime,
                 'updated_at' => $orderTime,

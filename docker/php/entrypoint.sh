@@ -3,7 +3,11 @@ set -e
 
 cd /var/www
 
-mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache
+mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache storage/app/public/products
+
+if [ ! -e /var/www/public/storage ]; then
+    php artisan storage:link || true
+fi
 
 if [ -f composer.lock ]; then
     CURRENT_HASH=$(sha256sum composer.lock | awk '{print $1}')

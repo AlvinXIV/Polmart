@@ -5,7 +5,9 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 class ProductImageSeeder extends Seeder
 {
@@ -94,3 +96,188 @@ class ProductImageSeeder extends Seeder
         ],
         'MIE-005' => [
             'https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full/catalog-image/102/MTA-175109942/brd-60517_bon-cabe-rasa-original-level-15-kobe-45g-cabe-bubuk-tabur-chilli-powder-hot-pedas-boncabe_full01-addf8f5f.jpg',
+        ],
+
+        // Alat Tulis Kantor & Kuliah
+        'ATK-001' => [
+            'https://down-id.img.susercontent.com/file/sg-11134201-22100-34nsv06k6liv6c',
+        ],
+        'ATK-002' => [
+            'https://down-id.img.susercontent.com/file/sg-11134201-22120-x2z0rphkflkv14',
+        ],
+        'ATK-003' => [
+            'https://down-id.img.susercontent.com/file/id-11134207-7r98r-lkuq6p5oaf2d7e',
+        ],
+        'ATK-004' => [
+            'https://down-id.img.susercontent.com/file/id-11134207-7r98r-lmzsv4524wcf86',
+        ],
+        'ATK-005' => [
+            'https://down-id.img.susercontent.com/file/id-11134207-7qukw-lho024y9lmsy67',
+        ],
+        'ATK-006' => [
+            'https://down-id.img.susercontent.com/file/sg-11134201-22100-m461m6yv0liv2f',
+        ],
+
+        // Kebutuhan Harian & Kesehatan
+        'KSH-001' => [
+            'https://down-id.img.susercontent.com/file/id-11134207-7rasf-m2k1d2z1161726',
+        ],
+        'KSH-002' => [
+            'https://down-id.img.susercontent.com/file/sg-11134201-22110-s95h9e7ovzjv7d',
+        ],
+        'KSH-003' => [
+            'https://down-id.img.susercontent.com/file/id-11134207-7r98u-lpx76o00m39gbf',
+        ],
+        'KSH-004' => [
+            'https://down-id.img.susercontent.com/file/sg-11134201-22100-x8sfnqwvqlivb7',
+        ],
+        'KSH-005' => [
+            'https://down-id.img.susercontent.com/file/sg-11134201-22110-b4x31x9f6zjvfc',
+        ],
+    ];
+
+    public function run(): void
+    {
+        if (! Schema::hasTable('products')) {
+            return;
+        }
+
+        $imageColumn = collect(['image', 'image_path', 'photo', 'gambar'])
+            ->first(fn (string $col) => Schema::hasColumn('products', $col));
+
+        if (! $imageColumn) {
+            $this->command?->warn('Kolom gambar pada tabel products tidak ditemukan.');
+
+            return;
+        }
+
+        $targetDir = storage_path('app/public/products');
+
+        File::ensureDirectoryExists($targetDir);
+
+        $products = DB::table('products')
+            ->whereIn('sku', array_keys(self::IMAGE_SOURCES))
+            ->get(['id', 'sku', 'name', $imageColumn]);
+
+        $updatedCount = 0;
+        $skippedCount = 0;
+
+        foreach ($products as $product) {
+            // Jika file gambar lokal sudah ada untuk SKU ini, gunakan langsung tanpa mengunduh ulang
+            $existingFiles = File::glob($targetDir . DIRECTORY_SEPARATOR . strtolower($product->sku) . '.*');
+            if (! empty($existingFiles)) {
+                $savedPath = 'products/' . basename($existingFiles[0]);
+                DB::table('products')
+                    ->where('id', $product->id)
+                    ->update([
+                        $imageColumn => $savedPath,
+                        'updated_at' => now(),
+                    ]);
+
+                $updatedCount++;
+                continue;
+            }
+
+            $urls = self::IMAGE_SOURCES[$product->sku] ?? [];
+            $savedPath = null;
+
+            foreach ($urls as $url) {
+                $downloaded = $this->downloadImage(
+                    $product->sku,
+                    $url,
+                    $targetDir
+                );
+
+                if ($downloaded !== null) {
+                    $savedPath = $downloaded;
+                    break;
+                }
+            }
+
+            if ($savedPath !== null) {
+                DB::table('products')
+                    ->where('id', $product->id)
+                    ->update([
+                        $imageColumn => $savedPath,
+                        'updated_at' => now(),
+                    ]);
+
+                $updatedCount++;
+            } else {
+                $skippedCount++;
+
+                $this->command?->warn(
+                    "Gagal mengunduh gambar untuk {$product->sku} ({$product->name}); nilai lama dipertahankan."
+                );
+            }
+        }
+
+        $this->command?->info(
+            "ProductImageSeeder selesai: {$updatedCount} produk diperbarui, {$skippedCount} dilewati."
+        );
+    }
+
+    private function downloadImage(
+        string $sku,
+        string $url,
+        string $targetDir
+    ): ?string {
+        try {
+            $response = Http::timeout(10)
+                ->withHeaders([
+                    'User-Agent' => 'Mozilla/5.0 (compatible; PolmartSeeder/1.0)',
+                    'Accept' => 'image/*',
+                ])
+                ->get($url);
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $body = $response->body();
+
+            if ($body === '' || strlen($body) < 100) {
+                return null;
+            }
+
+            $contentType = strtolower(
+                (string) $response->header('Content-Type')
+            );
+
+            $extension = match (true) {
+                str_contains($contentType, 'png') => 'png',
+                str_contains($contentType, 'webp') => 'webp',
+                str_contains($contentType, 'jpeg'),
+                str_contains($contentType, 'jpg') => 'jpg',
+                str_ends_with(
+                    strtolower(parse_url($url, PHP_URL_PATH) ?? ''),
+                    '.png'
+                ) => 'png',
+                str_ends_with(
+                    strtolower(parse_url($url, PHP_URL_PATH) ?? ''),
+                    '.webp'
+                ) => 'webp',
+                default => 'jpg',
+            };
+
+            if (
+                $contentType !== ''
+                && ! str_contains($contentType, 'image/')
+                && ! str_contains($contentType, 'octet-stream')
+            ) {
+                return null;
+            }
+
+            $filename = strtolower($sku) . '.' . $extension;
+
+            File::put(
+                $targetDir . DIRECTORY_SEPARATOR . $filename,
+                $body
+            );
+
+            return 'products/' . $filename;
+        } catch (Throwable) {
+            return null;
+        }
+    }
+}
