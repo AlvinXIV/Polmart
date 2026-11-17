@@ -1,234 +1,113 @@
-﻿
 <x-app-layout>
+    @section('title', 'Checkout Pesanan - Polmart')
+    @section('page_title', 'Checkout Pesanan')
 
-    <div class="min-h-screen bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="space-y-6">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-600">PORTAL ANGGOTA</span>
+            <h1 class="text-2xl font-extrabold text-slate-900 mt-1">Konfirmasi Checkout</h1>
+            <p class="text-sm text-slate-500 mt-1">Periksa detail pesanan Anda sebelum melakukan reservasi stok & pembayaran QRIS.</p>
+        </div>
 
-            <!-- Header -->
-            <div class="mb-8">
-                <p class="text-sm font-medium text-green-700">
-                    MEMBER PORTAL
-                </p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Daftar Barang -->
+                <section class="polmart-card">
+                    <h2 class="text-base font-extrabold text-slate-900 mb-4">Detail Barang Dipesan</h2>
+                    <div class="divide-y divide-slate-100">
+                        @foreach ($items as $item)
+                            @php $product = $item['product']; @endphp
+                            <div class="py-3.5 flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden">
+                                        @if ($product->image)
+                                            <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                        @else
+                                            <span class="text-2xl">📦</span>
+                                        @endif
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-900 text-sm">{{ $product->name }}</p>
+                                        <p class="text-xs text-slate-500">{{ $item['qty'] }} × Rp {{ number_format($item['unit_price'], 0, ',', '.') }}</p>
+                                    </div>
+                                </div>
+                                <p class="font-extrabold text-slate-900 text-sm">
+                                    Rp {{ number_format($item['subtotal'], 0, ',', '.') }}
+                                </p>
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
 
-                <h1 class="text-3xl font-bold text-gray-900 mt-2">
-                    Checkout
-                </h1>
+                <!-- Data Anggota -->
+                <section class="polmart-card">
+                    <h2 class="text-base font-extrabold text-slate-900 mb-4">Informasi Pemesan</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="text-slate-400 text-xs">Nama Lengkap</p>
+                            <p class="font-bold text-slate-900 mt-0.5">{{ Auth::user()->name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs">Nomor Anggota / NIM / NIK</p>
+                            <p class="font-bold text-slate-900 font-mono mt-0.5">{{ Auth::user()->member_code ?? '-' }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs">Email</p>
+                            <p class="font-bold text-slate-900 mt-0.5">{{ Auth::user()->email }}</p>
+                        </div>
+                        <div>
+                            <p class="text-slate-400 text-xs">Nomor WhatsApp</p>
+                            <p class="font-bold text-slate-900 mt-0.5">{{ Auth::user()->phone ?? '-' }}</p>
+                        </div>
+                    </div>
+                </section>
 
-                <p class="text-gray-500 mt-2">
-                    Periksa kembali pesanan sebelum melanjutkan pembayaran.
-                </p>
+                <!-- Metode Pembayaran -->
+                <section class="polmart-card">
+                    <h2 class="text-base font-extrabold text-slate-900 mb-3">Metode Pembayaran</h2>
+                    <div class="border border-blue-500 bg-blue-50 rounded-xl p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-white border border-blue-200 flex items-center justify-center font-extrabold text-blue-700">
+                            QRIS
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-bold text-slate-900 text-sm">QRIS Dinamis Polmart</p>
+                            <p class="text-xs text-slate-600 mt-0.5">Kode QR unik dibuat otomatis dengan batas pembayaran 15 menit.</p>
+                        </div>
+                        <span class="text-blue-700 font-extrabold">✓</span>
+                    </div>
+                </section>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Ringkasan Checkout -->
+            <aside class="polmart-card space-y-5 sticky top-24">
+                <h2 class="text-lg font-extrabold text-slate-900">Ringkasan Pembayaran</h2>
 
-                <!-- Order Details -->
-                <div class="lg:col-span-2 space-y-6">
-
-                    <!-- Products -->
-                    <section class="bg-white border border-gray-200 rounded-xl p-6">
-
-                        <h2 class="text-lg font-semibold text-gray-900">
-                            Detail Pesanan
-                        </h2>
-
-                        <div class="divide-y divide-gray-100 mt-5">
-
-                            <!-- Product 1 -->
-                            <div class="py-4 flex items-center gap-4">
-                                <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                                    <span class="text-3xl">🥤</span>
-                                </div>
-
-                                <div class="flex-1">
-                                    <h3 class="font-medium text-gray-900">
-                                        Contoh Produk Minuman
-                                    </h3>
-
-                                    <p class="text-sm text-gray-500 mt-1">
-                                        1 × Rp5.000
-                                    </p>
-                                </div>
-
-                                <p class="font-semibold text-gray-900">
-                                    Rp5.000
-                                </p>
-                            </div>
-
-                            <!-- Product 2 -->
-                            <div class="py-4 flex items-center gap-4">
-                                <div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center">
-                                    <span class="text-3xl">🍪</span>
-                                </div>
-
-                                <div class="flex-1">
-                                    <h3 class="font-medium text-gray-900">
-                                        Contoh Produk Makanan
-                                    </h3>
-
-                                    <p class="text-sm text-gray-500 mt-1">
-                                        2 × Rp3.000
-                                    </p>
-                                </div>
-
-                                <p class="font-semibold text-gray-900">
-                                    Rp6.000
-                                </p>
-                            </div>
-
-                        </div>
-                    </section>
-
-                    <!-- Customer Information -->
-                    <section class="bg-white border border-gray-200 rounded-xl p-6">
-
-                        <h2 class="text-lg font-semibold text-gray-900">
-                            Informasi Anggota
-                        </h2>
-
-                        <p class="text-sm text-gray-500 mt-1">
-                            Informasi akun yang digunakan untuk pemesanan.
-                        </p>
-
-                        <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
-
-                            <div>
-                                <p class="text-sm text-gray-500">
-                                    Nama Anggota
-                                </p>
-
-                                <p class="font-medium text-gray-900 mt-1">
-                                    {{ Auth::user()->name }}
-                                </p>
-                            </div>
-
-                            <div>
-                                <p class="text-sm text-gray-500">
-                                    Email
-                                </p>
-
-                                <p class="font-medium text-gray-900 mt-1">
-                                    {{ Auth::user()->email }}
-                                </p>
-                            </div>
-
-                        </div>
-                    </section>
-
-                    <!-- Payment Method -->
-                    <section class="bg-white border border-gray-200 rounded-xl p-6">
-
-                        <h2 class="text-lg font-semibold text-gray-900">
-                            Metode Pembayaran
-                        </h2>
-
-                        <div class="mt-5 border border-green-700 bg-green-50 rounded-xl p-4 flex items-center gap-4">
-
-                            <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center border border-gray-200">
-                                <span class="font-bold text-green-800 text-lg">
-                                    QR
-                                </span>
-                            </div>
-
-                            <div class="flex-1">
-                                <p class="font-semibold text-gray-900">
-                                    QRIS
-                                </p>
-
-                                <p class="text-sm text-gray-500 mt-1">
-                                    Pembayaran melalui simulasi QRIS POLMART.
-                                </p>
-                            </div>
-
-                            <span class="text-green-700 font-semibold">
-                                ✓
-                            </span>
-
-                        </div>
-                    </section>
-
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-slate-500">Total Produk</span>
+                        <strong class="text-slate-900">{{ $totalItems }} item</strong>
+                    </div>
+                    <div class="flex justify-between border-t border-slate-200 pt-3">
+                        <span class="font-bold text-slate-900">Total Pembayaran</span>
+                        <strong class="text-xl font-extrabold text-blue-700">Rp {{ number_format($totalAmount, 0, ',', '.') }}</strong>
+                    </div>
                 </div>
 
-                <!-- Order Summary -->
-                <aside>
-                    <div class="bg-white border border-gray-200 rounded-xl p-6">
+                <div class="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 leading-relaxed">
+                    <strong>Perhatian (FR-06):</strong> Saat pesanan dibuat, stok langsung direservasi dan Anda memiliki waktu <strong>15 menit</strong> untuk menyelesaikan pembayaran QRIS.
+                </div>
 
-                        <h2 class="text-lg font-semibold text-gray-900">
-                            Ringkasan Pembayaran
-                        </h2>
+                <form method="POST" action="{{ route('anggota.checkout.store') }}">
+                    @csrf
+                    <button type="submit" class="polmart-btn polmart-btn-primary w-full py-3">
+                        Buat Pesanan & Bayar QRIS →
+                    </button>
+                </form>
 
-                        <div class="space-y-4 mt-6">
-
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">
-                                    Total Produk
-                                </span>
-
-                                <span class="font-medium text-gray-900">
-                                    3 item
-                                </span>
-                            </div>
-
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">
-                                    Subtotal
-                                </span>
-
-                                <span class="font-medium text-gray-900">
-                                    Rp11.000
-                                </span>
-                            </div>
-
-                            <div class="border-t border-gray-200 pt-4">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-semibold text-gray-900">
-                                        Total Pembayaran
-                                    </span>
-
-                                    <span class="text-xl font-bold text-green-800">
-                                        Rp11.000
-                                    </span>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <!-- Payment Deadline Information -->
-                        <div class="mt-6 bg-yellow-50 border border-yellow-100 rounded-lg p-4">
-
-                            <p class="text-sm font-semibold text-yellow-800">
-                                Perhatian
-                            </p>
-
-                            <p class="text-xs text-yellow-700 mt-2 leading-relaxed">
-                                Setelah checkout berhasil diproses, pesanan
-                                memiliki batas waktu pembayaran selama
-                                15 menit.
-                            </p>
-
-                        </div>
-
-                        <!-- Create Order -->
-                        <button type="button"
-                                disabled
-                                class="w-full mt-6 py-3 rounded-lg bg-gray-200 text-gray-500 font-semibold text-sm cursor-not-allowed">
-                            Buat Pesanan
-                        </button>
-
-                        <p class="text-xs text-gray-400 text-center mt-4">
-                            Tombol akan dihubungkan dengan proses checkout backend.
-                        </p>
-
-                        <!-- Back to Cart -->
-                        <a href="{{ route('anggota.keranjang') }}"
-                           class="block text-center text-sm text-green-800 font-medium mt-5 hover:underline">
-                            Kembali ke Keranjang
-                        </a>
-
-                    </div>
-                </aside>
-
-            </div>
+                <a href="{{ route('anggota.keranjang') }}" class="block text-center text-sm font-semibold text-slate-500 hover:text-blue-700">
+                    ← Kembali ke Keranjang
+                </a>
+            </aside>
         </div>
     </div>
-
 </x-app-layout>

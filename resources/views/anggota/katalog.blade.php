@@ -1,404 +1,134 @@
-﻿
 <x-app-layout>
+    @section('title', 'Katalog Belanja Anggota - Polmart')
+    @section('page_title', 'Katalog Belanja')
 
-    <div class="min-h-screen bg-gray-50">
-
+    <div class="space-y-6">
         <!-- Header Katalog -->
-        <section class="bg-green-900">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-
-                    <div>
-                        <p class="text-green-200 text-sm mb-2">
-                            Selamat datang di POLMART
-                        </p>
-
-                        <h1 class="text-3xl md:text-4xl font-bold text-white">
-                            Belanja Kebutuhanmu
-                        </h1>
-
-                        <p class="text-green-100 mt-3 max-w-xl">
-                            Temukan berbagai kebutuhan harian dengan mudah
-                            melalui katalog produk POLMART.
-                        </p>
-                    </div>
-
-                    <div class="hidden md:flex w-20 h-20 rounded-2xl bg-white/10 items-center justify-center">
-                        <span class="text-5xl">🛒</span>
-                    </div>
-
-                </div>
+        <section class="polmart-banner flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="relative z-10">
+                <span class="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-bold uppercase tracking-wider mb-2">
+                    PORTAL BELANJA ANGGOTA
+                </span>
+                <h1 class="text-2xl sm:text-3xl font-extrabold">Katalog Produk Polmart 🛍️</h1>
+                <p class="text-blue-100 text-sm mt-1">Pilih barang aktif dengan stok tersedia secara real-time dan masukkan ke keranjang belanja Anda.</p>
+            </div>
+            <div class="relative z-10">
+                <a href="{{ route('anggota.keranjang') }}" class="px-5 py-3 bg-white text-blue-700 font-extrabold text-sm rounded-xl shadow hover:bg-blue-50 transition inline-flex items-center gap-2">
+                    🧺 Lihat Keranjang ({{ $cartCount }})
+                </a>
             </div>
         </section>
 
-
-        <!-- Konten Katalog -->
-        <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-
-            <!-- Pencarian -->
-            <div class="mb-8">
-                <label for="searchProduct"
-                       class="block text-sm font-semibold text-gray-700 mb-2">
-                    Cari Produk
-                </label>
-
-                <div class="relative">
-                    <input
-                        type="text"
-                        id="searchProduct"
-                        placeholder="Cari nama produk..."
-                        class="w-full pl-11 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-700 focus:border-green-700"
-                    >
-
-                    <svg class="w-5 h-5 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2"
-                         fill="none"
-                         stroke="currentColor"
-                         viewBox="0 0 24 24">
-                        <circle cx="11" cy="11" r="7" stroke-width="2"/>
-                        <path d="m16 16 4 4" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </div>
+        @if (session('success'))
+            <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium flex items-center justify-between gap-3">
+                <span>{{ session('success') }}</span>
+                <a href="{{ route('anggota.keranjang') }}" class="font-bold underline">Buka Keranjang →</a>
             </div>
-
-
-            <!-- Kategori -->
-            <div class="mb-8">
-                <div class="flex flex-wrap gap-3" id="categoryFilters">
-
-                    <button type="button"
-                            data-category="Semua"
-                            class="category-btn px-5 py-2 rounded-full bg-green-800 text-white text-sm font-medium">
-                        Semua Produk
-                    </button>
-
-                    <button type="button"
-                            data-category="Makanan"
-                            class="category-btn px-5 py-2 rounded-full bg-white border border-gray-200 text-gray-600 text-sm hover:border-green-700">
-                        Makanan
-                    </button>
-
-                    <button type="button"
-                            data-category="Minuman"
-                            class="category-btn px-5 py-2 rounded-full bg-white border border-gray-200 text-gray-600 text-sm hover:border-green-700">
-                        Minuman
-                    </button>
-
-                    <button type="button"
-                            data-category="Alat Tulis"
-                            class="category-btn px-5 py-2 rounded-full bg-white border border-gray-200 text-gray-600 text-sm hover:border-green-700">
-                        Alat Tulis
-                    </button>
-
-                    <button type="button"
-                            data-category="Lainnya"
-                            class="category-btn px-5 py-2 rounded-full bg-white border border-gray-200 text-gray-600 text-sm hover:border-green-700">
-                        Lainnya
-                    </button>
-
-                </div>
+        @endif
+        @if ($errors->any())
+            <div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm font-medium">
+                {{ $errors->first() }}
             </div>
+        @endif
 
+        <!-- Pencarian & Filter Kategori -->
+        <section class="polmart-card space-y-4">
+            <form method="GET" action="{{ route('anggota.katalog') }}" class="flex flex-wrap items-center gap-3">
+                <input type="text" name="search" value="{{ $search }}"
+                       placeholder="Cari nama barang, SKU, atau kategori..."
+                       class="polmart-input sm:w-80">
 
-            <!-- Judul Produk -->
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-900">
-                        Katalog Produk
-                    </h2>
+                <select name="category" class="polmart-select sm:w-52">
+                    <option value="">Semua Kategori</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category }}" {{ $selectedCategory === $category ? 'selected' : '' }}>
+                            {{ $category }}
+                        </option>
+                    @endforeach
+                </select>
 
-                    <p class="text-sm text-gray-500 mt-1">
-                        Pilih produk yang ingin kamu beli.
-                    </p>
-                </div>
+                <button type="submit" class="polmart-btn polmart-btn-primary">Cari</button>
+                @if ($search !== '' || $selectedCategory !== '')
+                    <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-secondary">Reset</a>
+                @endif
+            </form>
 
-                <span class="text-sm text-gray-500" id="productCount">
-                    4 produk
-                </span>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('anggota.katalog', array_filter(['search' => $search])) }}"
+                   class="px-4 py-1.5 rounded-full text-xs font-semibold border {{ $selectedCategory === '' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400' }}">
+                    Semua Produk
+                </a>
+                @foreach ($categories as $category)
+                    <a href="{{ route('anggota.katalog', array_filter(['category' => $category, 'search' => $search])) }}"
+                       class="px-4 py-1.5 rounded-full text-xs font-semibold border {{ $selectedCategory === $category ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-600 border-slate-200 hover:border-blue-400' }}">
+                        {{ $category }}
+                    </a>
+                @endforeach
             </div>
+        </section>
 
-
-            <!-- Daftar Produk -->
-            <!-- Data berikut masih contoh tampilan -->
-            <div id="productList"
-                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                <!-- Produk 1 -->
-                <div class="product-card bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                     data-name="Air Mineral"
-                     data-category="Minuman">
-
-                    <div class="h-44 bg-blue-50 flex items-center justify-center">
-                        <span class="text-7xl">💧</span>
-                    </div>
-
-                    <div class="p-5">
-                        <span class="text-xs font-medium text-blue-700 bg-blue-50 px-3 py-1 rounded-full">
-                            Minuman
-                        </span>
-
-                        <h3 class="font-semibold text-gray-900 mt-3">
-                            Air Mineral
-                        </h3>
-
-                        <p class="text-sm text-gray-500 mt-1">
-                            Contoh produk katalog
-                        </p>
-
-                        <div class="flex items-center justify-between mt-4">
-                            <span class="font-bold text-green-800">
-                                Rp3.000
-                            </span>
-
-                            <span class="text-xs text-gray-400">
-                                Stok: -
+        <!-- Daftar Produk -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            @forelse ($products as $product)
+                @php
+                    $inCartQty = (int) ($cart[$product->id] ?? 0);
+                    $maxAddable = max(0, $product->stock - $inCartQty);
+                @endphp
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div>
+                        <div class="h-44 bg-slate-100 flex items-center justify-center overflow-hidden relative">
+                            @if ($product->image)
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                            @else
+                                <span class="text-6xl">📦</span>
+                            @endif
+                            <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold bg-white/90 text-blue-700 shadow-sm">
+                                {{ $product->category }}
                             </span>
                         </div>
 
-                        <button type="button" disabled
-                                class="w-full mt-4 py-2.5 rounded-lg bg-gray-200 text-gray-500 text-sm font-medium cursor-not-allowed">
-                            Tambah ke Keranjang
-                        </button>
-                    </div>
-                </div>
+                        <div class="p-4">
+                            <p class="font-mono text-xs text-slate-400">{{ $product->sku }}</p>
+                            <h3 class="font-bold text-slate-900 mt-1 line-clamp-2">{{ $product->name }}</h3>
 
+                            <div class="flex items-center justify-between mt-3">
+                                <span class="text-lg font-extrabold text-blue-700">
+                                    Rp {{ number_format($product->price, 0, ',', '.') }}
+                                </span>
+                                <span class="text-xs font-semibold {{ $product->stock <= 5 ? 'text-amber-600' : 'text-emerald-600' }}">
+                                    Stok: {{ $product->stock }}
+                                </span>
+                            </div>
 
-                <!-- Produk 2 -->
-                <div class="product-card bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                     data-name="Roti"
-                     data-category="Makanan">
-
-                    <div class="h-44 bg-orange-50 flex items-center justify-center">
-                        <span class="text-7xl">🍞</span>
-                    </div>
-
-                    <div class="p-5">
-                        <span class="text-xs font-medium text-orange-700 bg-orange-50 px-3 py-1 rounded-full">
-                            Makanan
-                        </span>
-
-                        <h3 class="font-semibold text-gray-900 mt-3">
-                            Roti
-                        </h3>
-
-                        <p class="text-sm text-gray-500 mt-1">
-                            Contoh produk katalog
-                        </p>
-
-                        <div class="flex items-center justify-between mt-4">
-                            <span class="font-bold text-green-800">
-                                Rp5.000
-                            </span>
-
-                            <span class="text-xs text-gray-400">
-                                Stok: -
-                            </span>
+                            @if ($inCartQty > 0)
+                                <p class="text-xs text-blue-600 font-semibold mt-1">
+                                    Di keranjang: {{ $inCartQty }} pcs
+                                </p>
+                            @endif
                         </div>
+                    </div>
 
-                        <button type="button" disabled
-                                class="w-full mt-4 py-2.5 rounded-lg bg-gray-200 text-gray-500 text-sm font-medium cursor-not-allowed">
-                            Tambah ke Keranjang
-                        </button>
+                    <div class="p-4 pt-0">
+                        <form method="POST" action="{{ route('anggota.keranjang.add') }}" class="flex items-center gap-2">
+                            @csrf
+                            <input type="hidden" name="product_id" value="{{ $product->id }}">
+                            <input type="number" name="qty" value="1" min="1" max="{{ max(1, $maxAddable) }}"
+                                   {{ $maxAddable < 1 ? 'disabled' : '' }}
+                                   class="w-16 px-2 py-2 text-sm text-center border border-slate-300 rounded-lg">
+                            <button type="submit" {{ $maxAddable < 1 ? 'disabled' : '' }}
+                                    class="flex-1 py-2 px-3 rounded-lg text-xs font-bold transition {{ $maxAddable < 1 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white' }}">
+                                {{ $maxAddable < 1 ? 'Maks. Stok' : '+ Keranjang' }}
+                            </button>
+                        </form>
                     </div>
                 </div>
-
-
-                <!-- Produk 3 -->
-                <div class="product-card bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                     data-name="Buku Tulis"
-                     data-category="Alat Tulis">
-
-                    <div class="h-44 bg-yellow-50 flex items-center justify-center">
-                        <span class="text-7xl">📒</span>
-                    </div>
-
-                    <div class="p-5">
-                        <span class="text-xs font-medium text-yellow-700 bg-yellow-50 px-3 py-1 rounded-full">
-                            Alat Tulis
-                        </span>
-
-                        <h3 class="font-semibold text-gray-900 mt-3">
-                            Buku Tulis
-                        </h3>
-
-                        <p class="text-sm text-gray-500 mt-1">
-                            Contoh produk katalog
-                        </p>
-
-                        <div class="flex items-center justify-between mt-4">
-                            <span class="font-bold text-green-800">
-                                Rp4.000
-                            </span>
-
-                            <span class="text-xs text-gray-400">
-                                Stok: -
-                            </span>
-                        </div>
-
-                        <button type="button" disabled
-                                class="w-full mt-4 py-2.5 rounded-lg bg-gray-200 text-gray-500 text-sm font-medium cursor-not-allowed">
-                            Tambah ke Keranjang
-                        </button>
-                    </div>
+            @empty
+                <div class="col-span-full polmart-card text-center py-12">
+                    <div class="text-4xl mb-3">🔍</div>
+                    <h3 class="font-bold text-slate-800">Tidak ada produk tersedia</h3>
+                    <p class="text-sm text-slate-500 mt-1">Coba ubah kata kunci pencarian atau kategori.</p>
                 </div>
-
-
-                <!-- Produk 4 -->
-                <div class="product-card bg-white rounded-2xl border border-gray-100 overflow-hidden"
-                     data-name="Perlengkapan"
-                     data-category="Lainnya">
-
-                    <div class="h-44 bg-purple-50 flex items-center justify-center">
-                        <span class="text-7xl">📦</span>
-                    </div>
-
-                    <div class="p-5">
-                        <span class="text-xs font-medium text-purple-700 bg-purple-50 px-3 py-1 rounded-full">
-                            Lainnya
-                        </span>
-
-                        <h3 class="font-semibold text-gray-900 mt-3">
-                            Perlengkapan
-                        </h3>
-
-                        <p class="text-sm text-gray-500 mt-1">
-                            Contoh produk katalog
-                        </p>
-
-                        <div class="flex items-center justify-between mt-4">
-                            <span class="font-bold text-green-800">
-                                Rp10.000
-                            </span>
-
-                            <span class="text-xs text-gray-400">
-                                Stok: -
-                            </span>
-                        </div>
-
-                        <button type="button" disabled
-                                class="w-full mt-4 py-2.5 rounded-lg bg-gray-200 text-gray-500 text-sm font-medium cursor-not-allowed">
-                            Tambah ke Keranjang
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-
-
-            <!-- Pesan Jika Produk Tidak Ditemukan -->
-            <div id="emptyMessage"
-                 class="hidden text-center py-16">
-
-                <div class="text-5xl mb-4">🔍</div>
-
-                <h3 class="font-semibold text-gray-800">
-                    Produk tidak ditemukan
-                </h3>
-
-                <p class="text-sm text-gray-500 mt-2">
-                    Coba gunakan kata kunci atau kategori lainnya.
-                </p>
-            </div>
-
-
-            <!-- Keterangan -->
-            <div class="mt-10 p-4 bg-yellow-50 border border-yellow-100 rounded-xl">
-                <p class="text-sm text-yellow-800">
-                    <strong>Catatan:</strong> Produk dan harga pada halaman ini
-                    masih berupa data contoh. Fitur pencarian dan filter sudah
-                    dapat digunakan, sedangkan data produk dan keranjang belum
-                    terhubung dengan database.
-                </p>
-            </div>
-
+            @endforelse
         </section>
     </div>
-
-
-    <!-- JavaScript Pencarian dan Filter -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-
-            const searchInput = document.getElementById('searchProduct');
-            const categoryButtons = document.querySelectorAll('.category-btn');
-            const productCards = document.querySelectorAll('.product-card');
-            const productCount = document.getElementById('productCount');
-            const emptyMessage = document.getElementById('emptyMessage');
-
-            let selectedCategory = 'Semua';
-
-            function filterProducts() {
-
-                const keyword = searchInput.value.toLowerCase().trim();
-                let visibleCount = 0;
-
-                productCards.forEach(function (card) {
-
-                    const name = card.dataset.name.toLowerCase();
-                    const category = card.dataset.category;
-
-                    const matchesSearch = name.includes(keyword);
-
-                    const matchesCategory =
-                        selectedCategory === 'Semua' ||
-                        category === selectedCategory;
-
-                    if (matchesSearch && matchesCategory) {
-                        card.classList.remove('hidden');
-                        visibleCount++;
-                    } else {
-                        card.classList.add('hidden');
-                    }
-
-                });
-
-                productCount.textContent = visibleCount + ' produk';
-
-                if (visibleCount === 0) {
-                    emptyMessage.classList.remove('hidden');
-                } else {
-                    emptyMessage.classList.add('hidden');
-                }
-            }
-
-            searchInput.addEventListener('input', filterProducts);
-
-            categoryButtons.forEach(function (button) {
-
-                button.addEventListener('click', function () {
-
-                    selectedCategory = this.dataset.category;
-
-                    categoryButtons.forEach(function (item) {
-                        item.classList.remove(
-                            'bg-green-800',
-                            'text-white'
-                        );
-
-                        item.classList.add(
-                            'bg-white',
-                            'text-gray-600',
-                            'border',
-                            'border-gray-200'
-                        );
-                    });
-
-                    this.classList.remove(
-                        'bg-white',
-                        'text-gray-600',
-                        'border',
-                        'border-gray-200'
-                    );
-
-                    this.classList.add(
-                        'bg-green-800',
-                        'text-white'
-                    );
-
-                    filterProducts();
-                });
-            });
-
-        });
-    </script>
-
 </x-app-layout>

@@ -1,185 +1,133 @@
-﻿
 <x-app-layout>
+    @section('title', 'Keranjang Belanja - Polmart')
+    @section('page_title', 'Keranjang Belanja')
 
-    <div class="min-h-screen bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-            <!-- Header -->
-            <div class="mb-8">
-                <p class="text-sm font-medium text-green-700">
-                    MEMBER PORTAL
-                </p>
-
-                <h1 class="text-3xl font-bold text-gray-900 mt-2">
-                    Keranjang Belanja
-                </h1>
-
-                <p class="text-gray-500 mt-2">
-                    Periksa kembali produk pilihanmu sebelum checkout.
-                </p>
+    <div class="space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-blue-600">PORTAL ANGGOTA</span>
+                <h1 class="text-2xl font-extrabold text-slate-900 mt-1">Keranjang Belanja 🧺</h1>
+                <p class="text-sm text-slate-500 mt-1">Periksa kembali daftar barang dan kuantitas sebelum melakukan checkout.</p>
             </div>
+            @if (! empty($items))
+                <form method="POST" action="{{ route('anggota.keranjang.clear') }}">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="polmart-btn polmart-btn-danger polmart-btn-sm"
+                            onclick="return confirm('Kosongkan seluruh keranjang belanja?')">
+                        🗑 Kosongkan Keranjang
+                    </button>
+                </form>
+            @endif
+        </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        @if (session('success'))
+            <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if ($errors->any())
+            <div class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm font-medium">
+                {{ $errors->first() }}
+            </div>
+        @endif
+        @foreach ($warnings as $warning)
+            <div class="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm font-medium">
+                ⚠ {{ $warning }}
+            </div>
+        @endforeach
 
-                <!-- Cart Items -->
+        @if (empty($items))
+            <div class="polmart-card text-center py-14 space-y-4">
+                <div class="text-5xl">🧺</div>
+                <h2 class="text-lg font-extrabold text-slate-900">Keranjang belanja masih kosong</h2>
+                <p class="text-sm text-slate-500 max-w-md mx-auto">Jelajahi katalog Polmart untuk memilih produk kebutuhan Anda.</p>
+                <div>
+                    <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-primary">
+                        🛍️ Belanja di Katalog
+                    </a>
+                </div>
+            </div>
+        @else
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <!-- Daftar Item -->
                 <div class="lg:col-span-2 space-y-4">
-
-                    <!-- Product 1 -->
-                    <div class="bg-white border border-gray-200 rounded-xl p-5">
-                        <div class="flex flex-col sm:flex-row gap-5">
-
-                            <div class="w-full sm:w-28 h-28 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <span class="text-5xl">🥤</span>
+                    @foreach ($items as $item)
+                        @php $product = $item['product']; @endphp
+                        <div class="polmart-card flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                            <div class="w-24 h-24 rounded-xl bg-slate-100 flex items-center justify-center overflow-hidden shrink-0">
+                                @if ($product->image)
+                                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
+                                @else
+                                    <span class="text-4xl">📦</span>
+                                @endif
                             </div>
 
-                            <div class="flex-1">
-                                <p class="text-xs text-green-700 font-medium">
-                                    MINUMAN
+                            <div class="flex-1 min-w-0">
+                                <span class="text-xs font-bold text-blue-600 uppercase">{{ $product->category }}</span>
+                                <h3 class="font-bold text-slate-900 text-base">{{ $product->name }}</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">
+                                    Rp {{ number_format($item['unit_price'], 0, ',', '.') }} / pcs • Sisa stok: {{ $product->stock }}
                                 </p>
 
-                                <h3 class="font-semibold text-gray-900 mt-1">
-                                    Contoh Produk Minuman
-                                </h3>
-
-                                <p class="text-sm text-gray-500 mt-1">
-                                    Harga satuan: Rp5.000
-                                </p>
-
-                                <div class="flex flex-wrap items-center justify-between gap-4 mt-4">
-
-                                    <div class="flex items-center border border-gray-300 rounded-lg">
-                                        <button type="button" disabled class="px-3 py-1.5 text-gray-400">
-                                            −
+                                <div class="flex flex-wrap items-center gap-3 mt-3">
+                                    <form method="POST" action="{{ route('anggota.keranjang.update', $product) }}" class="flex items-center gap-2">
+                                        @csrf
+                                        @method('PATCH')
+                                        <label class="text-xs font-semibold text-slate-500">Qty:</label>
+                                        <input type="number" name="qty" value="{{ $item['qty'] }}" min="1" max="{{ $product->stock }}"
+                                               class="w-20 px-2 py-1.5 text-sm border border-slate-300 rounded-lg text-center">
+                                        <button type="submit" class="polmart-btn polmart-btn-secondary polmart-btn-sm">
+                                            Perbarui
                                         </button>
+                                    </form>
 
-                                        <span class="px-4 py-1.5 text-sm">1</span>
-
-                                        <button type="button" disabled class="px-3 py-1.5 text-gray-400">
-                                            +
+                                    <form method="POST" action="{{ route('anggota.keranjang.remove', $product) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-xs font-semibold text-rose-600 hover:underline">
+                                            Hapus
                                         </button>
-                                    </div>
-
-                                    <p class="font-semibold text-gray-900">
-                                        Rp5.000
-                                    </p>
+                                    </form>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- Product 2 -->
-                    <div class="bg-white border border-gray-200 rounded-xl p-5">
-                        <div class="flex flex-col sm:flex-row gap-5">
-
-                            <div class="w-full sm:w-28 h-28 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <span class="text-5xl">🍪</span>
-                            </div>
-
-                            <div class="flex-1">
-                                <p class="text-xs text-green-700 font-medium">
-                                    MAKANAN
+                            <div class="text-right shrink-0">
+                                <p class="text-xs text-slate-400">Subtotal</p>
+                                <p class="text-lg font-extrabold text-slate-900">
+                                    Rp {{ number_format($item['subtotal'], 0, ',', '.') }}
                                 </p>
-
-                                <h3 class="font-semibold text-gray-900 mt-1">
-                                    Contoh Produk Makanan
-                                </h3>
-
-                                <p class="text-sm text-gray-500 mt-1">
-                                    Harga satuan: Rp3.000
-                                </p>
-
-                                <div class="flex flex-wrap items-center justify-between gap-4 mt-4">
-
-                                    <div class="flex items-center border border-gray-300 rounded-lg">
-                                        <button type="button" disabled class="px-3 py-1.5 text-gray-400">
-                                            −
-                                        </button>
-
-                                        <span class="px-4 py-1.5 text-sm">2</span>
-
-                                        <button type="button" disabled class="px-3 py-1.5 text-gray-400">
-                                            +
-                                        </button>
-                                    </div>
-
-                                    <p class="font-semibold text-gray-900">
-                                        Rp6.000
-                                    </p>
-                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endforeach
 
-                    <!-- Back to Catalog -->
                     <div class="pt-2">
-                        <a href="{{ route('anggota.katalog') }}"
-                           class="inline-flex items-center gap-2 text-sm font-medium text-green-800 hover:text-green-950">
-                            <span>←</span>
-                            Lanjut Belanja
+                        <a href="{{ route('anggota.katalog') }}" class="text-sm font-bold text-blue-600 hover:underline">
+                            ← Lanjut Belanja di Katalog
                         </a>
                     </div>
-
                 </div>
 
-                <!-- Order Summary -->
-                <aside>
-                    <div class="bg-white border border-gray-200 rounded-xl p-6 sticky top-6">
+                <!-- Ringkasan Belanja -->
+                <aside class="polmart-card space-y-5 sticky top-24">
+                    <h2 class="text-lg font-extrabold text-slate-900">Ringkasan Belanja</h2>
 
-                        <h2 class="text-lg font-semibold text-gray-900">
-                            Ringkasan Belanja
-                        </h2>
-
-                        <div class="space-y-4 mt-6">
-
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">
-                                    Total Produk
-                                </span>
-
-                                <span class="font-medium text-gray-900">
-                                    3 item
-                                </span>
-                            </div>
-
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">
-                                    Subtotal
-                                </span>
-
-                                <span class="font-medium text-gray-900">
-                                    Rp11.000
-                                </span>
-                            </div>
-
-                            <div class="border-t border-gray-200 pt-4">
-                                <div class="flex justify-between items-center">
-                                    <span class="font-semibold text-gray-900">
-                                        Total
-                                    </span>
-
-                                    <span class="text-xl font-bold text-green-800">
-                                        Rp11.000
-                                    </span>
-                                </div>
-                            </div>
-
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Total Item</span>
+                            <strong class="text-slate-900">{{ $totalItems }} pcs</strong>
                         </div>
-
-                        <button type="button" disabled
-                                class="w-full mt-6 py-3 rounded-lg bg-gray-200 text-gray-500 font-semibold text-sm cursor-not-allowed">
-                            Lanjut ke Checkout
-                        </button>
-
-                        <p class="text-xs text-gray-400 text-center mt-4">
-                            Ringkasan ini masih menggunakan data contoh.
-                        </p>
-
+                        <div class="flex justify-between border-t border-slate-200 pt-3 text-base">
+                            <span class="font-bold text-slate-900">Total Pembayaran</span>
+                            <strong class="text-xl font-extrabold text-blue-700">Rp {{ number_format($totalAmount, 0, ',', '.') }}</strong>
+                        </div>
                     </div>
+
+                    <a href="{{ route('anggota.checkout') }}" class="polmart-btn polmart-btn-primary w-full py-3">
+                        Lanjut ke Checkout →
+                    </a>
                 </aside>
-
             </div>
-
-        </div>
+        @endif
     </div>
-
 </x-app-layout>

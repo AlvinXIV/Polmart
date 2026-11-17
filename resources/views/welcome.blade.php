@@ -332,19 +332,17 @@
         </a>
 
         <div class="landing-nav-links">
-            <a href="{{ route('anggota.katalog') }}" class="landing-nav-link">Katalog Anggota</a>
-            <a href="{{ route('inventaris') }}" class="landing-nav-link">Inventaris</a>
-            <a href="{{ route('dashboard') }}" class="landing-nav-link">Dashboard Admin</a>
-            
+            <a href="{{ route('anggota.katalog') }}" class="landing-nav-link">Katalog Belanja Anggota</a>
+
             @if (Route::has('login'))
                 @auth
-                    <a href="{{ route('dashboard') }}" class="btn-hero-primary" style="padding: 9px 18px; font-size: 13px;">
-                        Buka Dashboard →
+                    <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('anggota.dashboard') }}" class="btn-hero-primary" style="padding: 9px 18px; font-size: 13px;">
+                        Dashboard Saya →
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="landing-nav-link" style="color: #2563eb;">Masuk</a>
                     <a href="{{ route('register') }}" class="btn-hero-primary" style="padding: 9px 18px; font-size: 13px;">
-                        Daftar
+                        Daftar Anggota
                     </a>
                 @endauth
             @endif
@@ -354,69 +352,78 @@
     <!-- HERO -->
     <section class="landing-hero">
         <div class="hero-badge">
-            🚀 Sistem Koperasi Digital Generasi Baru
+            🚀 Portal Layanan Koperasi Digital Polmart
         </div>
 
         <h1 class="hero-title">
-            Kelola Koperasi & Inventaris Lebih Mudah dengan <span>Polmart</span>
+            Belanja Kebutuhan Anggota Lebih Mudah di <span>Polmart</span>
         </h1>
 
         <p class="hero-desc">
-            Satu platform terpadu untuk pencatatan stok barang, kasir transaksi loket walk-in, portal belanja anggota mandiri, dan pelaporan keuangan real-time.
+            Jelajahi ketersediaan stok barang secara real-time, pesan kebutuhan harian Anda secara daring, bayar praktis menggunakan QRIS dinamis, dan ambil pesanan di loket koperasi dengan kode 4-digit.
         </p>
 
         <div class="hero-actions">
-            <a href="{{ route('dashboard') }}" class="btn-hero-primary">
-                💼 Panel Admin & Pengurus
-            </a>
-            <a href="{{ route('anggota.katalog') }}" class="btn-hero-secondary">
+            <a href="{{ route('anggota.katalog') }}" class="btn-hero-primary">
                 🛍️ Katalog Belanja Anggota
             </a>
+            @auth
+                <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('anggota.dashboard') }}" class="btn-hero-secondary">
+                    Buka Dashboard Saya →
+                </a>
+            @else
+                <a href="{{ route('login') }}" class="btn-hero-secondary">
+                    Masuk Akun
+                </a>
+                <a href="{{ route('register') }}" class="btn-hero-secondary">
+                    Daftar Anggota Baru
+                </a>
+            @endauth
         </div>
     </section>
 
     <!-- FEATURES -->
     <section class="features-section">
         <div class="section-header">
-            <h2>Fitur Unggulan Terintegrasi</h2>
-            <p>Dirancang untuk memenuhi seluruh kebutuhan operasional koperasi modern</p>
+            <h2>Keunggulan Belanja di Polmart</h2>
+            <p>Kemudahan bertransaksi bagi seluruh anggota koperasi secara cepat dan transparan</p>
         </div>
 
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon-box">📦</div>
-                <h3>Manajemen Inventaris</h3>
-                <p>Pantau stok barang, SKU, harga, status aktif produk, serta riwayat mutasi barang masuk dan keluar secara terperinci.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon-box">🛒</div>
-                <h3>Kasir Transaksi Walk-in</h3>
-                <p>Input pembelian langsung di loket kasir dengan cepat, kalkulasi otomatis, dan cetak struk pembayaran instan.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon-box">⌕</div>
-                <h3>Validasi Loket Ambil</h3>
-                <p>Verifikasi kode pengambilan atau QR token pesanan anggota dengan mudah saat barang diserahkan di loket.</p>
-            </div>
-
-            <div class="feature-card">
-                <div class="feature-icon-box">📊</div>
-                <h3>Impor Data Excel</h3>
-                <p>Unggah file Excel riwayat transaksi lama atau data massal dengan validasi kolom otomatis sebelum disimpan ke database.</p>
+                <h3>Stok Real-Time</h3>
+                <p>Lihat ketersediaan barang dan harga satuan terkini langsung dari inventaris koperasi sebelum memesan.</p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon-box">🛍️</div>
-                <h3>Portal Belanja Anggota</h3>
-                <p>Katalog interaktif untuk anggota, keranjang belanja, checkout mandiri, dan pembayaran QRIS praktis.</p>
+                <h3>Katalog & Keranjang Mandiri</h3>
+                <p>Pilih barang kebutuhan Anda, atur kuantitas di keranjang belanja, dan lakukan checkout kapan saja.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-box">▥</div>
-                <h3>Laporan & Statistik</h3>
-                <p>Rekapitulasi penjualan, omzet harian/bulanan, dan analisis produk terlaris untuk pengambilan keputusan pengurus.</p>
+                <div class="feature-icon-box">📱</div>
+                <h3>Pembayaran QRIS Dinamis</h3>
+                <p>Setiap pesanan dilengkapi kode QR pembayaran unik dengan validasi status otomatis dalam hitungan detik.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box">🔢</div>
+                <h3>Kode Pengambilan 4-Digit</h3>
+                <p>Setelah pembayaran terkonfirmasi, dapatkan kode ambil unik 4-digit untuk penukaran cepat di loket Polmart.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box">🧾</div>
+                <h3>Riwayat & Struk Digital</h3>
+                <p>Pantau seluruh status pesanan aktif hingga selesai beserta bukti transaksi digital di portal anggota.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-box">⏱️</div>
+                <h3>Reservasi Stok Otomatis</h3>
+                <p>Stok langsung diamankan selama 15 menit saat Anda checkout agar tidak kehabisan barang sebelum pembayaran selesai.</p>
             </div>
         </div>
     </section>
@@ -425,12 +432,19 @@
     <div class="landing-cta-banner">
         <div class="cta-box">
             <div>
-                <h3>Siap Menggunakan Polmart?</h3>
-                <p>Buka panel admin sekarang untuk mengelola koperasi atau jelajahi katalog sebagai anggota.</p>
+                <h3>Siap Berbelanja di Polmart?</h3>
+                <p>Masuk atau daftarkan akun anggota Anda sekarang untuk menjelajahi katalog belanja dan memesan kebutuhan koperasi dengan praktis.</p>
             </div>
-            <a href="{{ route('dashboard') }}" style="background: #ffffff; color: #2563eb; font-weight: 800; padding: 14px 28px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                Masuk ke Aplikasi →
-            </a>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                <a href="{{ route('anggota.katalog') }}" style="background: #ffffff; color: #2563eb; font-weight: 800; padding: 14px 24px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                    Katalog Belanja →
+                </a>
+                @guest
+                    <a href="{{ route('register') }}" style="background: rgba(255,255,255,0.18); color: #ffffff; border: 1px solid rgba(255,255,255,0.4); font-weight: 700; padding: 14px 24px; border-radius: 12px; text-decoration: none;">
+                        Daftar Anggota
+                    </a>
+                @endguest
+            </div>
         </div>
     </div>
 

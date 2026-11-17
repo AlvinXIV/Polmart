@@ -1,8 +1,11 @@
 <x-app-layout>
+    @section('title', 'Pesanan Walk-in - Polmart')
+    @section('page_title', 'Riwayat Pesanan Walk-in')
+
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Riwayat Pesanan Manual / Walk-in (FR-09)</h2>
-            <a href="{{ route('admin.manual-orders.create') }}" class="px-4 py-2 bg-indigo-600 text-white rounded-md text-sm">+ Input Pesanan Walk-in</a>
+            <a href="{{ route('admin.manual-orders.create') }}" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-semibold">+ Input Pesanan Walk-in</a>
         </div>
     </x-slot>
 

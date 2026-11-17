@@ -15,17 +15,28 @@
 
     <!-- Quick Credentials Helper for Testing -->
     <div style="background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px 16px; margin-bottom: 24px; font-size: 12.5px; color: #1e40af;">
-        <div style="font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-            <span>💡</span> Akun Demo Pengujian:
+        <div style="font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+            <span>💡</span> Akun Demo Pengujian (Seeder):
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; background: #ffffff; padding: 8px 12px; border-radius: 8px; border: 1px solid #dbeafe;">
-            <div>
-                <div><strong>Email:</strong> test@example.com</div>
-                <div><strong>Password:</strong> password</div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 12px; border-radius: 8px; border: 1px solid #dbeafe;">
+                <div>
+                    <div><strong>Anggota:</strong> anggota@polmart.test</div>
+                    <div style="font-size: 11px; color: #64748b;">Password: password</div>
+                </div>
+                <button type="button" onclick="fillDemoCredentials('anggota@polmart.test')" style="background: #16a34a; color: #ffffff; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                    Isi Anggota
+                </button>
             </div>
-            <button type="button" onclick="fillDemoCredentials()" style="background: #2563eb; color: #ffffff; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
-                Gunakan
-            </button>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 12px; border-radius: 8px; border: 1px solid #dbeafe;">
+                <div>
+                    <div><strong>Admin:</strong> admin@polmart.test</div>
+                    <div style="font-size: 11px; color: #64748b;">Password: password</div>
+                </div>
+                <button type="button" onclick="fillDemoCredentials('admin@polmart.test')" style="background: #2563eb; color: #ffffff; border: none; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                    Isi Admin
+                </button>
+            </div>
         </div>
     </div>
 
@@ -79,8 +90,8 @@
     </form>
 
     <script>
-        function fillDemoCredentials() {
-            document.getElementById('email').value = 'test@example.com';
+        function fillDemoCredentials(email) {
+            document.getElementById('email').value = email;
             document.getElementById('password').value = 'password';
         }
     </script>

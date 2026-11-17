@@ -1,4 +1,7 @@
 <x-app-layout>
+    @section('title', 'Mutasi Stok - Polmart')
+    @section('page_title', 'Log Mutasi Stok')
+
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Riwayat Mutasi Stok (FR-04)</h2>

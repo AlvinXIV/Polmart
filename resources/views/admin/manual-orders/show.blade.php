@@ -1,4 +1,7 @@
 <x-app-layout>
+    @section('title', 'Struk Walk-in - Polmart')
+    @section('page_title', 'Struk Transaksi Walk-in')
+
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Detail Pesanan Walk-in: {{ $order->order_code }}</h2>

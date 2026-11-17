@@ -57,4 +57,20 @@ class Order extends Model
 
         return $prefix . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Membangkitkan 4-digit kode pengambilan unik untuk pesanan SIAP_DIAMBIL.
+     */
+    public static function generatePickupCode(): string
+    {
+        do {
+            $code = str_pad((string) random_int(1000, 9999), 4, '0', STR_PAD_LEFT);
+        } while (
+            static::where('status', 'SIAP_DIAMBIL')
+                ->where('pickup_code', $code)
+                ->exists()
+        );
+
+        return $code;
+    }
 }

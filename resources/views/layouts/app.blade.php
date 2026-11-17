@@ -466,98 +466,118 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
+        @php
+            $currentUser = Auth::user();
+            $isAdmin = $currentUser?->isAdmin() ?? false;
+            $homeRoute = $isAdmin ? route('admin.dashboard') : route('anggota.dashboard');
+            $cartItemCount = $isAdmin ? 0 : (int) collect(session('polmart_cart', []))->sum();
+        @endphp
 
         <div>
             <!-- BRAND LOGO -->
-            <a href="{{ route('dashboard') }}" class="brand">
+            <a href="{{ $homeRoute }}" class="brand">
                 <div class="brand-icon">P</div>
                 <div>
                     <div class="brand-name">Polmart.</div>
-                    <div class="brand-subtitle">Smart Cooperative</div>
+                    <div class="brand-subtitle">{{ $isAdmin ? 'Admin & Pengurus' : 'Portal Anggota' }}</div>
                 </div>
             </a>
 
             <!-- NAVIGATION ITEMS -->
             <div class="sidebar-menu-wrapper">
 
-                <div class="menu-label">Menu Utama</div>
+                @if ($isAdmin)
+                    <div class="menu-label">Menu Utama</div>
 
-                <!-- Dashboard -->
-                <a href="{{ route('dashboard') }}"
-                   class="menu-link {{ request()->routeIs('dashboard', 'admin.dashboard') ? 'active' : '' }}">
-                    <span class="menu-icon">▦</span>
-                    <span>Dashboard</span>
-                </a>
+                    <a href="{{ route('admin.dashboard') }}"
+                       class="menu-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                        <span class="menu-icon">▦</span>
+                        <span>Dashboard Analitik</span>
+                    </a>
 
-                <div class="menu-label">Manajemen Koperasi</div>
+                    <div class="menu-label">Manajemen Koperasi</div>
 
-                <!-- Master Barang & Inventaris -->
-                <a href="{{ route('inventaris') }}"
-                   class="menu-link {{ request()->routeIs('inventaris') ? 'active' : '' }}">
-                    <span class="menu-icon">📦</span>
-                    <span>Master Barang & Inventaris</span>
-                </a>
+                    <a href="{{ route('admin.products.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
+                        <span class="menu-icon">📦</span>
+                        <span>Master Barang</span>
+                    </a>
 
-                <!-- Transaksi Walk-in / Kasir -->
-                <a href="{{ route('transaksi.walkin') }}"
-                   class="menu-link {{ request()->routeIs('transaksi.walkin') ? 'active' : '' }}">
-                    <span class="menu-icon">🛒</span>
-                    <span>Transaksi Walk-in / Kasir</span>
-                </a>
+                    <a href="{{ route('admin.stock-mutations.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.stock-mutations.*') ? 'active' : '' }}">
+                        <span class="menu-icon">⇄</span>
+                        <span>Log Mutasi Stok</span>
+                    </a>
 
-                <!-- Validasi Loket -->
-                <a href="{{ route('validasi.loket') }}"
-                   class="menu-link {{ request()->routeIs('validasi.loket') ? 'active' : '' }}">
-                    <span class="menu-icon">⌕</span>
-                    <span>Validasi Loket Ambil</span>
-                </a>
+                    <a href="{{ route('admin.manual-orders.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.manual-orders.*') ? 'active' : '' }}">
+                        <span class="menu-icon">🛒</span>
+                        <span>Transaksi Walk-in</span>
+                    </a>
 
-                <div class="menu-label">Data & Laporan</div>
+                    <a href="{{ route('admin.pickup.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.pickup.*') ? 'active' : '' }}">
+                        <span class="menu-icon">⌕</span>
+                        <span>Validasi Loket Ambil</span>
+                    </a>
 
-                <!-- Impor Excel -->
-                <a href="{{ route('impor.excel') }}"
-                   class="menu-link {{ request()->routeIs('impor.excel') ? 'active' : '' }}">
-                    <span class="menu-icon">▤</span>
-                    <span>Impor Data Excel</span>
-                </a>
+                    <div class="menu-label">Data & Laporan</div>
 
-                <!-- Riwayat Transaksi -->
-                <a href="{{ route('riwayat.transaksi') }}"
-                   class="menu-link {{ request()->routeIs('riwayat.transaksi') ? 'active' : '' }}">
-                    <span class="menu-icon">▧</span>
-                    <span>Riwayat Transaksi</span>
-                </a>
+                    <a href="{{ route('admin.order-imports.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.order-imports.*') ? 'active' : '' }}">
+                        <span class="menu-icon">▤</span>
+                        <span>Impor Data Excel</span>
+                    </a>
 
-                <!-- Laporan Koperasi -->
-                <a href="{{ route('laporan') }}"
-                   class="menu-link {{ request()->routeIs('laporan') ? 'active' : '' }}">
-                    <span class="menu-icon">▥</span>
-                    <span>Laporan Koperasi</span>
-                </a>
+                    <a href="{{ route('admin.transactions.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
+                        <span class="menu-icon">▧</span>
+                        <span>Riwayat Transaksi</span>
+                    </a>
 
-                <div class="menu-label">Portal Anggota</div>
+                    <a href="{{ route('admin.reports.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                        <span class="menu-icon">▥</span>
+                        <span>Laporan & Export Excel</span>
+                    </a>
+                @else
+                    <div class="menu-label">Portal Anggota</div>
 
-                <!-- Katalog Belanja -->
-                <a href="{{ route('anggota.katalog') }}"
-                   class="menu-link {{ request()->routeIs('anggota.katalog') ? 'active' : '' }}">
-                    <span class="menu-icon">🛍️</span>
-                    <span>Katalog Belanja</span>
-                    <span class="menu-badge">Member</span>
-                </a>
+                    <a href="{{ route('anggota.dashboard') }}"
+                       class="menu-link {{ request()->routeIs('anggota.dashboard') ? 'active' : '' }}">
+                        <span class="menu-icon">▦</span>
+                        <span>Dashboard Anggota</span>
+                    </a>
 
-                <!-- Keranjang -->
-                <a href="{{ route('anggota.keranjang') }}"
-                   class="menu-link {{ request()->routeIs('anggota.keranjang') ? 'active' : '' }}">
-                    <span class="menu-icon">🧺</span>
-                    <span>Keranjang</span>
-                </a>
+                    <a href="{{ route('anggota.katalog') }}"
+                       class="menu-link {{ request()->routeIs('anggota.katalog') ? 'active' : '' }}">
+                        <span class="menu-icon">🛍️</span>
+                        <span>Katalog Belanja</span>
+                    </a>
 
-                <!-- Status Pesanan -->
-                <a href="{{ route('anggota.pesanan') }}"
-                   class="menu-link {{ request()->routeIs('anggota.pesanan') ? 'active' : '' }}">
-                    <span class="menu-icon">📋</span>
-                    <span>Status Pesanan</span>
-                </a>
+                    <a href="{{ route('anggota.keranjang') }}"
+                       class="menu-link {{ request()->routeIs('anggota.keranjang*') ? 'active' : '' }}">
+                        <span class="menu-icon">🧺</span>
+                        <span>Keranjang Belanja</span>
+                        @if ($cartItemCount > 0)
+                            <span class="menu-badge">{{ $cartItemCount }}</span>
+                        @endif
+                    </a>
+
+                    <a href="{{ route('anggota.pesanan') }}"
+                       class="menu-link {{ request()->routeIs('anggota.pesanan*', 'anggota.checkout*', 'anggota.pembayaran*') ? 'active' : '' }}">
+                        <span class="menu-icon">📋</span>
+                        <span>Pesanan Saya</span>
+                    </a>
+
+                    <div class="menu-label">Akun</div>
+
+                    <a href="{{ route('profile.edit') }}"
+                       class="menu-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                        <span class="menu-icon">👤</span>
+                        <span>Profil Akun</span>
+                    </a>
+                @endif
 
             </div>
         </div>
@@ -565,19 +585,19 @@
         <!-- SIDEBAR USER & LOGOUT -->
         <div class="sidebar-bottom">
             <div class="admin-profile">
-                <div class="profile-user-wrap">
+                <a href="{{ route('profile.edit') }}" class="profile-user-wrap" style="text-decoration: none;">
                     <div class="avatar">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                        {{ strtoupper(substr($currentUser->name ?? 'U', 0, 1)) }}
                     </div>
-                    <div>
+                    <div style="min-width: 0;">
                         <div class="profile-name">
-                            {{ Auth::user()->name ?? 'Administrator' }}
+                            {{ $currentUser->name ?? 'Pengguna' }}
                         </div>
                         <div class="profile-role">
-                            {{ Auth::user()->role ?? 'Pengurus Polmart' }}
+                            {{ $isAdmin ? 'Admin / Pengurus' : ('Anggota • ' . ($currentUser->member_code ?? '-')) }}
                         </div>
                     </div>
-                </div>
+                </a>
 
                 <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                     @csrf
@@ -604,9 +624,9 @@
                 </button>
 
                 <div class="page-context">
-                    <a href="{{ route('dashboard') }}">Polmart</a>
+                    <a href="{{ $homeRoute }}">Polmart</a>
                     <span>/</span>
-                    <strong style="color: #1e293b;">@yield('page_title', 'Sistem Koperasi')</strong>
+                    <strong style="color: #1e293b;">@yield('page_title', $isAdmin ? 'Panel Pengurus' : 'Portal Anggota')</strong>
                 </div>
             </div>
 
@@ -614,29 +634,28 @@
                 <!-- Search Box -->
                 <div class="search-box">
                     <span class="search-box-icon">🔍</span>
-                    <input type="text" id="globalSearchInput" placeholder="Cari barang, transaksi..." onkeyup="handleGlobalSearch(event)">
+                    <input type="text" id="globalSearchInput" placeholder="{{ $isAdmin ? 'Cari SKU atau nama barang...' : 'Cari barang di katalog...' }}" onkeyup="handleGlobalSearch(event)">
                     <span class="search-box-kbd">⌘K</span>
                 </div>
 
-                <!-- Portal Switch Pill -->
-                @if(request()->is('anggota*'))
-                    <a href="{{ route('dashboard') }}" class="portal-switch-pill">
-                        <span class="icon">💼</span>
-                        <span>Mode Admin</span>
+                @if ($isAdmin)
+                    <a href="{{ route('admin.manual-orders.create') }}" class="portal-switch-pill">
+                        <span class="icon">🛒</span>
+                        <span>+ Kasir Walk-in</span>
                     </a>
                 @else
-                    <a href="{{ route('anggota.katalog') }}" class="portal-switch-pill">
-                        <span class="icon">🛍️</span>
-                        <span>Katalog Anggota</span>
+                    <a href="{{ route('anggota.keranjang') }}" class="portal-switch-pill">
+                        <span class="icon">🧺</span>
+                        <span>Keranjang ({{ $cartItemCount }})</span>
                     </a>
                 @endif
 
                 <!-- User Avatar Pill -->
-                <div style="display: flex; align-items: center; gap: 8px;">
+                <a href="{{ route('profile.edit') }}" title="Profil Saya" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
                     <div class="avatar" style="width: 34px; height: 34px; font-size: 13px;">
-                        {{ strtoupper(substr(Auth::user()->name ?? 'A', 0, 1)) }}
+                        {{ strtoupper(substr($currentUser->name ?? 'U', 0, 1)) }}
                     </div>
-                </div>
+                </a>
             </div>
         </header>
 
@@ -665,7 +684,8 @@
         if (e.key === 'Enter') {
             const query = e.target.value.trim();
             if (query) {
-                window.location.href = "{{ route('inventaris') }}?search=" + encodeURIComponent(query);
+                const searchBaseUrl = @json($isAdmin ? route('admin.products.index') : route('anggota.katalog'));
+                window.location.href = searchBaseUrl + "?search=" + encodeURIComponent(query);
             }
         }
     }

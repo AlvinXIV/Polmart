@@ -20,11 +20,25 @@ class ProductController extends Controller
         $query = Product::query();
 
         if ($search = $request->string('search')->trim()->value()) {
-            $query->where(function ($q) use ($search) {
-                $q->where('sku', 'ilike', "%{$search}%")
-                    ->orWhere('name', 'ilike', "%{$search}%")
-                    ->orWhere('category', 'ilike', "%{$search}%");
+            $pattern = '%' . mb_strtolower($search) . '%';
+            $query->where(function ($q) use ($pattern) {
+                $q->whereRaw('LOWER(sku) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(name) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(category) LIKE ?', [$pattern]);
             });
+        }
+
+        if ($category = $request->string('category')->trim()->value()) {
+            $query->where('category', $category);
+        }
+
+        if ($stockStatus = $request->string('stock_status')->trim()->value()) {
+            match ($stockStatus) {
+                'available' => $query->where('stock', '>', 10),
+                'low' => $query->where('stock', '>', 0)->where('stock', '<=', 10),
+                'empty' => $query->where('stock', '<=', 0),
+                default => null,
+            };
         }
 
         $products = $query->orderByDesc('is_active')
@@ -32,7 +46,20 @@ class ProductController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.products.index', compact('products'));
+        $categories = Product::query()
+            ->select('category')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category');
+
+        $stats = [
+            'total' => Product::count(),
+            'available' => Product::where('stock', '>', 10)->count(),
+            'low' => Product::where('stock', '>', 0)->where('stock', '<=', 10)->count(),
+            'empty' => Product::where('stock', '<=', 0)->count(),
+        ];
+
+        return view('admin.products.index', compact('products', 'categories', 'stats'));
     }
 
     public function create(): View
