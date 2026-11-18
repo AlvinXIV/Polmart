@@ -141,21 +141,16 @@
                                 </span>
                             </td>
                             <td>
-                                <form method="POST" action="{{ route('admin.products.restock', $product) }}"
-                                      x-data="{ qty: 1 }"
-                                      class="flex items-center gap-1.5">
+                                <form method="POST" action="{{ route('admin.products.restock', $product) }}" class="flex items-center gap-1.5">
                                     @csrf
-                                    <div class="inline-flex items-center border border-slate-300 rounded-md overflow-hidden bg-white">
+                                    <div class="polmart-qty-stepper sm">
                                         <button type="button"
-                                                @click="qty = Math.max(1, qty - 1)"
-                                                class="w-6 h-7 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                                                onclick="const i = this.nextElementSibling; i.value = Math.max(1, (parseInt(i.value, 10) || 1) - 1);">
                                             −
                                         </button>
-                                        <input type="number" name="qty" x-model.number="qty" min="1" required readonly
-                                               class="w-10 h-7 text-xs font-bold text-center border-0 focus:ring-0 p-0 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                        <input type="number" name="qty" value="1" min="1" required readonly>
                                         <button type="button"
-                                                @click="qty = qty + 1"
-                                                class="w-6 h-7 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                                                onclick="const i = this.previousElementSibling; i.value = (parseInt(i.value, 10) || 1) + 1;">
                                             +
                                         </button>
                                     </div>

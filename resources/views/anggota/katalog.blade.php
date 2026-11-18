@@ -18,7 +18,7 @@
         @if (session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium flex items-center justify-between gap-3">
                 <span>{{ session('success') }}</span>
-                <a href="{{ route('anggota.keranjang') }}" class="font-bold underline">Buka Keranjang →</a>
+                <a href="{{ route('anggota.keranjang') }}" class="font-bold underline">Buka Keranjang</a>
             </div>
         @endif
         @if ($errors->any())
@@ -105,23 +105,18 @@
                     </div>
 
                     <div class="p-4 pt-0">
-                        <form method="POST" action="{{ route('anggota.keranjang.add') }}"
-                              x-data="{ qty: 1, max: {{ max(1, $maxAddable) }} }"
-                              class="flex items-center gap-2">
+                        <form method="POST" action="{{ route('anggota.keranjang.add') }}" class="flex items-center gap-2">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            <div class="inline-flex items-center border border-slate-300 rounded-lg overflow-hidden bg-white {{ $maxAddable < 1 ? 'opacity-50' : '' }}">
+                            <div class="polmart-qty-stepper {{ $maxAddable < 1 ? 'opacity-50' : '' }}">
                                 <button type="button" {{ $maxAddable < 1 ? 'disabled' : '' }}
-                                        @click="qty = Math.max(1, qty - 1)"
-                                        class="w-8 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition disabled:cursor-not-allowed">
+                                        onclick="const i = this.nextElementSibling; i.value = Math.max(1, (parseInt(i.value, 10) || 1) - 1);">
                                     −
                                 </button>
-                                <input type="number" name="qty" x-model.number="qty" min="1" max="{{ max(1, $maxAddable) }}"
-                                       {{ $maxAddable < 1 ? 'disabled' : '' }} readonly
-                                       class="w-10 h-9 text-sm font-bold text-center border-0 focus:ring-0 p-0 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                <input type="number" name="qty" value="1" min="1" max="{{ max(1, $maxAddable) }}"
+                                       {{ $maxAddable < 1 ? 'disabled' : '' }} readonly>
                                 <button type="button" {{ $maxAddable < 1 ? 'disabled' : '' }}
-                                        @click="qty = Math.min(max, qty + 1)"
-                                        class="w-8 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition disabled:cursor-not-allowed">
+                                        onclick="const i = this.previousElementSibling; const m = parseInt(i.max, 10) || 1; i.value = Math.min(m, (parseInt(i.value, 10) || 1) + 1);">
                                     +
                                 </button>
                             </div>

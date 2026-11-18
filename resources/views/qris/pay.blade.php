@@ -99,7 +99,7 @@
     <script>
         (function () {
             const orderCode = @json($order->order_code);
-            const callbackUrl = @json(route('api.qris.simulate-callback'));
+            const callbackUrl = @json(route('api.qris.simulate-callback', [], false));
             let status = @json($order->status);
             let remaining = {{ $remainingSeconds }};
 

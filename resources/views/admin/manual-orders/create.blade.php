@@ -146,18 +146,15 @@
                                     <div class="flex items-center justify-between gap-3">
                                         <div class="flex items-center gap-2">
                                             <label class="text-xs font-semibold text-slate-500">Qty:</label>
-                                            <div class="inline-flex items-center border border-slate-300 rounded-lg overflow-hidden bg-white">
+                                            <div class="polmart-qty-stepper sm">
                                                 <button type="button"
-                                                        @click="row.qty = Math.max(1, (Number(row.qty) || 1) - 1)"
-                                                        class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+                                                        @click="row.qty = Math.max(1, (Number(row.qty) || 1) - 1)">
                                                     −
                                                 </button>
                                                 <input type="number" :name="`items[${index}][qty]`" x-model.number="row.qty"
-                                                       min="1" :max="row.stock" required readonly
-                                                       class="w-12 h-8 text-sm font-bold text-center border-0 focus:ring-0 p-0 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                                       min="1" :max="row.stock" required readonly>
                                                 <button type="button"
-                                                        @click="row.qty = Math.min(row.stock, (Number(row.qty) || 1) + 1)"
-                                                        class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+                                                        @click="row.qty = Math.min(row.stock, (Number(row.qty) || 1) + 1)">
                                                     +
                                                 </button>
                                             </div>

@@ -70,23 +70,18 @@
                                 </p>
 
                                 <div class="flex flex-wrap items-center gap-3 mt-3">
-                                    <form method="POST" action="{{ route('anggota.keranjang.update', $product) }}"
-                                          x-data="{ qty: {{ (int) $item['qty'] }}, max: {{ (int) $product->stock }} }"
-                                          class="flex items-center gap-2">
+                                    <form method="POST" action="{{ route('anggota.keranjang.update', $product) }}" class="flex items-center gap-2">
                                         @csrf
                                         @method('PATCH')
                                         <label class="text-xs font-semibold text-slate-500">Qty:</label>
-                                        <div class="inline-flex items-center border border-slate-300 rounded-lg overflow-hidden bg-white">
+                                        <div class="polmart-qty-stepper">
                                             <button type="button"
-                                                    @click="qty = Math.max(1, qty - 1)"
-                                                    class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+                                                    onclick="const i = this.nextElementSibling; i.value = Math.max(1, (parseInt(i.value, 10) || 1) - 1);">
                                                 −
                                             </button>
-                                            <input type="number" name="qty" x-model.number="qty" min="1" max="{{ $product->stock }}" readonly
-                                                   class="w-12 h-8 text-sm font-bold text-center border-0 focus:ring-0 p-0 bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
+                                            <input type="number" name="qty" value="{{ (int) $item['qty'] }}" min="1" max="{{ $product->stock }}" readonly>
                                             <button type="button"
-                                                    @click="qty = Math.min(max, qty + 1)"
-                                                    class="w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition">
+                                                    onclick="const i = this.previousElementSibling; const m = parseInt(i.max, 10) || 1; i.value = Math.min(m, (parseInt(i.value, 10) || 1) + 1);">
                                                 +
                                             </button>
                                         </div>
@@ -116,7 +111,7 @@
 
                     <div class="pt-2">
                         <a href="{{ route('anggota.katalog') }}" class="text-sm font-bold text-blue-600 hover:underline">
-                            ← Lanjut Belanja di Katalog
+                            Lanjut Belanja di Katalog
                         </a>
                     </div>
                 </div>
@@ -137,7 +132,7 @@
                     </div>
 
                     <a href="{{ route('anggota.checkout') }}" class="polmart-btn polmart-btn-primary w-full py-3">
-                        Lanjut ke Checkout →
+                        Lanjut ke Checkout
                     </a>
                 </aside>
             </div>

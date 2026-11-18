@@ -21,7 +21,7 @@
                 <p class="text-sm text-slate-500">Anda belum pernah melakukan pemesanan di Polmart.</p>
                 <div>
                     <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-primary">
-                        Buka Katalog Belanja →
+                        Buka Katalog Belanja
                     </a>
                 </div>
             </div>
@@ -114,7 +114,7 @@
                                 <div class="pt-2">
                                     <a href="{{ route('anggota.pembayaran', ['order_code' => $selectedOrder->order_code]) }}"
                                        class="polmart-btn polmart-btn-primary w-full py-3">
-                                        Lanjutkan Pembayaran QRIS →
+                                        Lanjutkan Pembayaran QRIS
                                     </a>
                                 </div>
                             @endif

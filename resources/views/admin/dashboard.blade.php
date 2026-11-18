@@ -210,7 +210,7 @@
                         <p class="text-xs text-slate-500">Barang aktif diurutkan dari stok terbesar (ORDER BY stock DESC)</p>
                     </div>
                     <a href="{{ route('admin.products.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Kelola Stok →
+                        Kelola Stok
                     </a>
                 </div>
 
@@ -263,7 +263,7 @@
                         <p class="text-xs text-slate-500">Pesanan web QRIS, walk-in, dan impor Excel</p>
                     </div>
                     <a href="{{ route('admin.transactions.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Semua →
+                        Semua
                     </a>
                 </div>
                 <div class="space-y-3">
@@ -296,7 +296,7 @@
                         <p class="text-xs text-slate-500">Pergerakan stok masuk, keluar, dan pengembalian</p>
                     </div>
                     <a href="{{ route('admin.stock-mutations.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Semua →
+                        Semua
                     </a>
                 </div>
                 <div class="space-y-3">

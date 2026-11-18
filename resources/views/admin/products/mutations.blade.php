@@ -5,7 +5,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Riwayat Mutasi Stok</h2>
-            <a href="{{ route('admin.products.index') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm">← Kembali ke Master Barang</a>
+            <a href="{{ route('admin.products.index') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm">Kembali ke Master Barang</a>
         </div>
     </x-slot>
 

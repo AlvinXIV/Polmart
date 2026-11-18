@@ -86,7 +86,7 @@
                                     Lunas: {{ $order->paid_at?->format('d/m/Y H:i') }}
                                 </div>
                                 <a href="{{ route('anggota.pesanan', ['order_code' => $order->order_code]) }}" class="inline-block mt-2 text-xs font-bold text-emerald-700 hover:underline">
-                                    Lihat Struk →
+                                    Lihat Struk
                                 </a>
                             </div>
                             <div class="text-center bg-white px-4 py-3 rounded-xl border border-emerald-200 shadow-sm">
@@ -121,7 +121,7 @@
                                 </div>
                             </div>
                             <a href="{{ route('anggota.pembayaran', ['order_code' => $order->order_code]) }}" class="polmart-btn polmart-btn-primary">
-                                Bayar QRIS Sekarang →
+                                Bayar QRIS Sekarang
                             </a>
                         </div>
                     @endforeach
@@ -137,7 +137,7 @@
                     <p class="text-xs text-slate-500 mt-0.5">Pantau status transaksi, item yang dibeli, dan kode pengambilan Anda</p>
                 </div>
                 <a href="{{ route('anggota.pesanan') }}" class="text-sm font-bold text-blue-600 hover:underline">
-                    Lihat Semua →
+                    Lihat Semua
                 </a>
             </div>
 

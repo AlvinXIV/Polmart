@@ -335,7 +335,7 @@
             @if (Route::has('login'))
                 @auth
                     <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('anggota.dashboard') }}" class="btn-hero-primary" style="padding: 9px 18px; font-size: 13px;">
-                        Dashboard Saya →
+                        Dashboard Saya
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="landing-nav-link" style="color: #2563eb;">Masuk</a>
@@ -360,7 +360,7 @@
         <div class="hero-actions">
             @auth
                 <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('anggota.dashboard') }}" class="btn-hero-primary">
-                    Buka Dashboard Saya →
+                    Buka Dashboard Saya
                 </a>
             @else
                 <a href="{{ route('login') }}" class="btn-hero-primary">

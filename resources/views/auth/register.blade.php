@@ -60,7 +60,7 @@
 
         <!-- Submit Button -->
         <button type="submit" class="polmart-btn polmart-btn-primary" style="width: 100%; padding: 12px; font-size: 14.5px; border-radius: 10px; margin-top: 8px;">
-            Daftar Sekarang →
+            Daftar Sekarang
         </button>
 
         <!-- Login Link -->

@@ -13,7 +13,22 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 class QrisSimulationController extends Controller
 {
-    public function show(string $order_code, OrderService $orderService): View
+    public static function resolvePublicQrisUrl(Request $request, Order $order): string
+    {
+        $path = route('qris.pay', ['order_code' => $order->order_code], false);
+        $host = $request->getHost();
+
+        if (in_array($host, ['localhost', '127.0.0.1'], true)) {
+            $publicBase = rtrim((string) config('app.qris_public_url'), '/');
+            if ($publicBase !== '') {
+                return $publicBase . $path;
+            }
+        }
+
+        return $request->getSchemeAndHttpHost() . $path;
+    }
+
+    public function show(Request $request, string $order_code, OrderService $orderService): View
     {
         $orderService->cancelExpiredOrders();
 
@@ -21,7 +36,7 @@ class QrisSimulationController extends Controller
             ->where('order_code', $order_code)
             ->firstOrFail();
 
-        $qrisUrl = route('qris.pay', ['order_code' => $order->order_code]);
+        $qrisUrl = self::resolvePublicQrisUrl($request, $order);
         $qrCodeSvg = QrCode::format('svg')
             ->size(200)
             ->margin(1)

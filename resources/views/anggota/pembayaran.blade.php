@@ -142,7 +142,7 @@
                 </div>
                 <div class="pt-3 flex flex-wrap gap-3">
                     <a href="{{ route('anggota.pesanan', ['order_code' => $order->order_code]) }}" class="polmart-btn polmart-btn-primary">
-                        Lihat di Pesanan Saya →
+                        Lihat di Pesanan Saya
                     </a>
                     <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-secondary">
                         Kembali ke Katalog
@@ -159,7 +159,7 @@
             </p>
             <div>
                 <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-primary">
-                    Belanja Ulang di Katalog →
+                    Belanja Ulang di Katalog
                 </a>
             </div>
         </div>

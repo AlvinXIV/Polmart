@@ -458,6 +458,67 @@
                 display: none;
             }
         }
+
+        .polmart-qty-stepper {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        .polmart-qty-stepper button {
+            width: 30px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .polmart-qty-stepper button:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+        .polmart-qty-stepper button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .polmart-qty-stepper input {
+            width: 38px;
+            height: 34px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            border: none;
+            padding: 0;
+            background: #ffffff;
+            -moz-appearance: textfield;
+        }
+        .polmart-qty-stepper input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        .polmart-qty-stepper input::-webkit-outer-spin-button,
+        .polmart-qty-stepper input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .polmart-qty-stepper.sm button {
+            width: 26px;
+            height: 28px;
+            font-size: 12px;
+        }
+        .polmart-qty-stepper.sm input {
+            width: 34px;
+            height: 28px;
+            font-size: 12px;
+        }
     </style>
 </head>
 
