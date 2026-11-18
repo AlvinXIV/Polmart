@@ -1604,5 +1604,498 @@ class PolmartFlowTest extends TestCase
         $resEmpty->assertSee('—');
         $resEmpty->assertDontSee('Data HPP Lengkap (100%)');
     }
+
+    public function test_profitability_analysis_gpm_and_markup_calculation_and_zero_division_safety(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        // Case 1: Transaksi normal SELESAI
+        // Product: price 200.000, cost 150.000
+        $product = Product::create([
+            'sku' => 'PROFIT-CALC-01',
+            'name' => 'Produk Profit Valid',
+            'category' => 'Testing',
+            'cost_price' => 150000,
+            'price' => 200000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'order_code' => 'ORD-PROFIT-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 200000,
+            'transaction_date' => '2026-07-15 10:00:00',
+            'paid_at' => '2026-07-15 10:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'qty' => 1,
+            'unit_price' => 200000,
+            'subtotal' => 200000,
+            'cost_price' => 150000,
+            'subtotal_cost' => 150000,
+        ]);
+
+        // Verifikasi pada route admin.reports.index
+        $resReport = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-07-15',
+        ]));
+        $resReport->assertOk();
+        $reportSummary = $resReport->viewData('summary');
+
+        // Omzet: 200.000, HPP: 150.000, Laba Kotor: 50.000
+        // GPM = (50.000 / 200.000) * 100 = 25.0%
+        // Markup = (50.000 / 150.000) * 100 = 33.3%
+        $this->assertEquals(200000.0, $reportSummary['total_omzet']);
+        $this->assertEquals(150000.0, $reportSummary['total_hpp']);
+        $this->assertEquals(50000.0, $reportSummary['gross_profit']);
+        $this->assertEquals(25.0, $reportSummary['gpm']);
+        $this->assertEquals(33.3, $reportSummary['markup']);
+        $resReport->assertSee('25%');
+        $resReport->assertSee('33.3%');
+        $resReport->assertSee('Gross Profit Margin');
+        $resReport->assertSee('Markup Penjualan');
+
+        // Verifikasi pada route admin.dashboard
+        $resDashboard = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2026-07-15',
+        ]));
+        $resDashboard->assertOk();
+        $dashSummary = $resDashboard->viewData('periodSummary');
+        $this->assertEquals(25.0, $dashSummary['gpm']);
+        $this->assertEquals(33.3, $dashSummary['markup']);
+        $resDashboard->assertSee('25%');
+        $resDashboard->assertSee('33.3%');
+
+        // Case 2: Zero division safety (tanggal kosong / tanpa transaksi)
+        $resEmpty = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2030-01-01',
+        ]));
+        $resEmpty->assertOk();
+        $emptySummary = $resEmpty->viewData('summary');
+        $this->assertNull($emptySummary['gpm']);
+        $this->assertNull($emptySummary['markup']);
+
+        $resEmptyDash = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2030-01-01',
+        ]));
+        $resEmptyDash->assertOk();
+        $emptyDashSummary = $resEmptyDash->viewData('periodSummary');
+        $this->assertNull($emptyDashSummary['gpm']);
+        $this->assertNull($emptyDashSummary['markup']);
+    }
+
+    public function test_profitability_analysis_flags_provisional_when_unrecorded_hpp_exists(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $product = Product::create([
+            'sku' => 'PROFIT-PROV-01',
+            'name' => 'Produk Impor Tanpa HPP',
+            'category' => 'Testing',
+            'cost_price' => 0,
+            'price' => 100000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'order_code' => 'ORD-PROV-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'import_excel',
+            'status' => 'SELESAI',
+            'total_amount' => 100000,
+            'transaction_date' => '2026-07-16 10:00:00',
+            'paid_at' => '2026-07-16 10:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'qty' => 1,
+            'unit_price' => 100000,
+            'subtotal' => 100000,
+            'cost_price' => 0,
+            'subtotal_cost' => 0,
+        ]);
+
+        // Verifikasi pada laporan penjualan
+        $res = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-07-16',
+        ]));
+        $res->assertOk();
+        $summary = $res->viewData('summary');
+        $this->assertTrue($summary['has_unrecorded_hpp']);
+        $this->assertEquals(100.0, $summary['gpm']);
+        // Markup HPP 0 -> null
+        $this->assertNull($summary['markup']);
+        $res->assertSee('*Provisional (Laba / Omzet)');
+
+        // Verifikasi pada SummaryReportSheet
+        $sheet = new \App\Exports\Sheets\SummaryReportSheet($summary, 'Harian: 16 Juli 2026', []);
+        $sheetRows = $sheet->array();
+        $this->assertContains(['Gross Profit Margin (GPM)', '100% (Provisional)'], $sheetRows);
+        $this->assertContains(['Markup Penjualan (%)', '—'], $sheetRows);
+    }
+
+    public function test_profitable_products_ranking_orders_by_profit_not_quantity_and_excludes_non_completed(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        // Product High Volume, Low Profit: 50 pcs @ Rp 2.000, cost 1.800.
+        // Omzet: 100.000, Cost: 90.000, Profit: 10.000
+        $productVol = Product::create([
+            'sku' => 'PROFIT-VOL-01',
+            'name' => 'Barang Volume Tinggi Laba Tipis',
+            'category' => 'Snack',
+            'cost_price' => 1800,
+            'price' => 2000,
+            'stock' => 100,
+            'is_active' => true,
+        ]);
+
+        // Product Low Volume, High Profit: 2 pcs @ Rp 60.000, cost 20.000.
+        // Omzet: 120.000, Cost: 40.000, Profit: 80.000
+        $productMargin = Product::create([
+            'sku' => 'PROFIT-MAR-01',
+            'name' => 'Barang Volume Kecil Laba Besar',
+            'category' => 'Premium',
+            'cost_price' => 20000,
+            'price' => 60000,
+            'stock' => 20,
+            'is_active' => true,
+        ]);
+
+        // Product Non-SELESAI (SIAP_DIAMBIL): Should be ignored entirely!
+        $productPending = Product::create([
+            'sku' => 'PROFIT-PEND-01',
+            'name' => 'Barang Belum Selesai',
+            'category' => 'Special',
+            'cost_price' => 10000,
+            'price' => 100000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        // Order 1: SELESAI
+        $order1 = Order::create([
+            'order_code' => 'ORD-RANK-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 220000,
+            'transaction_date' => '2026-07-20 14:00:00',
+            'paid_at' => '2026-07-20 14:00:00',
+        ]);
+        $order1->items()->create([
+            'product_id' => $productVol->id,
+            'qty' => 50,
+            'unit_price' => 2000,
+            'subtotal' => 100000,
+            'cost_price' => 1800,
+            'subtotal_cost' => 90000,
+        ]);
+        $order1->items()->create([
+            'product_id' => $productMargin->id,
+            'qty' => 2,
+            'unit_price' => 60000,
+            'subtotal' => 120000,
+            'cost_price' => 20000,
+            'subtotal_cost' => 40000,
+        ]);
+
+        // Order 2: SIAP_DIAMBIL (Non-SELESAI) -> Omzet 500.000, Profit 450.000
+        $order2 = Order::create([
+            'order_code' => 'ORD-RANK-02',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SIAP_DIAMBIL',
+            'total_amount' => 500000,
+            'transaction_date' => '2026-07-20 15:00:00',
+        ]);
+        $order2->items()->create([
+            'product_id' => $productPending->id,
+            'qty' => 5,
+            'unit_price' => 100000,
+            'subtotal' => 500000,
+            'cost_price' => 10000,
+            'subtotal_cost' => 50000,
+        ]);
+
+        // 1. Verifikasi pada Laporan Penjualan (admin.reports.index)
+        $resReport = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-07-20',
+        ]));
+        $resReport->assertOk();
+
+        // Top Products (Barang Terlaris berdasarkan kuantitas):
+        // Rank 1: productVol (50 pcs)
+        // Rank 2: productMargin (2 pcs)
+        $topProducts = $resReport->viewData('topProducts');
+        $this->assertEquals($productVol->id, $topProducts->first()->id);
+        $this->assertEquals(50, $topProducts->first()->total_sold);
+
+        // Profitable Products (Berdasarkan total_profit):
+        // Rank 1: productMargin (Laba: Rp 80.000)
+        // Rank 2: productVol (Laba: Rp 10.000)
+        $profitableProducts = $resReport->viewData('profitableProducts');
+        $this->assertEquals($productMargin->id, $profitableProducts->first()->id);
+        $this->assertEquals(80000.0, $profitableProducts->first()->total_profit);
+        $this->assertEquals($productVol->id, $profitableProducts->values()->get(1)->id);
+        $this->assertEquals(10000.0, $profitableProducts->values()->get(1)->total_profit);
+
+        // Pastikan order non-SELESAI tidak masuk ke profitableProducts
+        $this->assertFalse($profitableProducts->contains('id', $productPending->id));
+
+        // 2. Verifikasi pada Dashboard Penjualan (admin.dashboard)
+        $resDashboard = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2026-07-20',
+        ]));
+        $resDashboard->assertOk();
+        $periodProfitable = $resDashboard->viewData('periodProfitableProducts');
+        $this->assertEquals($productMargin->id, $periodProfitable->first()->id);
+        $this->assertEquals(80000.0, $periodProfitable->first()->total_profit);
+        $this->assertFalse($periodProfitable->contains('id', $productPending->id));
+    }
+
+    public function test_profitable_products_isolates_unrecorded_hpp_and_handles_empty_state(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        // Product A: Complete HPP
+        $prodA = Product::create([
+            'sku' => 'PROFIT-CMPL-01',
+            'name' => 'Barang HPP Lengkap',
+            'category' => 'Testing',
+            'cost_price' => 10000,
+            'price' => 15000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        // Product B: Incomplete HPP
+        $prodB = Product::create([
+            'sku' => 'PROFIT-INCOMP-01',
+            'name' => 'Barang HPP Kosong',
+            'category' => 'Testing',
+            'cost_price' => 0,
+            'price' => 50000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'order_code' => 'ORD-MIXED-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 65000,
+            'transaction_date' => '2026-07-25 11:00:00',
+            'paid_at' => '2026-07-25 11:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $prodA->id,
+            'qty' => 1,
+            'unit_price' => 15000,
+            'subtotal' => 15000,
+            'cost_price' => 10000,
+            'subtotal_cost' => 10000,
+        ]);
+        $order->items()->create([
+            'product_id' => $prodB->id,
+            'qty' => 1,
+            'unit_price' => 50000,
+            'subtotal' => 50000,
+            'cost_price' => 0,
+            'subtotal_cost' => 0,
+        ]);
+
+        $res = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-07-25',
+        ]));
+        $res->assertOk();
+        $profitable = $res->viewData('profitableProducts');
+
+        // Prod B harus memiliki unrecorded_items_count > 0
+        $itemB = $profitable->firstWhere('id', $prodB->id);
+        $this->assertNotNull($itemB);
+        $this->assertGreaterThan(0, $itemB->unrecorded_items_count);
+
+        // Blade laporan harus menampilkan bagian provisional untuk Prod B
+        $res->assertSee('Data Produk Provisional (HPP Belum Lengkap)');
+        $res->assertSee($prodB->name);
+        $res->assertSee($prodA->name);
+
+        // Verifikasi empty state jika tanggal tidak ada transaksi sama sekali
+        $resEmpty = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2030-01-01',
+        ]));
+        $resEmpty->assertOk();
+        $resEmpty->assertSee('Belum ada produk dengan data HPP lengkap pada periode ini.');
+    }
+
+    public function test_profitable_products_period_filter_isolation(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $product = Product::create([
+            'sku' => 'PROFIT-FILTER-01',
+            'name' => 'Barang Filter Profit',
+            'category' => 'Testing',
+            'cost_price' => 10000,
+            'price' => 20000,
+            'stock' => 100,
+            'is_active' => true,
+        ]);
+
+        // Order 1 pada 2026-08-01: 5 pcs -> profit 50.000
+        $order1 = Order::create([
+            'order_code' => 'ORD-FLTR-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 100000,
+            'transaction_date' => '2026-08-01 10:00:00',
+            'paid_at' => '2026-08-01 10:00:00',
+        ]);
+        $order1->items()->create([
+            'product_id' => $product->id,
+            'qty' => 5,
+            'unit_price' => 20000,
+            'subtotal' => 100000,
+            'cost_price' => 10000,
+            'subtotal_cost' => 50000,
+        ]);
+
+        // Order 2 pada 2026-08-10: 10 pcs -> profit 100.000
+        $order2 = Order::create([
+            'order_code' => 'ORD-FLTR-02',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 200000,
+            'transaction_date' => '2026-08-10 10:00:00',
+            'paid_at' => '2026-08-10 10:00:00',
+        ]);
+        $order2->items()->create([
+            'product_id' => $product->id,
+            'qty' => 10,
+            'unit_price' => 20000,
+            'subtotal' => 200000,
+            'cost_price' => 10000,
+            'subtotal_cost' => 100000,
+        ]);
+
+        // Filter Harian 2026-08-01: hanya Order 1 (profit 50.000)
+        $resDaily = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-08-01',
+        ]));
+        $dailyProfit = $resDaily->viewData('profitableProducts');
+        $this->assertEquals(50000.0, $dailyProfit->first()->total_profit);
+
+        // Filter Bulanan Agustus 2026: Order 1 + Order 2 (profit 150.000)
+        $resMonthly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 8,
+            'year' => 2026,
+        ]));
+        $monthlyProfit = $resMonthly->viewData('profitableProducts');
+        $this->assertEquals(150000.0, $monthlyProfit->first()->total_profit);
+    }
+
+    public function test_excel_export_generates_four_sheets_including_profitability_analysis(): void
+    {
+        $profitableCollection = collect([
+            (object) [
+                'sku' => 'PROFIT-EXCEL-01',
+                'name' => 'Barang Excel Profit',
+                'category' => 'Testing',
+                'total_sold' => 10,
+                'total_revenue' => 200000.0,
+                'total_cost' => 120000.0,
+                'total_profit' => 80000.0,
+                'unrecorded_items_count' => 0,
+            ],
+            (object) [
+                'sku' => 'PROFIT-EXCEL-02',
+                'name' => 'Barang Excel Tanpa HPP',
+                'category' => 'Testing',
+                'total_sold' => 5,
+                'total_revenue' => 50000.0,
+                'total_cost' => 0.0,
+                'total_profit' => 50000.0,
+                'unrecorded_items_count' => 5,
+            ],
+        ]);
+
+        $export = new \App\Exports\PeriodicReportExport(
+            collect(),
+            collect(),
+            [
+                'total_omzet' => 250000.0,
+                'total_transactions' => 2,
+                'total_items_sold' => 15,
+                'avg_transaction' => 125000.0,
+                'total_hpp' => 120000.0,
+                'gross_profit' => 130000.0,
+                'gpm' => 52.0,
+                'markup' => 108.3,
+                'has_unrecorded_hpp' => true,
+                'unrecorded_items_count' => 5,
+                'unrecorded_orders_count' => 1,
+            ],
+            'Bulanan: Agustus 2026',
+            ['web' => 1, 'manual_admin' => 1, 'import_excel' => 0, 'other' => 0],
+            $profitableCollection
+        );
+
+        $sheets = $export->sheets();
+        $this->assertCount(4, $sheets);
+        $this->assertInstanceOf(\App\Exports\Sheets\TopProfitableProductsReportSheet::class, $sheets[3]);
+        $this->assertSame('Produk Paling Menguntungkan', $sheets[3]->title());
+
+        $this->assertCount(2, $sheets[3]->collection());
+
+        // Row 1: Complete HPP
+        $row1 = $sheets[3]->map($profitableCollection[0]);
+        $this->assertEquals('PROFIT-EXCEL-01', $row1[1]);
+        $this->assertEquals(80000.0, $row1[7]);
+        $this->assertEquals('40%', $row1[8]);
+        $this->assertEquals('Lengkap', $row1[9]);
+
+        // Row 2: Provisional HPP
+        $row2 = $sheets[3]->map($profitableCollection[1]);
+        $this->assertEquals('PROFIT-EXCEL-02', $row2[1]);
+        $this->assertEquals(50000.0, $row2[7]);
+        $this->assertEquals('Provisional (HPP Belum Lengkap)', $row2[9]);
+
+        // Sheet 0 Summary verifications
+        $summaryData = $sheets[0]->array();
+        $this->assertContains(['Gross Profit Margin (GPM)', '52% (Provisional)'], $summaryData);
+        $this->assertContains(['Markup Penjualan (%)', '108.3% (Provisional)'], $summaryData);
+    }
 }
 

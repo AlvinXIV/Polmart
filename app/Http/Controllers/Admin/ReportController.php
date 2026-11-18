@@ -51,7 +51,8 @@ class ReportController extends Controller
                 $report['topProducts'],
                 $report['summary'],
                 $report['periodLabel'],
-                $report['sourceCounts']
+                $report['sourceCounts'],
+                $report['profitableProducts']
             ),
             $filename
         );
@@ -156,7 +157,10 @@ class ReportController extends Controller
         $hasUnrecordedHpp = $unrecordedHppItemsCount > 0;
         $completenessPct = $totalOrderItemsCount > 0
             ? round((($totalOrderItemsCount - $unrecordedHppItemsCount) / $totalOrderItemsCount) * 100, 1)
-            : 100.0;
+            : null;
+
+        $gpm = $totalOmzet > 0 ? round(($grossProfit / $totalOmzet) * 100, 1) : null;
+        $markup = $totalHpp > 0 ? round(($grossProfit / $totalHpp) * 100, 1) : null;
 
         $sourceCounts = [
             'web' => $orders->where('source', 'web')->count(),
@@ -191,6 +195,33 @@ class ReportController extends Controller
             ->orderByDesc('total_sold')
             ->get();
 
+        $profitableProducts = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('orders.status', 'SELESAI')
+            ->whereBetween('orders.transaction_date', [$start, $end])
+            ->select(
+                'products.id',
+                'products.sku',
+                'products.name',
+                'products.category',
+                'products.stock',
+                DB::raw('SUM(order_items.qty) as total_sold'),
+                DB::raw('SUM(order_items.subtotal) as total_revenue'),
+                DB::raw('SUM(order_items.subtotal_cost) as total_cost'),
+                DB::raw('SUM(order_items.subtotal - order_items.subtotal_cost) as total_profit'),
+                DB::raw('SUM(CASE WHEN order_items.cost_price <= 0 OR order_items.subtotal_cost <= 0 THEN 1 ELSE 0 END) as unrecorded_items_count')
+            )
+            ->groupBy(
+                'products.id',
+                'products.sku',
+                'products.name',
+                'products.category',
+                'products.stock'
+            )
+            ->orderByDesc('total_profit')
+            ->get();
+
         $chartData = $this->buildChartDataFromDb($period, $start, $end, $orders);
 
         return [
@@ -203,6 +234,7 @@ class ReportController extends Controller
             'periodLabel' => $periodLabel,
             'orders' => $orders,
             'topProducts' => $topProducts,
+            'profitableProducts' => $profitableProducts,
             'chartData' => $chartData,
             'summary' => [
                 'total_omzet' => $totalOmzet,
@@ -211,6 +243,8 @@ class ReportController extends Controller
                 'avg_transaction' => $avgTransaction,
                 'total_hpp' => $totalHpp,
                 'gross_profit' => $grossProfit,
+                'gpm' => $gpm,
+                'markup' => $markup,
                 'has_unrecorded_hpp' => $hasUnrecordedHpp,
                 'unrecorded_items_count' => $unrecordedHppItemsCount,
                 'unrecorded_orders_count' => $unrecordedHppOrdersCount,
