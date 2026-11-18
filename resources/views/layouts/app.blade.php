@@ -73,6 +73,7 @@
             z-index: 100;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             overflow-y: auto;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -122,6 +123,7 @@
             flex: 1;
             padding-top: 16px;
             overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .menu-label {
@@ -151,7 +153,6 @@
         .menu-link:hover {
             background: #eff6ff;
             color: #2563eb;
-            transform: translateX(2px);
         }
 
         .menu-link.active {
@@ -457,6 +458,67 @@
                 display: none;
             }
         }
+
+        .polmart-qty-stepper {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+        .polmart-qty-stepper button {
+            width: 30px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .polmart-qty-stepper button:hover:not(:disabled) {
+            background: #e2e8f0;
+        }
+        .polmart-qty-stepper button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .polmart-qty-stepper input {
+            width: 38px;
+            height: 34px;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            border: none;
+            padding: 0;
+            background: #ffffff;
+            -moz-appearance: textfield;
+        }
+        .polmart-qty-stepper input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+        .polmart-qty-stepper input::-webkit-outer-spin-button,
+        .polmart-qty-stepper input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .polmart-qty-stepper.sm button {
+            width: 26px;
+            height: 28px;
+            font-size: 12px;
+        }
+        .polmart-qty-stepper.sm input {
+            width: 34px;
+            height: 28px;
+            font-size: 12px;
+        }
     </style>
 </head>
 
@@ -631,12 +693,14 @@
             </div>
 
             <div class="topbar-right">
-                <!-- Search Box -->
-                <div class="search-box">
-                    <span class="search-box-icon">🔍</span>
-                    <input type="text" id="globalSearchInput" placeholder="{{ $isAdmin ? 'Cari SKU atau nama barang...' : 'Cari barang di katalog...' }}" onkeyup="handleGlobalSearch(event)">
-                    <span class="search-box-kbd">⌘K</span>
-                </div>
+                @if ($isAdmin)
+                    <!-- Search Box -->
+                    <div class="search-box">
+                        <span class="search-box-icon">🔍</span>
+                        <input type="text" id="globalSearchInput" placeholder="Cari SKU atau nama barang..." onkeyup="handleGlobalSearch(event)">
+                        <span class="search-box-kbd">⌘K</span>
+                    </div>
+                @endif
 
                 @if ($isAdmin)
                     <a href="{{ route('admin.manual-orders.create') }}" class="portal-switch-pill">

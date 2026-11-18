@@ -64,9 +64,5 @@ services:
 
 volumes:
   polmart_pgdata:
-<<<<<<< HEAD
-  polmart_pgadmin_data:   # <-- Tambahkan volume ini juga
-=======
   polmart_pgadmin_data:   # <-- Tambahkan volume ini juga
   polmart_vendor:
->>>>>>> origin/Farel

@@ -33,7 +33,7 @@
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold">⏱</div>
                     <div>
-                        <p class="font-bold text-amber-900 text-sm">Menunggu Pembayaran QRIS (Auto-Polling Aktif setiap 3 detik)</p>
+                        <p class="font-bold text-amber-900 text-sm">Menunggu Pembayaran QRIS</p>
                         <p class="text-xs text-amber-800 mt-0.5">Halaman akan otomatis beralih ke Struk Lunas & Kode Pengambilan 4-digit begitu pembayaran dikonfirmasi.</p>
                     </div>
                 </div>
@@ -105,7 +105,7 @@
                         ✓
                     </div>
                     <div>
-                        <span class="polmart-badge polmart-badge-green mb-1" id="paidStatusBadge">{{ $order->status }}</span>
+                        <span class="polmart-badge polmart-badge-green mb-1" id="paidStatusBadge">{{ str_replace('_', ' ', $order->status) }}</span>
                         <h2 class="text-xl font-extrabold text-emerald-950">Pembayaran QRIS Berhasil Dikonfirmasi!</h2>
                         <p class="text-sm text-emerald-800 mt-1">
                             Tunjukkan <strong>Kode Pengambilan 4-Digit</strong> di samping kepada petugas loket Polmart untuk mengambil pesanan Anda.
@@ -142,7 +142,7 @@
                 </div>
                 <div class="pt-3 flex flex-wrap gap-3">
                     <a href="{{ route('anggota.pesanan', ['order_code' => $order->order_code]) }}" class="polmart-btn polmart-btn-primary">
-                        Lihat di Pesanan Saya →
+                        Lihat di Pesanan Saya
                     </a>
                     <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-secondary">
                         Kembali ke Katalog
@@ -159,7 +159,7 @@
             </p>
             <div>
                 <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-primary">
-                    Belanja Ulang di Katalog →
+                    Belanja Ulang di Katalog
                 </a>
             </div>
         </div>
@@ -205,7 +205,7 @@
                     paidAtEl.textContent = data.paid_at;
                 }
                 if (data.status) {
-                    paidStatusBadge.textContent = data.status;
+                    paidStatusBadge.textContent = data.status.replace(/_/g, ' ');
                 }
 
                 clearInterval(countdownTimer);

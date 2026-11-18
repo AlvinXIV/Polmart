@@ -5,8 +5,7 @@
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <span class="text-xs font-bold uppercase tracking-wider text-blue-600">PORTAL ANGGOTA</span>
-                <h1 class="text-2xl font-extrabold text-slate-900 mt-1">Keranjang Belanja 🧺</h1>
+                <h1 class="text-2xl font-extrabold text-slate-900">Keranjang Belanja 🧺</h1>
                 <p class="text-sm text-slate-500 mt-1">Periksa kembali daftar barang dan kuantitas sebelum melakukan checkout.</p>
             </div>
             @if (! empty($items))
@@ -75,8 +74,17 @@
                                         @csrf
                                         @method('PATCH')
                                         <label class="text-xs font-semibold text-slate-500">Qty:</label>
-                                        <input type="number" name="qty" value="{{ $item['qty'] }}" min="1" max="{{ $product->stock }}"
-                                               class="w-20 px-2 py-1.5 text-sm border border-slate-300 rounded-lg text-center">
+                                        <div class="polmart-qty-stepper">
+                                            <button type="button"
+                                                    onclick="const i = this.nextElementSibling; i.value = Math.max(1, (parseInt(i.value, 10) || 1) - 1);">
+                                                −
+                                            </button>
+                                            <input type="number" name="qty" value="{{ (int) $item['qty'] }}" min="1" max="{{ $product->stock }}" readonly>
+                                            <button type="button"
+                                                    onclick="const i = this.previousElementSibling; const m = parseInt(i.max, 10) || 1; i.value = Math.min(m, (parseInt(i.value, 10) || 1) + 1);">
+                                                +
+                                            </button>
+                                        </div>
                                         <button type="submit" class="polmart-btn polmart-btn-secondary polmart-btn-sm">
                                             Perbarui
                                         </button>
@@ -103,7 +111,7 @@
 
                     <div class="pt-2">
                         <a href="{{ route('anggota.katalog') }}" class="text-sm font-bold text-blue-600 hover:underline">
-                            ← Lanjut Belanja di Katalog
+                            Lanjut Belanja di Katalog
                         </a>
                     </div>
                 </div>
@@ -124,7 +132,7 @@
                     </div>
 
                     <a href="{{ route('anggota.checkout') }}" class="polmart-btn polmart-btn-primary w-full py-3">
-                        Lanjut ke Checkout →
+                        Lanjut ke Checkout
                     </a>
                 </aside>
             </div>

@@ -87,9 +87,10 @@
                 <p class="text-xs text-rose-700 mt-1">Batas waktu 15 menit telah berakhir.</p>
             </div>
 
-            <div class="text-center pt-2">
-                <a href="{{ route('home') }}" class="text-xs font-semibold text-slate-400 hover:text-blue-600">
-                    ← Kembali ke Beranda Polmart
+            <div class="pt-2">
+                <a href="{{ route('dashboard') }}"
+                   class="block w-full text-center py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow transition">
+                    Kembali ke Dashboard
                 </a>
             </div>
         </div>
@@ -98,7 +99,7 @@
     <script>
         (function () {
             const orderCode = @json($order->order_code);
-            const callbackUrl = @json(route('api.qris.simulate-callback'));
+            const callbackUrl = @json(route('api.qris.simulate-callback', [], false));
             let status = @json($order->status);
             let remaining = {{ $remainingSeconds }};
 

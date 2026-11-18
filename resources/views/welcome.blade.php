@@ -332,12 +332,10 @@
         </a>
 
         <div class="landing-nav-links">
-            <a href="{{ route('anggota.katalog') }}" class="landing-nav-link">Katalog Belanja Anggota</a>
-
             @if (Route::has('login'))
                 @auth
                     <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('anggota.dashboard') }}" class="btn-hero-primary" style="padding: 9px 18px; font-size: 13px;">
-                        Dashboard Saya →
+                        Dashboard Saya
                     </a>
                 @else
                     <a href="{{ route('login') }}" class="landing-nav-link" style="color: #2563eb;">Masuk</a>
@@ -351,28 +349,21 @@
 
     <!-- HERO -->
     <section class="landing-hero">
-        <div class="hero-badge">
-            🚀 Portal Layanan Koperasi Digital Polmart
-        </div>
-
         <h1 class="hero-title">
-            Belanja Kebutuhan Anggota Lebih Mudah di <span>Polmart</span>
+            Belanja Kebutuhan Lebih Mudah di <span>Polmart</span>
         </h1>
 
         <p class="hero-desc">
-            Jelajahi ketersediaan stok barang secara real-time, pesan kebutuhan harian Anda secara daring, bayar praktis menggunakan QRIS dinamis, dan ambil pesanan di loket koperasi dengan kode 4-digit.
+            Belanja mudah dan praktis di Polman Bandung! Cek ketersediaan stok barang koperasi secara real-time, pesan kebutuhan kuliah dan harian langsung dari perangkat Anda, bayar cepat lewat QRIS dinamis, lalu ambil pesanan di loket Polmart cukup dengan kode 4-digit tanpa antre.
         </p>
 
         <div class="hero-actions">
-            <a href="{{ route('anggota.katalog') }}" class="btn-hero-primary">
-                🛍️ Katalog Belanja Anggota
-            </a>
             @auth
-                <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('anggota.dashboard') }}" class="btn-hero-secondary">
-                    Buka Dashboard Saya →
+                <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('anggota.dashboard') }}" class="btn-hero-primary">
+                    Buka Dashboard Saya
                 </a>
             @else
-                <a href="{{ route('login') }}" class="btn-hero-secondary">
+                <a href="{{ route('login') }}" class="btn-hero-primary">
                     Masuk Akun
                 </a>
                 <a href="{{ route('register') }}" class="btn-hero-secondary">
@@ -427,26 +418,6 @@
             </div>
         </div>
     </section>
-
-    <!-- CTA BANNER -->
-    <div class="landing-cta-banner">
-        <div class="cta-box">
-            <div>
-                <h3>Siap Berbelanja di Polmart?</h3>
-                <p>Masuk atau daftarkan akun anggota Anda sekarang untuk menjelajahi katalog belanja dan memesan kebutuhan koperasi dengan praktis.</p>
-            </div>
-            <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
-                <a href="{{ route('anggota.katalog') }}" style="background: #ffffff; color: #2563eb; font-weight: 800; padding: 14px 24px; border-radius: 12px; text-decoration: none; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-                    Katalog Belanja →
-                </a>
-                @guest
-                    <a href="{{ route('register') }}" style="background: rgba(255,255,255,0.18); color: #ffffff; border: 1px solid rgba(255,255,255,0.4); font-weight: 700; padding: 14px 24px; border-radius: 12px; text-decoration: none;">
-                        Daftar Anggota
-                    </a>
-                @endguest
-            </div>
-        </div>
-    </div>
 
     <!-- FOOTER -->
     <footer class="landing-footer">

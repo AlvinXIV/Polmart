@@ -21,7 +21,7 @@
                 <p class="text-sm text-slate-500">Anda belum pernah melakukan pemesanan di Polmart.</p>
                 <div>
                     <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-primary">
-                        Buka Katalog Belanja →
+                        Buka Katalog Belanja
                     </a>
                 </div>
             </div>
@@ -37,7 +37,7 @@
                             <div class="flex items-center justify-between gap-2">
                                 <span class="font-mono text-xs font-bold text-blue-700">{{ $order->order_code }}</span>
                                 <span class="polmart-badge {{ $order->status === 'SELESAI' ? 'polmart-badge-green' : ($order->status === 'SIAP_DIAMBIL' ? 'polmart-badge-blue' : ($order->status === 'MENUNGGU_BAYAR' ? 'polmart-badge-amber' : 'polmart-badge-red')) }}">
-                                    {{ $order->status }}
+                                    {{ str_replace('_', ' ', $order->status) }}
                                 </span>
                             </div>
                             <div class="flex items-center justify-between mt-2">
@@ -67,7 +67,7 @@
                                     <p class="text-xs text-slate-500 font-mono mt-0.5">{{ $selectedOrder->order_code }}</p>
                                 </div>
                                 <span class="polmart-badge {{ $selectedOrder->status === 'SELESAI' ? 'polmart-badge-green' : ($selectedOrder->status === 'SIAP_DIAMBIL' ? 'polmart-badge-blue' : ($selectedOrder->status === 'MENUNGGU_BAYAR' ? 'polmart-badge-amber' : 'polmart-badge-red')) }}">
-                                    {{ $selectedOrder->status }}
+                                    {{ str_replace('_', ' ', $selectedOrder->status) }}
                                 </span>
                             </div>
 
@@ -83,7 +83,7 @@
                                 <div>
                                     <p class="text-xs text-slate-400">Metode</p>
                                     <p class="font-semibold text-slate-900 mt-0.5">
-                                        {{ $selectedOrder->source === 'web' ? 'QRIS Dinamis' : strtoupper($selectedOrder->source) }}
+                                        {{ $selectedOrder->source === 'web' ? 'QRIS Dinamis' : str_replace('_', ' ', strtoupper($selectedOrder->source)) }}
                                     </p>
                                 </div>
                                 <div>
@@ -114,7 +114,7 @@
                                 <div class="pt-2">
                                     <a href="{{ route('anggota.pembayaran', ['order_code' => $selectedOrder->order_code]) }}"
                                        class="polmart-btn polmart-btn-primary w-full py-3">
-                                        Lanjutkan Pembayaran QRIS →
+                                        Lanjutkan Pembayaran QRIS
                                     </a>
                                 </div>
                             @endif

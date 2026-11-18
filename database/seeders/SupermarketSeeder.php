@@ -13,7 +13,7 @@ class SupermarketSeeder extends Seeder
 
     private function filterCols(string $table, array $data): array
     {
-        if (!isset($this->columnCache[$table])) {
+        if (! isset($this->columnCache[$table])) {
             $this->columnCache[$table] = array_flip(Schema::getColumnListing($table));
         }
 
@@ -26,16 +26,16 @@ class SupermarketSeeder extends Seeder
         $defaultPassword = Hash::make('password');
 
         $usersData = [
-            ['name' => 'Admin Pengurus Polmart', 'email' => 'admin@polmart.test', 'role' => 'admin', 'member_number' => 'ADM-001', 'phone' => '081234567890'],
-            ['name' => 'Anggota Contoh Polmart', 'email' => 'anggota@polmart.test', 'role' => 'member', 'member_number' => '224443001', 'phone' => '081234567891'],
-            ['name' => 'Dzikri Rahman Hafidz', 'email' => 'dzikri@polmart.test', 'role' => 'member', 'member_number' => '224443002', 'phone' => '081220010002'],
-            ['name' => 'Luthfi Rustian', 'email' => 'luthfi@polmart.test', 'role' => 'member', 'member_number' => '224443003', 'phone' => '081220010003'],
-            ['name' => 'Matahari Dhia Alwafy', 'email' => 'matahari@polmart.test', 'role' => 'member', 'member_number' => '224443004', 'phone' => '081220010004'],
-            ['name' => 'Muhammad Faiz Azril', 'email' => 'faiz@polmart.test', 'role' => 'member', 'member_number' => '224443005', 'phone' => '081220010005'],
-            ['name' => 'Wiryawan Pratama', 'email' => 'wiryawan@polmart.test', 'role' => 'member', 'member_number' => '224443006', 'phone' => '081220010006'],
-            ['name' => 'Najma Aulia', 'email' => 'najma@polmart.test', 'role' => 'member', 'member_number' => '224443007', 'phone' => '081220010007'],
-            ['name' => 'Alvin Pratama', 'email' => 'alvin@polmart.test', 'role' => 'member', 'member_number' => '224443008', 'phone' => '081220010008'],
-            ['name' => 'Farel Saputra', 'email' => 'farel@polmart.test', 'role' => 'member', 'member_number' => '224443009', 'phone' => '081220010009'],
+            ['name' => 'Admin Pengurus Polmart', 'email' => 'admin@polmart.test', 'role' => 'admin', 'member_code' => 'ADM-001', 'phone' => '081234567890'],
+            ['name' => 'Anggota Contoh Polmart', 'email' => 'anggota@polmart.test', 'role' => 'member', 'member_code' => '224443001', 'phone' => '081234567891'],
+            ['name' => 'Dzikri Rahman Hafidz', 'email' => 'dzikri@polmart.test', 'role' => 'member', 'member_code' => '224443002', 'phone' => '081220010002'],
+            ['name' => 'Luthfi Rustian', 'email' => 'luthfi@polmart.test', 'role' => 'member', 'member_code' => '224443003', 'phone' => '081220010003'],
+            ['name' => 'Matahari Dhia Alwafy', 'email' => 'matahari@polmart.test', 'role' => 'member', 'member_code' => '224443004', 'phone' => '081220010004'],
+            ['name' => 'Muhammad Faiz Azril', 'email' => 'faiz@polmart.test', 'role' => 'member', 'member_code' => '224443005', 'phone' => '081220010005'],
+            ['name' => 'Wiryawan Pratama', 'email' => 'wiryawan@polmart.test', 'role' => 'member', 'member_code' => '224443006', 'phone' => '081220010006'],
+            ['name' => 'Najma Aulia', 'email' => 'najma@polmart.test', 'role' => 'member', 'member_code' => '224443007', 'phone' => '081220010007'],
+            ['name' => 'Alvin Pratama', 'email' => 'alvin@polmart.test', 'role' => 'member', 'member_code' => '224443008', 'phone' => '081220010008'],
+            ['name' => 'Farel Saputra', 'email' => 'farel@polmart.test', 'role' => 'member', 'member_code' => '224443009', 'phone' => '081220010009'],
         ];
 
         $userIds = [];
@@ -57,11 +57,14 @@ class SupermarketSeeder extends Seeder
                 'email' => $u['email'],
                 'password' => $defaultPassword,
                 'role' => $u['role'],
+<<<<<<< HEAD
                 'member_code' => $u['member_number'],
                 'member_number' => $u['member_number'],
                 'nomor_anggota' => $u['member_number'],
+=======
+                'member_code' => $u['member_code'],
+>>>>>>> origin/Alvin
                 'phone' => $u['phone'],
-                'no_hp' => $u['phone'],
                 'email_verified_at' => $now,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -135,9 +138,9 @@ class SupermarketSeeder extends Seeder
                     'user_id' => $adminId,
                     'type' => 'in',
                     'qty' => $p['stock'],
-                    'quantity' => $p['stock'],
                     'stock_before' => 0,
                     'stock_after' => $p['stock'],
+                    'reference' => 'INIT-' . $p['sku'],
                     'notes' => 'Stok awal inventaris Polmart',
                     'created_at' => $now->copy()->subDays(30),
                     'updated_at' => $now->copy()->subDays(30),
@@ -151,11 +154,12 @@ class SupermarketSeeder extends Seeder
             ];
         }
 
-        if (!Schema::hasTable('orders') || !Schema::hasTable('order_items')) {
+        if (! Schema::hasTable('orders') || ! Schema::hasTable('order_items')) {
             return;
         }
 
         $sampleOrders = [
+<<<<<<< HEAD
             ['code' => 'PLM-20261101-001', 'days_ago' => 16, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['MNM-001', 2], ['SNK-001', 1], ['ATK-002', 2]]],
             ['code' => 'PLM-20261102-002', 'days_ago' => 15, 'source' => 'web', 'method' => 'qris', 'status' => 'SELESAI', 'items' => [['MIE-001', 5], ['MNM-003', 2]]],
             ['code' => 'PLM-20261103-003', 'days_ago' => 14, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['ATK-001', 3], ['ATK-003', 2], ['ATK-004', 1]]],
@@ -174,19 +178,37 @@ class SupermarketSeeder extends Seeder
             ['code' => 'PLM-20261116-016', 'days_ago' => 1, 'source' => 'manual_admin', 'method' => 'cash', 'status' => 'SELESAI', 'items' => [['ATK-001', 2], ['SNK-001', 2], ['MNM-005', 1]]],
             ['code' => 'PLM-20261117-017', 'days_ago' => 0, 'source' => 'web', 'method' => 'qris', 'status' => 'SIAP_DIAMBIL', 'items' => [['SNK-005', 1], ['MNM-006', 1], ['SNK-007', 1]]],
             ['code' => 'PLM-20261117-018', 'days_ago' => 0, 'source' => 'web', 'method' => 'qris', 'status' => 'MENUNGGU_BAYAR', 'items' => [['MNM-003', 2], ['SNK-008', 4]]],
+=======
+            ['code' => 'PLM-20261101-001', 'days_ago' => 16, 'source' => 'manual_admin', 'status' => 'SELESAI', 'items' => [['MNM-001', 2], ['SNK-001', 1], ['ATK-002', 2]]],
+            ['code' => 'PLM-20261102-002', 'days_ago' => 15, 'source' => 'web', 'status' => 'SELESAI', 'items' => [['MIE-001', 5], ['MNM-003', 2]]],
+            ['code' => 'PLM-20261103-003', 'days_ago' => 14, 'source' => 'manual_admin', 'status' => 'SELESAI', 'items' => [['ATK-001', 3], ['ATK-003', 2], ['ATK-004', 1]]],
+            ['code' => 'PLM-20261104-004', 'days_ago' => 13, 'source' => 'web', 'status' => 'SELESAI', 'items' => [['SNK-005', 1], ['MNM-006', 2]]],
+            ['code' => 'PLM-20261105-005', 'days_ago' => 12, 'source' => 'import_excel', 'status' => 'SELESAI', 'items' => [['MNM-002', 4], ['SNK-008', 6]]],
+            ['code' => 'PLM-20261106-006', 'days_ago' => 11, 'source' => 'manual_admin', 'status' => 'SELESAI', 'items' => [['MIE-003', 2], ['MNM-008', 2]]],
+            ['code' => 'PLM-20261107-007', 'days_ago' => 10, 'source' => 'web', 'status' => 'SELESAI', 'items' => [['SNK-007', 2], ['MNM-005', 2], ['KSH-001', 1]]],
+            ['code' => 'PLM-20261108-008', 'days_ago' => 9, 'source' => 'manual_admin', 'status' => 'SELESAI', 'items' => [['KSH-002', 3], ['MNM-010', 2]]],
+            ['code' => 'PLM-20261109-009', 'days_ago' => 8, 'source' => 'web', 'status' => 'SELESAI', 'items' => [['SNK-003', 2], ['SNK-004', 2], ['MNM-007', 2]]],
+            ['code' => 'PLM-20261110-010', 'days_ago' => 7, 'source' => 'manual_admin', 'status' => 'SELESAI', 'items' => [['ATK-005', 1], ['ATK-006', 4], ['ATK-002', 3]]],
+            ['code' => 'PLM-20261111-011', 'days_ago' => 6, 'source' => 'web', 'status' => 'SELESAI', 'items' => [['MIE-001', 4], ['MIE-002', 4], ['MIE-005', 1]]],
+            ['code' => 'PLM-20261112-012', 'days_ago' => 5, 'source' => 'manual_admin', 'status' => 'SELESAI', 'items' => [['SNK-002', 3], ['MNM-009', 3]]],
+            ['code' => 'PLM-20261113-013', 'days_ago' => 4, 'source' => 'web', 'status' => 'SELESAI', 'items' => [['KSH-003', 1], ['MNM-001', 3], ['SNK-006', 2]]],
+            ['code' => 'PLM-20261114-014', 'days_ago' => 3, 'source' => 'manual_admin', 'status' => 'SELESAI', 'items' => [['SNK-009', 2], ['MNM-004', 4]]],
+            ['code' => 'PLM-20261115-015', 'days_ago' => 2, 'source' => 'web', 'status' => 'SELESAI', 'items' => [['MIE-004', 3], ['MNM-008', 2], ['KSH-005', 2]]],
+            ['code' => 'PLM-20261116-016', 'days_ago' => 1, 'source' => 'manual_admin', 'status' => 'SELESAI', 'items' => [['ATK-001', 2], ['SNK-001', 2], ['MNM-005', 1]]],
+            ['code' => 'PLM-20261117-017', 'days_ago' => 0, 'source' => 'web', 'status' => 'SELESAI', 'items' => [['SNK-005', 1], ['MNM-006', 1], ['SNK-007', 1]]],
+            ['code' => 'PLM-20261117-018', 'days_ago' => 0, 'source' => 'web', 'status' => 'MENUNGGU_BAYAR', 'items' => [['MNM-003', 2], ['SNK-008', 4]]],
+>>>>>>> origin/Alvin
         ];
 
-        $codeColumn = Schema::hasColumn('orders', 'order_code') ? 'order_code' : (Schema::hasColumn('orders', 'invoice_number') ? 'invoice_number' : null);
-
         foreach ($sampleOrders as $idx => $ord) {
-            if ($codeColumn && DB::table('orders')->where($codeColumn, $ord['code'])->exists()) {
+            if (DB::table('orders')->where('order_code', $ord['code'])->exists()) {
                 continue;
             }
 
             $total = 0;
             $preparedItems = [];
             foreach ($ord['items'] as [$sku, $qty]) {
-                if (!isset($productRecords[$sku])) {
+                if (! isset($productRecords[$sku])) {
                     continue;
                 }
                 $prod = $productRecords[$sku];
@@ -194,9 +216,7 @@ class SupermarketSeeder extends Seeder
                 $total += $subtotal;
                 $preparedItems[] = [
                     'product_id' => $prod->id,
-                    'product_name' => $prod->name,
                     'qty' => $qty,
-                    'quantity' => $qty,
                     'unit_price' => $prod->price,
                     'subtotal' => $subtotal,
                 ];
@@ -211,20 +231,30 @@ class SupermarketSeeder extends Seeder
 
             $orderId = DB::table('orders')->insertGetId($this->filterCols('orders', [
                 'order_code' => $ord['code'],
+<<<<<<< HEAD
                 'invoice_number' => $ord['code'],
                 'pickup_code' => $pickupCode,
                 'user_id' => $memberId,
+=======
+                'pickup_code' => null,
+                'user_id' => $ord['source'] === 'import_excel' ? null : $memberId,
+>>>>>>> origin/Alvin
                 'customer_name' => $memberName,
-                'total_amount' => $total,
-                'total_price' => $total,
-                'status' => $ord['status'],
                 'source' => $ord['source'],
+<<<<<<< HEAD
                 'payment_method' => $ord['method'],
                 'payment_status' => $isPaid ? 'paid' : 'unpaid',
                 'paid_at' => $isPaid ? $orderTime : null,
                 'expires_at' => $expiresAt,
                 'transaction_date' => $orderTime,
                 'ordered_at' => $orderTime,
+=======
+                'status' => $ord['status'],
+                'total_amount' => $total,
+                'expires_at' => $ord['status'] === 'MENUNGGU_BAYAR' ? $now->copy()->addMinutes(15) : null,
+                'paid_at' => $ord['status'] === 'SELESAI' ? $orderTime : null,
+                'transaction_date' => $orderTime,
+>>>>>>> origin/Alvin
                 'created_at' => $orderTime,
                 'updated_at' => $orderTime,
             ]));
@@ -233,9 +263,7 @@ class SupermarketSeeder extends Seeder
                 DB::table('order_items')->insert($this->filterCols('order_items', [
                     'order_id' => $orderId,
                     'product_id' => $item['product_id'],
-                    'product_name' => $item['product_name'],
                     'qty' => $item['qty'],
-                    'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
                     'subtotal' => $item['subtotal'],
                     'created_at' => $orderTime,

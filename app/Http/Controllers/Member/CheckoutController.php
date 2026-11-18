@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Member;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\QrisSimulationController;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\OrderService;
@@ -122,7 +123,7 @@ class CheckoutController extends Controller
 
         return redirect()
             ->route('anggota.pembayaran', ['order_code' => $order->order_code])
-            ->with('success', "Pesanan {$order->order_code} berhasil dibuat! Selesaikan pembayaran QRIS dalam 15 menit.");
+            ->with('success', 'Pesanan berhasil dibuat!');
     }
 
     public function payment(Request $request, OrderService $orderService, ?string $order_code = null): View|RedirectResponse
@@ -150,7 +151,7 @@ class CheckoutController extends Controller
             }
         }
 
-        $qrisUrl = route('qris.pay', ['order_code' => $order->order_code]);
+        $qrisUrl = QrisSimulationController::resolvePublicQrisUrl($request, $order);
         $qrCodeSvg = QrCode::format('svg')
             ->size(220)
             ->margin(1)

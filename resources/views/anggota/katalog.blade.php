@@ -6,11 +6,7 @@
         <!-- Header Katalog -->
         <section class="polmart-banner flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="relative z-10">
-                <span class="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-bold uppercase tracking-wider mb-2">
-                    PORTAL BELANJA ANGGOTA
-                </span>
                 <h1 class="text-2xl sm:text-3xl font-extrabold">Katalog Produk Polmart 🛍️</h1>
-                <p class="text-blue-100 text-sm mt-1">Pilih barang aktif dengan stok tersedia secara real-time dan masukkan ke keranjang belanja Anda.</p>
             </div>
             <div class="relative z-10">
                 <a href="{{ route('anggota.keranjang') }}" class="px-5 py-3 bg-white text-blue-700 font-extrabold text-sm rounded-xl shadow hover:bg-blue-50 transition inline-flex items-center gap-2">
@@ -22,7 +18,7 @@
         @if (session('success'))
             <div class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm font-medium flex items-center justify-between gap-3">
                 <span>{{ session('success') }}</span>
-                <a href="{{ route('anggota.keranjang') }}" class="font-bold underline">Buka Keranjang →</a>
+                <a href="{{ route('anggota.keranjang') }}" class="font-bold underline">Buka Keranjang</a>
             </div>
         @endif
         @if ($errors->any())
@@ -112,9 +108,18 @@
                         <form method="POST" action="{{ route('anggota.keranjang.add') }}" class="flex items-center gap-2">
                             @csrf
                             <input type="hidden" name="product_id" value="{{ $product->id }}">
-                            <input type="number" name="qty" value="1" min="1" max="{{ max(1, $maxAddable) }}"
-                                   {{ $maxAddable < 1 ? 'disabled' : '' }}
-                                   class="w-16 px-2 py-2 text-sm text-center border border-slate-300 rounded-lg">
+                            <div class="polmart-qty-stepper {{ $maxAddable < 1 ? 'opacity-50' : '' }}">
+                                <button type="button" {{ $maxAddable < 1 ? 'disabled' : '' }}
+                                        onclick="const i = this.nextElementSibling; i.value = Math.max(1, (parseInt(i.value, 10) || 1) - 1);">
+                                    −
+                                </button>
+                                <input type="number" name="qty" value="1" min="1" max="{{ max(1, $maxAddable) }}"
+                                       {{ $maxAddable < 1 ? 'disabled' : '' }} readonly>
+                                <button type="button" {{ $maxAddable < 1 ? 'disabled' : '' }}
+                                        onclick="const i = this.previousElementSibling; const m = parseInt(i.max, 10) || 1; i.value = Math.min(m, (parseInt(i.value, 10) || 1) + 1);">
+                                    +
+                                </button>
+                            </div>
                             <button type="submit" {{ $maxAddable < 1 ? 'disabled' : '' }}
                                     class="flex-1 py-2 px-3 rounded-lg text-xs font-bold transition {{ $maxAddable < 1 ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white' }}">
                                 {{ $maxAddable < 1 ? 'Maks. Stok' : '+ Keranjang' }}

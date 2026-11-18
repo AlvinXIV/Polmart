@@ -57,11 +57,8 @@ class ManualOrderController extends Controller
         if ($customerName === '' && $member) {
             $customerName = $member->name;
         }
-
         if ($customerName === '') {
-            return back()
-                ->withInput()
-                ->withErrors(['customer_name' => 'Pilih anggota atau isi nama pemesan walk-in.']);
+            $customerName = 'Pelanggan Walk-in';
         }
 
         // Gabungkan kuantitas jika produk yang sama dipilih di beberapa baris

@@ -23,9 +23,6 @@
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
                     Halo, {{ Auth::user()->name }}!
                 </h1>
-                <p class="text-blue-100 text-sm mt-2 leading-relaxed">
-                    Kelola master inventaris barang, transaksi walk-in kasir, validasi kode pengambilan 4-digit, impor riwayat Excel, dan laporan berkala koperasi dalam satu dashboard terintegrasi.
-                </p>
 
                 <div class="flex flex-wrap gap-3 mt-5">
                     <a href="{{ route('admin.products.index') }}" class="px-4 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-lg shadow hover:bg-blue-50 transition">
@@ -42,6 +39,7 @@
             <div class="hidden lg:block text-7xl relative z-10 select-none">📊</div>
         </section>
 
+<<<<<<< HEAD
         <!-- Quick Menu -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <a href="{{ route('admin.products.index') }}" class="polmart-card block hover:border-blue-300">
@@ -521,6 +519,8 @@
             </div>
         </section>
 
+=======
+>>>>>>> origin/Alvin
         <!-- Ringkasan Statistik -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="polmart-stat-card">
@@ -564,7 +564,7 @@
         <section class="polmart-card">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                 <div>
-                    <h2 class="text-lg font-extrabold text-slate-900">Antrean Validasi Loket (SIAP_DIAMBIL)</h2>
+                    <h2 class="text-lg font-extrabold text-slate-900">Antrean Validasi Loket (SIAP DIAMBIL)</h2>
                     <p class="text-xs text-slate-500 mt-0.5">Masukkan kode pengambilan 4-digit dari anggota untuk menyelesaikan pesanan.</p>
                 </div>
 
@@ -692,7 +692,7 @@
                         <p class="text-xs text-slate-500">Barang aktif diurutkan dari stok terbesar (ORDER BY stock DESC)</p>
                     </div>
                     <a href="{{ route('admin.products.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Kelola Stok →
+                        Kelola Stok
                     </a>
                 </div>
 
@@ -745,7 +745,7 @@
                         <p class="text-xs text-slate-500">Pesanan web QRIS, walk-in, dan impor Excel</p>
                     </div>
                     <a href="{{ route('admin.transactions.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Semua →
+                        Semua
                     </a>
                 </div>
                 <div class="space-y-3">
@@ -755,13 +755,13 @@
                                 <div class="font-mono text-xs font-bold text-blue-700">{{ $order->order_code }}</div>
                                 <div class="text-sm font-semibold text-slate-900">{{ $order->customer_name }}</div>
                                 <div class="text-xs text-slate-400">
-                                    {{ $order->transaction_date?->format('d/m/Y H:i') }} • {{ strtoupper($order->source) }}
+                                    {{ $order->transaction_date?->format('d/m/Y H:i') }} • {{ str_replace('_', ' ', strtoupper($order->source)) }}
                                 </div>
                             </div>
                             <div class="text-right">
                                 <div class="font-bold text-sm text-slate-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
                                 <span class="polmart-badge {{ $order->status === 'SELESAI' ? 'polmart-badge-green' : ($order->status === 'SIAP_DIAMBIL' ? 'polmart-badge-blue' : ($order->status === 'MENUNGGU_BAYAR' ? 'polmart-badge-amber' : 'polmart-badge-red')) }}">
-                                    {{ $order->status }}
+                                    {{ str_replace('_', ' ', $order->status) }}
                                 </span>
                             </div>
                         </div>
@@ -778,7 +778,7 @@
                         <p class="text-xs text-slate-500">Pergerakan stok masuk, keluar, dan pengembalian</p>
                     </div>
                     <a href="{{ route('admin.stock-mutations.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Semua →
+                        Semua
                     </a>
                 </div>
                 <div class="space-y-3">
