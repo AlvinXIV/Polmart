@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\StockMutation;
 use App\Services\StockService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -186,12 +187,33 @@ class ProductController extends Controller
             ->with('success', "Stok {$product->name} berhasil ditambah sebanyak {$validated['qty']}.");
     }
 
-    public function mutations(): View
+    public function mutations(Request $request): View
     {
-        $mutations = StockMutation::with(['product', 'user'])
-            ->latest()
-            ->paginate(20);
+        $startDateInput = trim((string) $request->input('start_date', ''));
+        $endDateInput = trim((string) $request->input('end_date', ''));
 
-        return view('admin.products.mutations', compact('mutations'));
+        $query = StockMutation::with(['product', 'user'])->latest();
+
+        if ($startDateInput !== '') {
+            try {
+                $startDate = Carbon::createFromFormat('Y-m-d', $startDateInput)->startOfDay();
+                $query->where('created_at', '>=', $startDate);
+            } catch (\Throwable) {
+                $startDateInput = '';
+            }
+        }
+
+        if ($endDateInput !== '') {
+            try {
+                $endDate = Carbon::createFromFormat('Y-m-d', $endDateInput)->endOfDay();
+                $query->where('created_at', '<=', $endDate);
+            } catch (\Throwable) {
+                $endDateInput = '';
+            }
+        }
+
+        $mutations = $query->paginate(20)->withQueryString();
+
+        return view('admin.products.mutations', compact('mutations', 'startDateInput', 'endDateInput'));
     }
 }

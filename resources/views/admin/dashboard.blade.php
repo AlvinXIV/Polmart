@@ -17,9 +17,6 @@
         <!-- Welcome Banner -->
         <section class="polmart-banner flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div class="relative z-10 max-w-2xl">
-                <span class="inline-block px-3 py-1 rounded-full bg-white/20 text-xs font-bold tracking-wider uppercase mb-3">
-                    ✦ POLMART MANAGEMENT PANEL
-                </span>
                 <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight">
                     Halo, {{ Auth::user()->name }}!
                 </h1>
@@ -39,30 +36,6 @@
             <div class="hidden lg:block text-7xl relative z-10 select-none">📊</div>
         </section>
 
-        <!-- Quick Menu -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a href="{{ route('admin.products.index') }}" class="polmart-card block hover:border-blue-300">
-                <div class="polmart-stat-icon blue mb-3">📦</div>
-                <h3 class="font-bold text-slate-900">Master Barang (FR-03)</h3>
-                <p class="text-xs text-slate-500 mt-1">CRUD barang, harga, status aktif, restock & mutasi stok.</p>
-            </a>
-            <a href="{{ route('admin.manual-orders.create') }}" class="polmart-card block hover:border-blue-300">
-                <div class="polmart-stat-icon green mb-3">🛒</div>
-                <h3 class="font-bold text-slate-900">Kasir Walk-in (FR-09)</h3>
-                <p class="text-xs text-slate-500 mt-1">Input pesanan langsung di loket berstatus SELESAI.</p>
-            </a>
-            <a href="{{ route('admin.order-imports.index') }}" class="polmart-card block hover:border-blue-300">
-                <div class="polmart-stat-icon purple mb-3">📊</div>
-                <h3 class="font-bold text-slate-900">Impor Excel (FR-10)</h3>
-                <p class="text-xs text-slate-500 mt-1">Migrasi transaksi lama tanpa memotong stok fisik.</p>
-            </a>
-            <a href="#sales-analytics" class="polmart-card block hover:border-blue-300">
-                <div class="polmart-stat-icon amber mb-3">📑</div>
-                <h3 class="font-bold text-slate-900">Laporan &amp; Analisis (FR-12)</h3>
-                <p class="text-xs text-slate-500 mt-1">Analisis penjualan terpadu &amp; export .xlsx periode aktif.</p>
-            </a>
-        </section>
-
         <!-- =========================================================================
              SECTION: ANALISIS & LAPORAN PENJUALAN TERPADU DASHBOARD ADMIN
              ========================================================================= -->
@@ -74,17 +47,11 @@
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                 <div>
                     <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <span class="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-xs font-bold uppercase tracking-wider">
-                            ✦ Performa &amp; Laporan Penjualan
-                        </span>
                         <span class="text-xs text-slate-500 font-medium">
                             Periode Aktif: <strong class="text-blue-700">{{ $periodLabel }}</strong>
                         </span>
                     </div>
                     <h2 class="text-xl font-extrabold text-slate-900">Analisis Penjualan &amp; Laporan Berkala Koperasi</h2>
-                    <p class="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                        Pantau performa omzet aktual, tren waktu transaksi, distribusi pembayaran, dan produk terlaris tanpa berpindah halaman.
-                    </p>
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -102,27 +69,31 @@
             <!-- Filter Bar Periode (Harian, Mingguan, Bulanan, Tahunan) -->
             <div class="p-4 rounded-xl bg-slate-50/90 border border-slate-200">
                 <form method="GET" action="{{ route('admin.dashboard') }}#sales-analytics" class="space-y-4">
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex flex-wrap items-center" style="gap: 10px;">
                         <span class="text-xs font-bold text-slate-600 uppercase tracking-wider mr-1">Pilih Periode:</span>
                         <input type="hidden" name="period" :value="currentPeriod">
                         <button type="button" @click="currentPeriod = 'daily'"
                                 :class="currentPeriod === 'daily' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
-                                class="px-3.5 py-1.5 text-xs rounded-lg transition flex items-center gap-1.5">
+                                style="padding: 8px 16px;"
+                                class="text-xs rounded-lg transition flex items-center gap-1.5">
                             <span>📅</span> Harian
                         </button>
                         <button type="button" @click="currentPeriod = 'weekly'"
                                 :class="currentPeriod === 'weekly' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
-                                class="px-3.5 py-1.5 text-xs rounded-lg transition flex items-center gap-1.5">
+                                style="padding: 8px 16px;"
+                                class="text-xs rounded-lg transition flex items-center gap-1.5">
                             <span>📆</span> Mingguan
                         </button>
                         <button type="button" @click="currentPeriod = 'monthly'"
                                 :class="currentPeriod === 'monthly' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
-                                class="px-3.5 py-1.5 text-xs rounded-lg transition flex items-center gap-1.5">
+                                style="padding: 8px 16px;"
+                                class="text-xs rounded-lg transition flex items-center gap-1.5">
                             <span>📊</span> Bulanan
                         </button>
                         <button type="button" @click="currentPeriod = 'yearly'"
                                 :class="currentPeriod === 'yearly' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
-                                class="px-3.5 py-1.5 text-xs rounded-lg transition flex items-center gap-1.5">
+                                style="padding: 8px 16px;"
+                                class="text-xs rounded-lg transition flex items-center gap-1.5">
                             <span>📈</span> Tahunan
                         </button>
                     </div>
@@ -174,177 +145,151 @@
                 </form>
             </div>
 
-            <!-- Ringkasan Finansial: HPP & Laba Kotor (Task 2B) -->
-            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-200/80">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="text-sm font-extrabold text-slate-900">Ringkasan Finansial (HPP &amp; Laba Kotor)</h3>
-                            @if ($periodSummary['has_unrecorded_hpp'])
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200" title="Terdapat transaksi tanpa data HPP tercatat">
-                                    <span>⚠️</span>
-                                    <span>Laba Kotor Provisional</span>
-                                </span>
-                            @elseif ($periodSummary['total_transactions'] > 0)
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                    <span>✓</span>
-                                    <span>Data HPP Lengkap (100%)</span>
-                                </span>
-                            @endif
-                        </div>
-                        <p class="text-xs text-slate-500 mt-0.5">
-                            Berdasarkan snapshot biaya modal (HPP) riil transaksi SELESAI periode {{ strtolower($periodLabel) }}.
-                        </p>
-                    </div>
-                    <div class="text-xs text-slate-500">
-                        Kelengkapan HPP:
-                        @if ($periodSummary['completeness_pct'] !== null)
-                            <strong class="{{ $periodSummary['has_unrecorded_hpp'] ? 'text-amber-600' : 'text-emerald-600' }}">{{ $periodSummary['completeness_pct'] }}%</strong>
-                            ({{ $periodSummary['total_order_items_count'] - $periodSummary['unrecorded_items_count'] }}/{{ $periodSummary['total_order_items_count'] }} item)
-                        @else
-                            <strong class="text-slate-400">—</strong>
-                        @endif
-                    </div>
-                </div>
+            <!-- Ringkasan Finansial: HPP & Laba Kotor -->
+            <div>
+                <h3 class="text-sm font-extrabold text-slate-900 mb-3">Ringkasan Finansial (HPP &amp; Laba Kotor)</h3>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                    <div class="p-3.5 rounded-lg border border-emerald-200 bg-white shadow-sm">
-                        <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Total Omzet</p>
-                        <p class="text-xl font-extrabold text-emerald-900 mt-1">
-                            Rp {{ number_format($periodSummary['total_omzet'], 0, ',', '.') }}
-                        </p>
-                        <p class="text-[10px] text-emerald-600 mt-0.5">
-                            Subtotal penjualan transaksi selesai
-                        </p>
-                    </div>
-
-                    <div class="p-3.5 rounded-lg border border-rose-200 bg-white shadow-sm">
-                        <p class="text-[11px] font-bold text-rose-700 uppercase tracking-wider">HPP Tercatat</p>
-                        <p class="text-xl font-extrabold text-rose-900 mt-1">
-                            Rp {{ number_format($periodSummary['total_hpp'], 0, ',', '.') }}
-                        </p>
-                        <p class="text-[10px] text-rose-600 mt-0.5">
-                            Snapshot modal barang terjual
-                        </p>
-                    </div>
-
-                    <div class="p-3.5 rounded-lg border border-blue-200 bg-white shadow-sm">
-                        <p class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Laba Kotor</p>
-                        <p class="text-xl font-extrabold text-blue-900 mt-1">
-                            Rp {{ number_format($periodSummary['gross_profit'], 0, ',', '.') }}
-                        </p>
-                        <p class="text-[10px] text-blue-600 mt-0.5">
-                            @if ($periodSummary['has_unrecorded_hpp'])
-                                <span class="text-amber-700 font-semibold">*Provisional (Omzet - HPP)</span>
-                            @else
-                                <span>Omzet dikurangi HPP Tercatat</span>
-                            @endif
-                        </p>
-                    </div>
-
-                    <div class="p-3.5 rounded-lg border border-indigo-200 bg-white shadow-sm">
-                        <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Gross Profit Margin</p>
-                        <p class="text-xl font-extrabold text-indigo-900 mt-1">
-                            {{ $periodSummary['gpm'] !== null ? $periodSummary['gpm'] . '%' : '—' }}
-                        </p>
-                        <p class="text-[10px] text-indigo-600 mt-0.5">
-                            @if ($periodSummary['has_unrecorded_hpp'] && $periodSummary['gpm'] !== null)
-                                <span class="text-amber-700 font-semibold">*Provisional (Laba / Omzet)</span>
-                            @else
-                                <span>(Laba Kotor / Total Omzet)</span>
-                            @endif
-                        </p>
-                    </div>
-
-                    <div class="p-3.5 rounded-lg border border-amber-200 bg-white shadow-sm">
-                        <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Markup Penjualan</p>
-                        <p class="text-xl font-extrabold text-amber-900 mt-1">
-                            {{ $periodSummary['markup'] !== null ? $periodSummary['markup'] . '%' : '—' }}
-                        </p>
-                        <p class="text-[10px] text-amber-600 mt-0.5">
-                            @if ($periodSummary['has_unrecorded_hpp'] && $periodSummary['markup'] !== null)
-                                <span class="text-amber-700 font-semibold">*Provisional (Laba / HPP)</span>
-                            @else
-                                <span>(Laba Kotor / HPP Tercatat)</span>
-                            @endif
-                        </p>
-                    </div>
-                </div>
-
-                <p class="text-[11px] text-slate-500">
-                    *Catatan Metrik: <strong>GPM (Gross Profit Margin)</strong> dihitung terhadap Total Omzet Penjualan; <strong>Markup</strong> dihitung terhadap Total HPP Tercatat.
-                </p>
-
-                @if ($periodSummary['has_unrecorded_hpp'])
-                    <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2">
-                        <span class="text-sm select-none">⚠️</span>
-                        <div class="leading-relaxed">
-                            <strong>Perhatian Data HPP:</strong> Terdapat <strong>{{ $periodSummary['unrecorded_orders_count'] }} transaksi</strong> (<strong>{{ $periodSummary['unrecorded_items_count'] }} item</strong>) dengan HPP belum tercatat. Nilai laba kotor di atas bersifat <em>provisional</em> dan tidak mengasumsikan biaya modal historis bernilai nol.
+                    <div class="polmart-stat-card" style="padding: 16px;">
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Total Omzet</p>
+                            <p class="text-xl font-extrabold text-emerald-900 mt-1">
+                                Rp {{ number_format($periodSummary['total_omzet'], 0, ',', '.') }}
+                            </p>
+                            <p class="text-[10px] text-emerald-600 mt-0.5">
+                                {{ number_format($periodSummary['total_transactions']) }} transaksi selesai
+                            </p>
                         </div>
                     </div>
-                @endif
-            </div>
 
-            <!-- 4 Kartu Ringkasan Penjualan Periode Aktif -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="p-4 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-center justify-between shadow-sm">
-                    <div>
-                        <p class="text-xs font-bold text-emerald-700 uppercase tracking-wider">Total Omzet</p>
-                        <p class="text-xl sm:text-2xl font-extrabold text-emerald-900 mt-1">
-                            Rp {{ number_format($periodSummary['total_omzet'], 0, ',', '.') }}
-                        </p>
-                        <p class="text-[11px] text-emerald-700 mt-0.5">
-                            {{ number_format($periodSummary['total_transactions']) }} transaksi selesai
-                        </p>
+                    <div class="polmart-stat-card" style="padding: 16px;">
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-rose-700 uppercase tracking-wider">HPP Tercatat</p>
+                            <p class="text-xl font-extrabold text-rose-900 mt-1">
+                                Rp {{ number_format($periodSummary['total_hpp'], 0, ',', '.') }}
+                            </p>
+                            <p class="text-[10px] text-rose-600 mt-0.5">
+                                Snapshot modal barang terjual
+                            </p>
+                        </div>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold">
-                        💰
+
+                    <div class="polmart-stat-card" style="padding: 16px;">
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Laba Kotor</p>
+                            <p class="text-xl font-extrabold text-blue-900 mt-1">
+                                Rp {{ number_format($periodSummary['gross_profit'], 0, ',', '.') }}
+                            </p>
+                            <p class="text-[10px] text-blue-600 mt-0.5">
+                                @if ($periodSummary['has_unrecorded_hpp'])
+                                    <span class="text-amber-700 font-semibold">*Provisional (Omzet - HPP)</span>
+                                @else
+                                    <span>Omzet dikurangi HPP Tercatat</span>
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="polmart-stat-card" style="padding: 16px;">
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Gross Profit Margin</p>
+                            <p class="text-xl font-extrabold text-indigo-900 mt-1">
+                                {{ $periodSummary['gpm'] !== null ? $periodSummary['gpm'] . '%' : '—' }}
+                            </p>
+                            <p class="text-[10px] text-indigo-600 mt-0.5">
+                                @if ($periodSummary['has_unrecorded_hpp'] && $periodSummary['gpm'] !== null)
+                                    <span class="text-amber-700 font-semibold">*Provisional (Laba / Omzet)</span>
+                                @else
+                                    <span>(Laba Kotor / Total Omzet)</span>
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="polmart-stat-card" style="padding: 16px;">
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Markup Penjualan</p>
+                            <p class="text-xl font-extrabold text-amber-900 mt-1">
+                                {{ $periodSummary['markup'] !== null ? $periodSummary['markup'] . '%' : '—' }}
+                            </p>
+                            <p class="text-[10px] text-amber-600 mt-0.5">
+                                @if ($periodSummary['has_unrecorded_hpp'] && $periodSummary['markup'] !== null)
+                                    <span class="text-amber-700 font-semibold">*Provisional (Laba / HPP)</span>
+                                @else
+                                    <span>(Laba Kotor / HPP Tercatat)</span>
+                                @endif
+                            </p>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="p-4 rounded-xl border border-blue-100 bg-blue-50/40 flex items-center justify-between shadow-sm">
-                    <div>
-                        <p class="text-xs font-bold text-blue-700 uppercase tracking-wider">Jumlah Transaksi</p>
-                        <p class="text-xl sm:text-2xl font-extrabold text-blue-900 mt-1">
+            <!-- 6 Kartu Ringkasan Penjualan & Operasional (Horizontal, Tanpa Duplikasi) -->
+            <div class="polmart-stats-horizontal">
+                <div class="polmart-stat-card">
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-bold text-blue-700 uppercase tracking-wider truncate">Jumlah Transaksi</p>
+                        <p class="text-xl font-extrabold text-blue-900 mt-1">
                             {{ number_format($periodSummary['total_transactions']) }}
                         </p>
-                        <p class="text-[11px] text-blue-700 mt-0.5">
+                        <p class="text-[11px] text-slate-400 mt-0.5 truncate">
                             Pesanan status SELESAI
                         </p>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-xl font-bold">
-                        🧾
-                    </div>
+                    <div class="polmart-stat-icon blue">🧾</div>
                 </div>
 
-                <div class="p-4 rounded-xl border border-purple-100 bg-purple-50/40 flex items-center justify-between shadow-sm">
-                    <div>
-                        <p class="text-xs font-bold text-purple-700 uppercase tracking-wider">Produk Terjual</p>
-                        <p class="text-xl sm:text-2xl font-extrabold text-purple-900 mt-1">
-                            {{ number_format($periodSummary['total_items_sold']) }} <span class="text-sm font-semibold">pcs</span>
+                <div class="polmart-stat-card">
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-bold text-purple-700 uppercase tracking-wider truncate">Produk Terjual</p>
+                        <p class="text-xl font-extrabold text-purple-900 mt-1">
+                            {{ number_format($periodSummary['total_items_sold']) }} <span class="text-xs font-semibold">pcs</span>
                         </p>
-                        <p class="text-[11px] text-purple-700 mt-0.5">
+                        <p class="text-[11px] text-slate-400 mt-0.5 truncate">
                             Total unit fisik keluar
                         </p>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-xl font-bold">
-                        📦
-                    </div>
+                    <div class="polmart-stat-icon purple">📦</div>
                 </div>
 
-                <div class="p-4 rounded-xl border border-amber-100 bg-amber-50/40 flex items-center justify-between shadow-sm">
-                    <div>
-                        <p class="text-xs font-bold text-amber-700 uppercase tracking-wider">Rata-rata Nilai Transaksi</p>
-                        <p class="text-xl sm:text-2xl font-extrabold text-amber-900 mt-1">
+                <div class="polmart-stat-card">
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider truncate">Rata-rata Nilai Transaksi</p>
+                        <p class="text-xl font-extrabold text-amber-900 mt-1">
                             Rp {{ number_format($periodSummary['avg_transaction'], 0, ',', '.') }}
                         </p>
-                        <p class="text-[11px] text-amber-700 mt-0.5">
-                            Rata-rata belanja per pesanan
+                        <p class="text-[11px] text-slate-400 mt-0.5 truncate">
+                            Rata-rata per pesanan
                         </p>
                     </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-bold">
-                        📊
+                    <div class="polmart-stat-icon amber">📊</div>
+                </div>
+
+                <div class="polmart-stat-card">
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Siap Diambil (Loket)</p>
+                        <p class="text-xl font-extrabold text-blue-600 mt-1">{{ $stats['ready_pickup_count'] }}</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['pending_payment_count'] }} menunggu QRIS</p>
                     </div>
+                    <div class="polmart-stat-icon blue">🔢</div>
+                </div>
+
+                <div class="polmart-stat-card">
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Master Barang</p>
+                        <p class="text-xl font-extrabold text-slate-900 mt-1">{{ $stats['total_products'] }}</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['active_products'] }} aktif • {{ $stats['categories_count'] }} kategori</p>
+                    </div>
+                    <div class="polmart-stat-icon purple">🏷️</div>
+                </div>
+
+                <div class="polmart-stat-card">
+                    <div class="min-w-0">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Peringatan Stok</p>
+                        <p class="text-xl font-extrabold text-amber-600 mt-1">{{ $stats['low_stock_count'] }}</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['out_of_stock_count'] }} stok habis (0)</p>
+                    </div>
+                    <div class="polmart-stat-icon amber">⚠</div>
                 </div>
             </div>
 
@@ -375,43 +320,65 @@
                     </div>
 
                     @if ($chartData['has_data'])
-                        <div class="relative pt-6 pb-2">
-                            <div class="h-56 w-full flex items-end gap-1 sm:gap-2 px-1 border-b border-slate-200 overflow-x-auto">
-                                @foreach ($chartData['series'] as $pt)
-                                    @php
-                                        $hOmzet = $chartData['max_omzet'] > 0 ? max(4, round(($pt['omzet'] / $chartData['max_omzet']) * 100)) : 4;
-                                        $hCount = $chartData['max_count'] > 0 ? max(4, round(($pt['count'] / $chartData['max_count']) * 100)) : 4;
-                                    @endphp
-                                    <div class="group relative flex-1 min-w-[18px] sm:min-w-[24px] flex flex-col items-center h-full justify-end">
-                                        <!-- Tooltip Hover -->
-                                        <div class="opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity absolute bottom-full mb-2 z-20 px-2.5 py-1.5 rounded-lg bg-slate-900 text-white text-[11px] font-medium shadow-xl whitespace-nowrap">
-                                            <div class="font-bold text-blue-300">{{ $pt['label'] }}</div>
-                                            <div>Omzet: <strong>Rp {{ number_format($pt['omzet'], 0, ',', '.') }}</strong></div>
-                                            <div>Transaksi: <strong>{{ $pt['count'] }} pesanan</strong></div>
-                                        </div>
+                        @php
+                            $chartMaxHeightPx = 180;
+                            $minActivePx = 8;
+                            $zeroBasePx = 4;
+                            $maxOmzet = (float) ($chartData['max_omzet'] ?? 1);
+                            $maxCount = (int) ($chartData['max_count'] ?? 1);
+                        @endphp
+                        <div class="relative pt-10 pb-2">
+                            <div class="w-full overflow-x-auto">
+                                <div class="min-w-full w-max flex items-end gap-1 sm:gap-2 px-1 border-b border-slate-200">
+                                    @foreach ($chartData['series'] as $pt)
+                                        @php
+                                            $valOmzet = (float) ($pt['omzet'] ?? 0);
+                                            $valCount = (int) ($pt['count'] ?? 0);
 
-                                        <!-- Bar Omzet -->
-                                        <div class="w-full rounded-t-md transition-all duration-300"
-                                             x-show="chartMetric === 'omzet'"
-                                             style="height: {{ $pt['omzet'] > 0 ? $hOmzet : 4 }}%; background: {{ $pt['omzet'] > 0 ? 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)' : '#e2e8f0' }};">
-                                        </div>
+                                            $hOmzetPx = ($maxOmzet > 0 && $valOmzet > 0)
+                                                ? max($minActivePx, (int) round(($valOmzet / $maxOmzet) * $chartMaxHeightPx))
+                                                : $zeroBasePx;
 
-                                        <!-- Bar Jumlah Transaksi -->
-                                        <div class="w-full rounded-t-md transition-all duration-300"
-                                             x-show="chartMetric === 'count'"
-                                             style="height: {{ $pt['count'] > 0 ? $hCount : 4 }}%; background: {{ $pt['count'] > 0 ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)' : '#e2e8f0' }};">
-                                        </div>
+                                            $hCountPx = ($maxCount > 0 && $valCount > 0)
+                                                ? max($minActivePx, (int) round(($valCount / $maxCount) * $chartMaxHeightPx))
+                                                : $zeroBasePx;
+                                        @endphp
+                                        <div class="group relative flex-1 min-w-[20px] sm:min-w-[26px] flex flex-col items-center justify-end">
+                                            <!-- Tooltip Hover -->
+                                            <div class="opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150 absolute bottom-full mb-2 z-30 px-2.5 py-1.5 rounded-lg bg-slate-900 text-white text-[11px] font-medium shadow-xl whitespace-nowrap">
+                                                <div class="font-bold text-blue-300">{{ $pt['label'] }}</div>
+                                                <div>Omzet: <strong>Rp {{ number_format($valOmzet, 0, ',', '.') }}</strong></div>
+                                                <div>Transaksi: <strong>{{ number_format($valCount) }} pesanan</strong></div>
+                                            </div>
 
-                                        <!-- Label Sumbu X -->
-                                        <span class="text-[10px] text-slate-400 mt-2 truncate w-full text-center select-none font-mono">
-                                            {{ $pt['short_label'] }}
-                                        </span>
-                                    </div>
-                                @endforeach
+                                            <!-- Area Batang (Track) dengan tinggi eksplisit dalam pixel -->
+                                            <div class="w-full flex items-end justify-center" style="height: {{ $chartMaxHeightPx }}px;">
+                                                <!-- Bar Omzet -->
+                                                <div class="w-full rounded-t-md transition-all duration-300 cursor-pointer"
+                                                     x-show="chartMetric === 'omzet'"
+                                                     title="{{ $pt['label'] }} - Omzet: Rp {{ number_format($valOmzet, 0, ',', '.') }} ({{ number_format($valCount) }} transaksi)"
+                                                     style="height: {{ $hOmzetPx }}px; background: {{ $valOmzet > 0 ? 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)' : '#e2e8f0' }};">
+                                                </div>
+
+                                                <!-- Bar Jumlah Transaksi -->
+                                                <div class="w-full rounded-t-md transition-all duration-300 cursor-pointer"
+                                                     x-show="chartMetric === 'count'"
+                                                     title="{{ $pt['label'] }} - Transaksi: {{ number_format($valCount) }} pesanan (Omzet: Rp {{ number_format($valOmzet, 0, ',', '.') }})"
+                                                     style="height: {{ $hCountPx }}px; background: {{ $valCount > 0 ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)' : '#e2e8f0' }};">
+                                                </div>
+                                            </div>
+
+                                            <!-- Label Sumbu X -->
+                                            <span class="text-[10px] text-slate-500 mt-2 truncate w-full text-center select-none font-mono">
+                                                {{ $pt['short_label'] }}
+                                            </span>
+                                        </div>
+                                    @endforeach
+                                </div>
                             </div>
                         </div>
                     @else
-                        <div class="h-56 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl">
+                        <div class="flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl" style="height: 224px;">
                             <span class="text-3xl mb-2">📉</span>
                             <p class="text-sm font-semibold text-slate-700">Tidak ada transaksi SELESAI pada periode ini.</p>
                             <p class="text-xs text-slate-400 mt-1">Pilih tanggal atau rentang periode lain untuk memuat data penjualan.</p>
@@ -426,12 +393,9 @@
                         <p class="text-xs text-slate-500 mb-4">Komposisi pesanan SELESAI berdasarkan channel penjualan</p>
 
                         @php
-                            $totalSrc = $periodSummary['total_transactions'];
+                            $totalSrc = $periodSourceCounts['web'] + $periodSourceCounts['manual_admin'];
                             $pctWeb = $totalSrc > 0 ? round(($periodSourceCounts['web'] / $totalSrc) * 100, 1) : 0;
                             $pctWalkin = $totalSrc > 0 ? round(($periodSourceCounts['manual_admin'] / $totalSrc) * 100, 1) : 0;
-                            $pctImport = $totalSrc > 0 ? round(($periodSourceCounts['import_excel'] / $totalSrc) * 100, 1) : 0;
-                            $otherCount = $periodSourceCounts['other'] ?? 0;
-                            $pctOther = $totalSrc > 0 ? round(($otherCount / $totalSrc) * 100, 1) : 0;
                         @endphp
 
                         <div class="space-y-4">
@@ -462,36 +426,6 @@
                                     <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: {{ $pctWalkin }}%"></div>
                                 </div>
                             </div>
-
-                            <!-- Impor Excel -->
-                            <div>
-                                <div class="flex items-center justify-between text-xs mb-1">
-                                    <span class="font-semibold text-slate-700 flex items-center gap-1.5">
-                                        <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
-                                        Impor Excel Historis
-                                    </span>
-                                    <span class="font-bold text-slate-900">{{ $periodSourceCounts['import_excel'] }} ({{ $pctImport }}%)</span>
-                                </div>
-                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                    <div class="bg-purple-500 h-2 rounded-full transition-all duration-500" style="width: {{ $pctImport }}%"></div>
-                                </div>
-                            </div>
-
-                            <!-- Sumber Lainnya (jika ada transaksi di luar 3 sumber utama) -->
-                            @if ($otherCount > 0)
-                            <div>
-                                <div class="flex items-center justify-between text-xs mb-1">
-                                    <span class="font-semibold text-slate-700 flex items-center gap-1.5">
-                                        <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                                        Sumber Lainnya
-                                    </span>
-                                    <span class="font-bold text-slate-900">{{ $otherCount }} ({{ $pctOther }}%)</span>
-                                </div>
-                                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                    <div class="bg-slate-400 h-2 rounded-full transition-all duration-500" style="width: {{ $pctOther }}%"></div>
-                                </div>
-                            </div>
-                            @endif
                         </div>
                     </div>
 
@@ -502,144 +436,15 @@
                 </div>
             </div>
 
-            <!-- Produk Terlaris & Detail Transaksi Periode Aktif -->
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <!-- Tabel Produk Terlaris Periode Aktif -->
-                <div class="p-5 rounded-xl border border-slate-200 bg-white">
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <h3 class="text-sm font-extrabold text-slate-900">Produk Terlaris (Periode Aktif)</h3>
-                            <p class="text-xs text-slate-500">Urutan barang dengan kuantitas penjualan tertinggi pada periode ini</p>
-                        </div>
-                        <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 text-xs font-bold font-mono">
-                            Top {{ count($periodTopProducts) }}
-                        </span>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="polmart-table text-xs">
-                            <thead>
-                                <tr>
-                                    <th class="w-8">#</th>
-                                    <th>Barang</th>
-                                    <th class="text-center">Terjual</th>
-                                    <th class="text-right">Total Omzet</th>
-                                    <th class="text-center">Sisa Stok</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($periodTopProducts as $idx => $item)
-                                    <tr>
-                                        <td class="font-bold text-slate-400">{{ $idx + 1 }}</td>
-                                        <td>
-                                            <div class="font-semibold text-slate-900">{{ $item->name }}</div>
-                                            <div class="text-[11px] text-slate-400 font-mono">{{ $item->sku }} • {{ $item->category }}</div>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="polmart-badge polmart-badge-blue font-bold">
-                                                {{ number_format($item->total_sold) }} pcs
-                                            </span>
-                                        </td>
-                                        <td class="text-right font-bold text-slate-900">
-                                            Rp {{ number_format($item->total_revenue, 0, ',', '.') }}
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="font-mono text-slate-600">{{ $item->stock }} pcs</span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center text-slate-400 py-6">
-                                            Belum ada produk terjual pada periode ini.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Tabel Detail Transaksi Penjualan Periode Aktif -->
-                <div class="p-5 rounded-xl border border-slate-200 bg-white">
-                    <div class="flex items-center justify-between mb-3">
-                        <div>
-                            <h3 class="text-sm font-extrabold text-slate-900">Detail Transaksi Penjualan</h3>
-                            <p class="text-xs text-slate-500">Daftar transaksi SELESAI yang terekam dalam periode ini</p>
-                        </div>
-                        <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs font-bold font-mono">
-                            @if (($totalPeriodOrders ?? count($periodOrders)) > count($periodOrders))
-                                Menampilkan {{ count($periodOrders) }} dari {{ number_format($totalPeriodOrders) }} Transaksi
-                            @else
-                                {{ count($periodOrders) }} Transaksi
-                            @endif
-                        </span>
-                    </div>
-
-                    <div class="overflow-x-auto max-h-[360px] overflow-y-auto">
-                        <table class="polmart-table text-xs">
-                            <thead class="sticky top-0 bg-white shadow-sm z-10">
-                                <tr>
-                                    <th>No. Transaksi</th>
-                                    <th>Waktu</th>
-                                    <th>Pemesan</th>
-                                    <th>Sumber</th>
-                                    <th class="text-center">Item</th>
-                                    <th class="text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse ($periodOrders as $ord)
-                                    <tr>
-                                        <td class="font-mono font-bold text-blue-700">{{ $ord->order_code }}</td>
-                                        <td class="text-[11px] text-slate-500">{{ $ord->transaction_date?->format('d/m/Y H:i') }}</td>
-                                        <td class="font-semibold text-slate-800">{{ $ord->customer_name }}</td>
-                                        <td>
-                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                                                @if ($ord->source === 'web') bg-blue-50 text-blue-700
-                                                @elseif ($ord->source === 'manual_admin') bg-emerald-50 text-emerald-700
-                                                @elseif ($ord->source === 'import_excel') bg-purple-50 text-purple-700
-                                                @else bg-slate-100 text-slate-600 @endif">
-                                                {{ match($ord->source) {
-                                                    'web' => 'QRIS Web',
-                                                    'manual_admin' => 'Kasir',
-                                                    'import_excel' => 'Impor',
-                                                    default => 'Lainnya (' . ($ord->source ?: '-') . ')'
-                                                } }}
-                                            </span>
-                                        </td>
-                                        <td class="text-center">{{ $ord->items->sum('qty') }}</td>
-                                        <td class="text-right font-bold text-slate-900">Rp {{ number_format($ord->total_amount, 0, ',', '.') }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="6" class="text-center text-slate-400 py-6">
-                                            Tidak ada transaksi berstatus SELESAI pada periode ini.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    @if (($totalPeriodOrders ?? count($periodOrders)) > count($periodOrders))
-                        <p class="text-[11px] text-slate-500 mt-2.5 text-right italic">
-                            * Menampilkan {{ count($periodOrders) }} transaksi terbaru pada periode ini. Gunakan tombol <strong>Export Excel (.xlsx)</strong> di atas untuk mengunduh seluruh {{ number_format($totalPeriodOrders) }} transaksi.
-                        </p>
-                    @endif
-                </div>
-            </div>
-
-            <!-- Produk Paling Menguntungkan Berdasarkan Laba Kotor (Task 2C) -->
-            <div class="p-5 rounded-xl border border-slate-200 bg-white">
+            <!-- Produk Paling Menguntungkan Berdasarkan Laba Kotor -->
+            <div class="p-5 rounded-xl border border-slate-200 bg-white" x-data="{ showAllProfitable: false }">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                    <div>
-                        <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                            <span>Produk Paling Menguntungkan (Periode Aktif)</span>
-                            <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800">
-                                Berdasarkan Laba Kotor
-                            </span>
-                        </h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Urutan produk dengan total laba kotor tertinggi (Omzet - HPP Snapshot) transaksi SELESAI</p>
-                    </div>
+                    <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>Produk Paling Menguntungkan (Periode Aktif)</span>
+                        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800">
+                            Berdasarkan Laba Kotor
+                        </span>
+                    </h3>
                     <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs font-bold font-mono self-start sm:self-auto">
                         Top {{ count($periodProfitableProducts) }}
                     </span>
@@ -660,9 +465,8 @@
                                     <th class="text-center">Terjual</th>
                                     <th class="text-right">Total Omzet</th>
                                     <th class="text-right">HPP Tercatat</th>
-                                    <th class="text-right">Total Laba Kotor</th>
+                                    <th class="text-right">Laba Kotor</th>
                                     <th class="text-center">Margin</th>
-                                    <th class="text-center">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -673,7 +477,7 @@
                                         $itemProfit = (float) ($item->total_profit ?? 0);
                                         $itemMargin = $itemRev > 0 ? round(($itemProfit / $itemRev) * 100, 1) : 0.0;
                                     @endphp
-                                    <tr>
+                                    <tr x-show="showAllProfitable || {{ $loop->index }} < 3">
                                         <td class="font-bold text-slate-400">{{ $idx + 1 }}</td>
                                         <td>
                                             <div class="font-semibold text-slate-900">{{ $item->name }}</div>
@@ -696,39 +500,25 @@
                                         <td class="text-center font-bold text-blue-700">
                                             {{ $itemMargin }}%
                                         </td>
-                                        <td class="text-center">
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                                                ✓ Lengkap
-                                            </span>
-                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-                @else
-                    <div class="p-6 text-center border border-dashed border-slate-200 rounded-xl space-y-1">
-                        <p class="text-sm font-semibold text-slate-700">Belum ada produk dengan data HPP lengkap pada periode ini.</p>
-                        <p class="text-xs text-slate-400">Pastikan transaksi berstatus SELESAI dan seluruh item memiliki biaya modal (HPP) yang tercatat.</p>
-                    </div>
                 @endif
 
                 @if ($dashboardProvisionalProfitable->isNotEmpty())
-                    <div class="mt-4 pt-3 border-t border-slate-200">
-                        <h4 class="text-xs font-bold text-amber-800 flex items-center gap-1.5 mb-2">
-                            <span>⚠️</span>
-                            <span>Produk Terjual dengan Data HPP Belum Lengkap (Provisional)</span>
-                        </h4>
+                    <div class="{{ $dashboardCompleteProfitable->isNotEmpty() ? 'mt-4 pt-3 border-t border-slate-200' : '' }}">
                         <div class="overflow-x-auto">
-                            <table class="polmart-table text-xs opacity-90">
-                                <thead class="bg-amber-50/50">
+                            <table class="polmart-table text-xs">
+                                <thead>
                                     <tr>
                                         <th>Barang</th>
                                         <th class="text-center">Terjual</th>
-                                        <th class="text-right">Total Omzet</th>
-                                        <th class="text-right">HPP Tercatat</th>
-                                        <th class="text-right">Laba Kotor (Semu)</th>
-                                        <th class="text-center">Keterangan</th>
+                                        <th class="text-right">Omzet</th>
+                                        <th class="text-right">HPP</th>
+                                        <th class="text-right">Laba Kotor</th>
+                                        <th class="text-center">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -738,7 +528,7 @@
                                             $itemCost = (float) ($item->total_cost ?? 0);
                                             $itemProfit = (float) ($item->total_profit ?? 0);
                                         @endphp
-                                        <tr>
+                                        <tr x-show="showAllProfitable || {{ $loop->index }} < 3">
                                             <td>
                                                 <div class="font-medium text-slate-800">{{ $item->name }}</div>
                                                 <div class="text-[10px] text-slate-400 font-mono">{{ $item->sku }}</div>
@@ -746,10 +536,10 @@
                                             <td class="text-center">{{ number_format($item->total_sold) }} pcs</td>
                                             <td class="text-right">Rp {{ number_format($itemRev, 0, ',', '.') }}</td>
                                             <td class="text-right text-rose-700">Rp {{ number_format($itemCost, 0, ',', '.') }}</td>
-                                            <td class="text-right font-medium text-amber-700">Rp {{ number_format($itemProfit, 0, ',', '.') }}</td>
+                                            <td class="text-right font-semibold text-amber-700">Rp {{ number_format($itemProfit, 0, ',', '.') }}</td>
                                             <td class="text-center">
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800" title="Sebagian atau seluruh penjualan item ini tidak memiliki snapshot HPP">
-                                                    Provisional ({{ $item->unrecorded_items_count }} item belum ada HPP)
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                                    Provisional
                                                 </span>
                                             </td>
                                         </tr>
@@ -758,125 +548,32 @@
                             </table>
                         </div>
                     </div>
+                @elseif ($dashboardCompleteProfitable->isEmpty())
+                    <div class="p-4 text-center border border-dashed border-slate-200 rounded-xl">
+                        <p class="text-sm font-semibold text-slate-600">Belum ada produk dengan data HPP lengkap pada periode ini.</p>
+                    </div>
+                @endif
+
+                @if ($dashboardCompleteProfitable->count() > 3 || $dashboardProvisionalProfitable->count() > 3)
+                    <div class="pt-3 mt-3 border-t border-slate-100 text-center">
+                        <button type="button"
+                                @click="showAllProfitable = !showAllProfitable"
+                                class="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline px-3 py-1.5 rounded-lg transition">
+                            <span x-show="!showAllProfitable">Lihat Selengkapnya ({{ max($dashboardCompleteProfitable->count(), $dashboardProvisionalProfitable->count()) - 3 }} lainnya)</span>
+                            <span x-show="showAllProfitable" style="display: none;">Tampilkan Lebih Sedikit</span>
+                        </button>
+                    </div>
                 @endif
             </div>
         </section>
 
-        <!-- Ringkasan Statistik -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="polmart-stat-card">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Omzet (SELESAI)</p>
-                    <p class="text-2xl font-extrabold text-slate-900 mt-1">Rp {{ number_format($stats['total_revenue'], 0, ',', '.') }}</p>
-                    <p class="text-xs text-slate-400 mt-1">{{ number_format($stats['completed_orders_count']) }} transaksi selesai</p>
-                </div>
-                <div class="polmart-stat-icon green">💰</div>
-            </div>
-
-            <div class="polmart-stat-card">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Siap Diambil (Loket)</p>
-                    <p class="text-2xl font-extrabold text-blue-600 mt-1">{{ $stats['ready_pickup_count'] }}</p>
-                    <p class="text-xs text-slate-400 mt-1">{{ $stats['pending_payment_count'] }} menunggu bayar QRIS</p>
-                </div>
-                <div class="polmart-stat-icon blue">🔢</div>
-            </div>
-
-            <div class="polmart-stat-card">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Master Barang</p>
-                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['total_products'] }}</p>
-                    <p class="text-xs text-slate-400 mt-1">{{ $stats['active_products'] }} aktif • {{ $stats['categories_count'] }} kategori</p>
-                </div>
-                <div class="polmart-stat-icon purple">📦</div>
-            </div>
-
-            <div class="polmart-stat-card">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Peringatan Stok</p>
-                    <p class="text-2xl font-extrabold text-amber-600 mt-1">{{ $stats['low_stock_count'] }}</p>
-                    <p class="text-xs text-slate-400 mt-1">{{ $stats['out_of_stock_count'] }} produk stok habis (0)</p>
-                </div>
-                <div class="polmart-stat-icon amber">⚠</div>
-            </div>
-        </section>
-
-        <!-- Validasi Loket Cepat & Antrean SIAP_DIAMBIL -->
-        <section class="polmart-card">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-                <div>
-                    <h2 class="text-lg font-extrabold text-slate-900">Antrean Validasi Loket (SIAP DIAMBIL)</h2>
-                    <p class="text-xs text-slate-500 mt-0.5">Masukkan kode pengambilan 4-digit dari anggota untuk menyelesaikan pesanan.</p>
-                </div>
-
-                <form method="POST" action="{{ route('admin.pickup.verify-code') }}" class="flex items-center gap-2">
-                    @csrf
-                    <input type="text" name="pickup_code" maxlength="6" placeholder="Kode 4-digit (cth: 4829)" required
-                           class="polmart-input w-48 font-mono font-bold tracking-wider">
-                    <button type="submit" class="polmart-btn polmart-btn-primary whitespace-nowrap">
-                        ✓ Verifikasi & Selesai
-                    </button>
-                </form>
-            </div>
-
-            <div class="overflow-x-auto mt-4">
-                <table class="polmart-table">
-                    <thead>
-                        <tr>
-                            <th>Kode Pesanan</th>
-                            <th>Kode Ambil</th>
-                            <th>Pemesan</th>
-                            <th>Item</th>
-                            <th class="text-right">Total</th>
-                            <th class="text-right">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($readyPickupOrders as $order)
-                            <tr>
-                                <td class="font-mono font-bold text-blue-700">{{ $order->order_code }}</td>
-                                <td>
-                                    <span class="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 font-mono font-extrabold tracking-widest">
-                                        #{{ $order->pickup_code }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div class="font-semibold text-slate-900">{{ $order->customer_name }}</div>
-                                    <div class="text-xs text-slate-400">{{ $order->user?->member_code ?? '-' }}</div>
-                                </td>
-                                <td class="text-xs text-slate-600">
-                                    {{ $order->items->sum('qty') }} pcs ({{ $order->items->map(fn ($i) => $i->product?->name)->filter()->take(2)->implode(', ') }})
-                                </td>
-                                <td class="text-right font-bold">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
-                                <td class="text-right">
-                                    <form method="POST" action="{{ route('admin.pickup.complete', $order) }}" class="inline">
-                                        @csrf
-                                        <button type="submit" class="polmart-btn polmart-btn-success polmart-btn-sm">
-                                            ✓ Selesaikan
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="text-center text-slate-400 py-6">
-                                    Tidak ada pesanan yang menunggu diambil di loket saat ini.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- Analitik PRD FR-11: Barang Terlaris & Stok Terbanyak -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Barang Terlaris -->
+        <!-- Analitik: Barang Terlaris & Stok Terbanyak (Grafik) -->
+        <section class="grid grid-cols-1 gap-6">
+            <!-- Grafik Barang Terlaris -->
             <div class="polmart-card">
-                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
                     <div>
                         <h2 class="text-base font-extrabold text-slate-900">Barang Terlaris (Top Selling)</h2>
-                        <p class="text-xs text-slate-500">Agregasi SUM(qty) dari pesanan berstatus SELESAI</p>
                     </div>
                     <div class="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs font-semibold">
                         <a href="{{ route('admin.dashboard', ['top_filter' => 'all']) }}"
@@ -890,159 +587,115 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="polmart-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Barang</th>
-                                <th class="text-center">Terjual</th>
-                                <th class="text-right">Omzet</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($topSellingProducts as $idx => $item)
-                                <tr>
-                                    <td class="font-bold text-slate-400">{{ $idx + 1 }}</td>
-                                    <td>
-                                        <div class="font-semibold text-slate-900">{{ $item->name }}</div>
-                                        <div class="text-xs text-slate-400 font-mono">{{ $item->sku }} • {{ $item->category }}</div>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="polmart-badge polmart-badge-blue">{{ number_format($item->total_sold) }} pcs</span>
-                                    </td>
-                                    <td class="text-right font-semibold">Rp {{ number_format($item->total_revenue, 0, ',', '.') }}</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-slate-400 py-6">
-                                        Belum ada penjualan berstatus SELESAI pada periode ini.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                @php
+                    $maxTopSold = max(1, (int) ($topSellingProducts->max('total_sold') ?? 1));
+                @endphp
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    @forelse ($topSellingProducts as $idx => $item)
+                        @php
+                            $pctSold = min(100, max(6, round(((int) $item->total_sold / $maxTopSold) * 100)));
+                        @endphp
+                        <div>
+                            <div class="flex items-center justify-between gap-3 text-xs" style="margin-bottom: 6px;">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="font-bold text-slate-400 w-5 shrink-0">{{ $idx + 1 }}.</span>
+                                    <span class="font-semibold text-slate-800 truncate" title="{{ $item->name }}">{{ $item->name }}</span>
+                                </div>
+                                <div class="shrink-0 font-bold text-slate-700 whitespace-nowrap">
+                                    <span class="text-blue-600">{{ number_format($item->total_sold) }} pcs</span>
+                                    <span class="text-slate-400 font-normal ml-1">• Rp {{ number_format($item->total_revenue, 0, ',', '.') }}</span>
+                                </div>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full overflow-hidden" style="height: 12px;">
+                                <div class="rounded-full transition-all duration-300"
+                                     style="height: 12px; width: {{ $pctSold }}%; background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-center text-sm text-slate-400 py-8">
+                            Belum ada penjualan berstatus SELESAI pada periode ini.
+                        </p>
+                    @endforelse
                 </div>
             </div>
 
-            <!-- Stok Terbanyak -->
+            <!-- Grafik Stok Terbanyak -->
             <div class="polmart-card">
-                <div class="flex items-center justify-between gap-3 mb-4">
+                <div class="flex items-center justify-between gap-3 mb-5">
                     <div>
                         <h2 class="text-base font-extrabold text-slate-900">Stok Terbanyak</h2>
-                        <p class="text-xs text-slate-500">Barang aktif diurutkan dari stok terbesar (ORDER BY stock DESC)</p>
                     </div>
                     <a href="{{ route('admin.products.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
                         Kelola Stok
                     </a>
                 </div>
 
-                <div class="overflow-x-auto">
-                    <table class="polmart-table">
-                        <thead>
-                            <tr>
-                                <th>Produk</th>
-                                <th>Kategori</th>
-                                <th class="text-right">Harga</th>
-                                <th class="text-center">Stok</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse ($highestStockProducts as $product)
-                                <tr>
-                                    <td>
-                                        <div class="font-semibold text-slate-900">{{ $product->name }}</div>
-                                        <div class="text-xs text-slate-400 font-mono">{{ $product->sku }}</div>
-                                    </td>
-                                    <td class="text-xs text-slate-600">{{ $product->category }}</td>
-                                    <td class="text-right text-xs font-semibold">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
-                                    <td class="text-center">
-                                        @if ($product->stock > 10)
-                                            <span class="polmart-badge polmart-badge-green">{{ $product->stock }} pcs</span>
-                                        @elseif ($product->stock > 0)
-                                            <span class="polmart-badge polmart-badge-amber">{{ $product->stock }} pcs</span>
-                                        @else
-                                            <span class="polmart-badge polmart-badge-red">Habis</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-slate-400 py-6">Belum ada produk aktif.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                @php
+                    $maxHighStock = max(1, (int) ($highestStockProducts->max('stock') ?? 1));
+                @endphp
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    @forelse ($highestStockProducts as $product)
+                        @php
+                            $pctStock = min(100, max(6, round(((int) $product->stock / $maxHighStock) * 100)));
+                            $barGrad = $product->stock > 10
+                                ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)'
+                                : ($product->stock > 0
+                                    ? 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)'
+                                    : 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)');
+                        @endphp
+                        <div>
+                            <div class="flex items-center justify-between gap-3 text-xs" style="margin-bottom: 6px;">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="font-semibold text-slate-800 truncate" title="{{ $product->name }}">{{ $product->name }}</span>
+                                    <span class="text-[11px] text-slate-400 shrink-0">({{ $product->category }})</span>
+                                </div>
+                                <span class="shrink-0 font-bold {{ $product->stock > 10 ? 'text-emerald-700' : ($product->stock > 0 ? 'text-amber-700' : 'text-rose-600') }}">
+                                    {{ number_format($product->stock) }} pcs
+                                </span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full overflow-hidden" style="height: 12px;">
+                                <div class="rounded-full transition-all duration-300"
+                                     style="height: 12px; width: {{ $pctStock }}%; background: {{ $barGrad }};"></div>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-center text-sm text-slate-400 py-8">Belum ada produk aktif.</p>
+                    @endforelse
                 </div>
             </div>
         </section>
 
-        <!-- Transaksi & Mutasi Terkini -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="polmart-card">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 class="text-base font-extrabold text-slate-900">Transaksi Terbaru</h2>
-                        <p class="text-xs text-slate-500">Pesanan web QRIS, walk-in, dan impor Excel</p>
-                    </div>
-                    <a href="{{ route('admin.transactions.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Semua
-                    </a>
+        <!-- Transaksi Terbaru -->
+        <section class="polmart-card">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-900">Transaksi Terbaru</h2>
+                    <p class="text-xs text-slate-500">Pesanan web QRIS, walk-in, dan impor Excel</p>
                 </div>
-                <div class="space-y-3">
-                    @forelse ($recentOrders as $order)
-                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                            <div>
-                                <div class="font-mono text-xs font-bold text-blue-700">{{ $order->order_code }}</div>
-                                <div class="text-sm font-semibold text-slate-900">{{ $order->customer_name }}</div>
-                                <div class="text-xs text-slate-400">
-                                    {{ $order->transaction_date?->format('d/m/Y H:i') }} • {{ str_replace('_', ' ', strtoupper($order->source)) }}
-                                </div>
-                            </div>
-                            <div class="text-right">
-                                <div class="font-bold text-sm text-slate-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
-                                <span class="polmart-badge {{ $order->status === 'SELESAI' ? 'polmart-badge-green' : ($order->status === 'SIAP_DIAMBIL' ? 'polmart-badge-blue' : ($order->status === 'MENUNGGU_BAYAR' ? 'polmart-badge-amber' : 'polmart-badge-red')) }}">
-                                    {{ str_replace('_', ' ', $order->status) }}
-                                </span>
-                            </div>
-                        </div>
-                    @empty
-                        <p class="text-center text-sm text-slate-400 py-6">Belum ada transaksi tercatat.</p>
-                    @endforelse
-                </div>
+                <a href="{{ route('admin.transactions.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
+                    Semua
+                </a>
             </div>
-
-            <div class="polmart-card">
-                <div class="flex items-center justify-between mb-4">
-                    <div>
-                        <h2 class="text-base font-extrabold text-slate-900">Log Mutasi Stok Terbaru</h2>
-                        <p class="text-xs text-slate-500">Pergerakan stok masuk, keluar, dan pengembalian</p>
-                    </div>
-                    <a href="{{ route('admin.stock-mutations.index') }}" class="text-xs font-bold text-blue-600 hover:underline">
-                        Semua
-                    </a>
-                </div>
-                <div class="space-y-3">
-                    @forelse ($recentMutations as $mutation)
-                        <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
-                            <div>
-                                <div class="text-sm font-semibold text-slate-900">{{ $mutation->product?->name ?? 'Produk' }}</div>
-                                <div class="text-xs text-slate-500">{{ $mutation->notes ?? $mutation->reference ?? '-' }}</div>
-                                <div class="text-xs text-slate-400">{{ $mutation->created_at?->format('d/m/Y H:i') }}</div>
-                            </div>
-                            <div class="text-right">
-                                <span class="polmart-badge {{ in_array($mutation->type, ['in', 'return'], true) ? 'polmart-badge-green' : 'polmart-badge-amber' }}">
-                                    {{ strtoupper($mutation->type) }} {{ $mutation->qty }}
-                                </span>
-                                <div class="text-xs text-slate-500 mt-1">
-                                    {{ $mutation->stock_before }} → <strong>{{ $mutation->stock_after }}</strong>
-                                </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                @forelse ($recentOrders as $order)
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div>
+                            <div class="font-mono text-xs font-bold text-blue-700">{{ $order->order_code }}</div>
+                            <div class="text-sm font-semibold text-slate-900">{{ $order->customer_name }}</div>
+                            <div class="text-xs text-slate-400">
+                                {{ $order->transaction_date?->format('d/m/Y H:i') }} • {{ str_replace('_', ' ', strtoupper($order->source)) }}
                             </div>
                         </div>
-                    @empty
-                        <p class="text-center text-sm text-slate-400 py-6">Belum ada mutasi stok tercatat.</p>
-                    @endforelse
-                </div>
+                        <div class="text-right">
+                            <div class="font-bold text-sm text-slate-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</div>
+                            <span class="polmart-badge {{ $order->status === 'SELESAI' ? 'polmart-badge-green' : ($order->status === 'SIAP_DIAMBIL' ? 'polmart-badge-blue' : ($order->status === 'MENUNGGU_BAYAR' ? 'polmart-badge-amber' : 'polmart-badge-red')) }}">
+                                {{ str_replace('_', ' ', $order->status) }}
+                            </span>
+                        </div>
+                    </div>
+                @empty
+                    <p class="col-span-full text-center text-sm text-slate-400 py-6">Belum ada transaksi tercatat.</p>
+                @endforelse
             </div>
         </section>
     </div>

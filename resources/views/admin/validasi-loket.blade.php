@@ -6,7 +6,7 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-extrabold text-slate-900">Validasi Loket & Pengambilan Barang</h1>
-                <p class="text-sm text-slate-500 mt-1">Verifikasi kode pengambilan 4-digit dari anggota untuk menyelesaikan status pesanan (SIAP DIAMBIL → SELESAI).</p>
+                <p class="text-sm text-slate-500 mt-1">Klik tombol Selesai pada pesanan berstatus SIAP DIAMBIL untuk menandakan barang telah diambil anggota.</p>
             </div>
             <a href="{{ route('admin.transactions.index') }}" class="polmart-btn polmart-btn-secondary">
                 ▧ Riwayat Transaksi
@@ -23,31 +23,6 @@
                 {{ $errors->first() }}
             </div>
         @endif
-
-        <!-- Form Verifikasi Cepat Kode 4-Digit -->
-        <section class="polmart-card border-l-4 border-l-blue-600">
-            <h2 class="text-base font-extrabold text-slate-900">Verifikasi Cepat Kode Pengambilan (4-Digit)</h2>
-            <p class="text-xs text-slate-500 mt-1 mb-4">Masukkan kode pengambilan yang ditunjukkan anggota di loket koperasi.</p>
-
-            <form method="POST" action="{{ route('admin.pickup.verify-code') }}" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-                @csrf
-                <div class="sm:col-span-4">
-                    <label for="pickup_code" class="polmart-label">Kode Pengambilan 4-Digit</label>
-                    <input id="pickup_code" name="pickup_code" type="text" value="{{ old('pickup_code') }}"
-                           placeholder="Contoh: 4829" required class="polmart-input font-mono font-bold tracking-widest text-lg">
-                </div>
-                <div class="sm:col-span-5">
-                    <label for="order_code" class="polmart-label">Kode Pesanan (Opsional)</label>
-                    <input id="order_code" name="order_code" type="text" value="{{ old('order_code') }}"
-                           placeholder="Contoh: PLM-20261117-0001" class="polmart-input font-mono">
-                </div>
-                <div class="sm:col-span-3">
-                    <button type="submit" class="polmart-btn polmart-btn-primary w-full py-2.5">
-                        ✓ Verifikasi & Selesaikan
-                    </button>
-                </div>
-            </form>
-        </section>
 
         <!-- Statistik Status -->
         <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -149,10 +124,8 @@
                                 </td>
                                 <td class="text-right">
                                     @if ($order->status === 'SIAP_DIAMBIL')
-                                        <form method="POST" action="{{ route('admin.pickup.complete', $order) }}" class="inline-flex items-center gap-1.5">
+                                        <form method="POST" action="{{ route('admin.pickup.complete', $order) }}" class="inline">
                                             @csrf
-                                            <input type="text" name="pickup_code" maxlength="6" placeholder="Kode 4-digit"
-                                                   required class="w-28 px-2 py-1 text-xs border border-slate-300 rounded font-mono">
                                             <button type="submit" class="polmart-btn polmart-btn-success polmart-btn-sm">
                                                 Selesai
                                             </button>

@@ -519,6 +519,37 @@
             height: 28px;
             font-size: 12px;
         }
+
+        .polmart-stats-horizontal {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .polmart-stats-horizontal .polmart-stat-card {
+            padding: 14px;
+            gap: 8px;
+        }
+        .polmart-stats-horizontal .polmart-stat-icon {
+            width: 38px;
+            height: 38px;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        @media (max-width: 1279px) {
+            .polmart-stats-horizontal {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 767px) {
+            .polmart-stats-horizontal {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 480px) {
+            .polmart-stats-horizontal {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 

@@ -156,7 +156,6 @@
                                             +
                                         </button>
                                     </div>
-                                    <input type="text" name="notes" placeholder="Catatan" class="w-24 px-2 py-1 text-xs border border-slate-300 rounded-md">
                                     <button type="submit" class="polmart-btn polmart-btn-success polmart-btn-sm">Tambah</button>
                                 </form>
                             </td>

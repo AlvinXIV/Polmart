@@ -11,6 +11,25 @@
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
+            <div class="polmart-card">
+                <form method="GET" action="{{ route('admin.stock-mutations.index') }}" class="flex flex-wrap items-end gap-3">
+                    <div>
+                        <label for="start_date" class="polmart-label">Dari Tanggal</label>
+                        <input id="start_date" type="date" name="start_date" value="{{ $startDateInput ?? '' }}" class="polmart-input sm:w-48">
+                    </div>
+                    <div>
+                        <label for="end_date" class="polmart-label">Sampai Tanggal</label>
+                        <input id="end_date" type="date" name="end_date" value="{{ $endDateInput ?? '' }}" class="polmart-input sm:w-48">
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="submit" class="polmart-btn polmart-btn-primary">Filter</button>
+                        @if (! empty($startDateInput) || ! empty($endDateInput))
+                            <a href="{{ route('admin.stock-mutations.index') }}" class="polmart-btn polmart-btn-secondary">Reset</a>
+                        @endif
+                    </div>
+                </form>
+            </div>
+
             <div class="bg-white shadow-sm sm:rounded-lg overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">

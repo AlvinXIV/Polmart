@@ -218,7 +218,6 @@ class PolmartFlowTest extends TestCase
         $resMonthly->assertSee('Distribusi Sumber Transaksi');
         $resMonthly->assertSee('Portal Anggota (QRIS)');
         $resMonthly->assertSee('Kasir Walk-in');
-        $resMonthly->assertSee('Impor Excel Historis');
         $resMonthly->assertSee('Export Excel (.xlsx)');
 
         // 2. Filter Harian
@@ -1423,7 +1422,7 @@ class PolmartFlowTest extends TestCase
         $res->assertSee('Rp 110.000');
         $res->assertSee('Rp 70.000');
         $res->assertSee('Rp 40.000');
-        $res->assertSee('Data HPP Lengkap (100%)');
+        $res->assertSee('Omzet dikurangi HPP Tercatat');
 
         // Pastikan empat kartu operasional lama tetap ada dan akurat
         $res->assertSee('Total Omzet');
@@ -1482,11 +1481,8 @@ class PolmartFlowTest extends TestCase
         $this->assertEquals(1, $summary['unrecorded_items_count']);
         $this->assertEquals(0.0, $summary['completeness_pct']);
 
-        // Verifikasi badge dan peringatan provisional pada dashboard
-        $res->assertSee('Laba Kotor Provisional');
-        $res->assertSee('Perhatian Data HPP:');
-        $res->assertSee('1 transaksi');
-        $res->assertSee('1 item');
+        // Verifikasi indikator provisional pada kartu ringkasan finansial dashboard
+        $res->assertSee('*Provisional (Omzet - HPP)');
     }
 
     public function test_admin_dashboard_period_filters_strictly_isolate_hpp_and_financial_aggregations(): void
