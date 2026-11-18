@@ -29,14 +29,29 @@ class ReportController extends Controller
         $orderService->cancelExpiredOrders();
 
         $report = $this->buildReportData($request);
-        $filename = sprintf(
-            'laporan_polmart_%s_%s.xlsx',
-            $report['period'],
-            now()->format('Ymd_His')
-        );
+
+        $period = $report['period'];
+        $date = $report['date'];
+        $startDate = $report['startDate'];
+        $endDate = $report['endDate'];
+        $month = sprintf('%02d', (int) $report['month']);
+        $year = (int) $report['year'];
+
+        $filename = match ($period) {
+            'daily' => "Laporan_Penjualan_Harian_{$date}.xlsx",
+            'weekly' => "Laporan_Penjualan_Mingguan_{$startDate}_sd_{$endDate}.xlsx",
+            'yearly' => "Laporan_Penjualan_Tahunan_{$year}.xlsx",
+            default => "Laporan_Penjualan_Bulanan_{$year}-{$month}.xlsx",
+        };
 
         return Excel::download(
-            new PeriodicReportExport($report['orders'], $report['topProducts']),
+            new PeriodicReportExport(
+                $report['orders'],
+                $report['topProducts'],
+                $report['summary'],
+                $report['periodLabel'],
+                $report['sourceCounts']
+            ),
             $filename
         );
     }
@@ -51,32 +66,39 @@ class ReportController extends Controller
             $period = 'monthly';
         }
 
-        $date = $request->input('date', now()->toDateString());
-        $startDateInput = $request->input('start_date', now()->startOfWeek()->toDateString());
-        $endDateInput = $request->input('end_date', now()->endOfWeek()->toDateString());
+        $rawDate = $request->input('date');
+        $rawStartDate = $request->input('start_date');
+        $rawEndDate = $request->input('end_date');
         $month = (int) $request->input('month', now()->month);
         $year = (int) $request->input('year', now()->year);
 
         if ($month < 1 || $month > 12) {
-            $month = now()->month;
+            $month = (int) now()->month;
         }
         if ($year < 2000 || $year > 2100) {
-            $year = now()->year;
+            $year = (int) now()->year;
         }
 
         [$start, $end, $periodLabel] = match ($period) {
-            'daily' => [
-                Carbon::parse($date)->startOfDay(),
-                Carbon::parse($date)->endOfDay(),
-                'Harian: ' . Carbon::parse($date)->translatedFormat('d F Y'),
-            ],
-            'weekly' => (function () use ($startDateInput, $endDateInput) {
-                $s = Carbon::parse($startDateInput)->startOfDay();
-                $e = Carbon::parse($endDateInput)->endOfDay();
+            'daily' => (function () use ($rawDate) {
+                $parsed = $this->safeParseDate($rawDate, now());
+                return [
+                    $parsed->copy()->startOfDay(),
+                    $parsed->copy()->endOfDay(),
+                    'Harian: ' . $parsed->translatedFormat('d F Y'),
+                ];
+            })(),
+            'weekly' => (function () use ($rawStartDate, $rawEndDate) {
+                $s = $this->safeParseDate($rawStartDate, now()->startOfWeek())->startOfDay();
+                $e = $this->safeParseDate($rawEndDate, now()->endOfWeek())->endOfDay();
                 if ($e->lt($s)) {
                     [$s, $e] = [$e->copy()->startOfDay(), $s->copy()->endOfDay()];
                 }
-                return [$s, $e, 'Pekanan: ' . $s->format('d/m/Y') . ' - ' . $e->format('d/m/Y')];
+                // Batasi rentang mingguan agar benar-benar maksimal 7 hari
+                if ($s->diffInDays($e) > 6) {
+                    $e = $s->copy()->addDays(6)->endOfDay();
+                }
+                return [$s, $e, 'Mingguan: ' . $s->format('d/m/Y') . ' - ' . $e->format('d/m/Y')];
             })(),
             'yearly' => [
                 Carbon::create($year, 1, 1)->startOfYear(),
@@ -89,6 +111,10 @@ class ReportController extends Controller
                 'Bulanan: ' . Carbon::create($year, $month, 1)->translatedFormat('F Y'),
             ],
         };
+
+        $date = $start->toDateString();
+        $startDate = $start->toDateString();
+        $endDate = $end->toDateString();
 
         $orders = Order::with(['user', 'items.product'])
             ->where('status', 'SELESAI')
@@ -105,6 +131,7 @@ class ReportController extends Controller
             'web' => $orders->where('source', 'web')->count(),
             'manual_admin' => $orders->where('source', 'manual_admin')->count(),
             'import_excel' => $orders->where('source', 'import_excel')->count(),
+            'other' => $orders->whereNotIn('source', ['web', 'manual_admin', 'import_excel'])->count(),
         ];
 
         $topProducts = DB::table('order_items')
@@ -134,8 +161,8 @@ class ReportController extends Controller
         return [
             'period' => $period,
             'date' => $date,
-            'startDate' => $start->toDateString(),
-            'endDate' => $end->toDateString(),
+            'startDate' => $startDate,
+            'endDate' => $endDate,
             'month' => $month,
             'year' => $year,
             'periodLabel' => $periodLabel,
@@ -149,6 +176,30 @@ class ReportController extends Controller
             ],
             'sourceCounts' => $sourceCounts,
         ];
+    }
+
+    /**
+     * Parsing tanggal aman dengan validasi kalender ketat (menolak non-string/array, format non-YYYY-MM-DD, dan tanggal kalender tidak valid).
+     */
+    private function safeParseDate(mixed $value, Carbon $fallback): Carbon
+    {
+        if (! is_string($value) || ! preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $matches)) {
+            return $fallback->copy();
+        }
+
+        $year = (int) $matches[1];
+        $month = (int) $matches[2];
+        $day = (int) $matches[3];
+
+        if (! checkdate($month, $day, $year)) {
+            return $fallback->copy();
+        }
+
+        try {
+            return Carbon::create($year, $month, $day);
+        } catch (\Throwable) {
+            return $fallback->copy();
+        }
     }
 }
 

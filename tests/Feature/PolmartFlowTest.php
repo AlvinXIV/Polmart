@@ -198,5 +198,303 @@ class PolmartFlowTest extends TestCase
         $this->assertDatabaseHas('orders', ['status' => 'MENUNGGU_BAYAR']);
         $this->assertDatabaseHas('orders', ['status' => 'SIAP_DIAMBIL']);
     }
+
+    public function test_admin_dashboard_integrated_sales_analytics_and_period_filters(): void
+    {
+        $this->seed(\Database\Seeders\SupermarketSeeder::class);
+        $admin = User::where('role', 'admin')->firstOrFail();
+
+        // 1. Default Bulanan
+        $resMonthly = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $resMonthly->assertOk();
+        $resMonthly->assertSee('Analisis Penjualan & Laporan Berkala Koperasi');
+        $resMonthly->assertSee('Total Omzet');
+        $resMonthly->assertSee('Jumlah Transaksi');
+        $resMonthly->assertSee('Produk Terjual');
+        $resMonthly->assertSee('Rata-rata Nilai Transaksi');
+        $resMonthly->assertSee('Grafik Tren Penjualan');
+        $resMonthly->assertSee('Distribusi Sumber Transaksi');
+        $resMonthly->assertSee('Portal Anggota (QRIS)');
+        $resMonthly->assertSee('Kasir Walk-in');
+        $resMonthly->assertSee('Impor Excel Historis');
+        $resMonthly->assertSee('Export Excel (.xlsx)');
+
+        // 2. Filter Harian
+        $resDaily = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2026-11-17',
+        ]));
+        $resDaily->assertOk();
+        $resDaily->assertSee('Harian: 17 November 2026');
+        $resDaily->assertSee('Per Jam');
+
+        // 3. Filter Mingguan
+        $resWeekly = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'weekly',
+            'start_date' => '2026-11-10',
+            'end_date' => '2026-11-17',
+        ]));
+        $resWeekly->assertOk();
+        $resWeekly->assertSee('Mingguan:');
+        $resWeekly->assertSee('Per Hari');
+
+        // 4. Filter Tahunan
+        $resYearly = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'yearly',
+            'year' => 2026,
+        ]));
+        $resYearly->assertOk();
+        $resYearly->assertSee('Tahunan: 2026');
+        $resYearly->assertSee('Per Bulan');
+    }
+
+    public function test_admin_reports_export_excel_with_informative_filenames(): void
+    {
+        $this->seed(\Database\Seeders\SupermarketSeeder::class);
+        $admin = User::where('role', 'admin')->firstOrFail();
+
+        // 1. Export Harian
+        $resDaily = $this->actingAs($admin)->get(route('admin.reports.export', [
+            'period' => 'daily',
+            'date' => '2026-11-18',
+        ]));
+        $resDaily->assertOk();
+        $this->assertStringContainsString('Laporan_Penjualan_Harian_2026-11-18.xlsx', (string) $resDaily->headers->get('content-disposition'));
+
+        // 2. Export Bulanan
+        $resMonthly = $this->actingAs($admin)->get(route('admin.reports.export', [
+            'period' => 'monthly',
+            'month' => 11,
+            'year' => 2026,
+        ]));
+        $resMonthly->assertOk();
+        $this->assertStringContainsString('Laporan_Penjualan_Bulanan_2026-11.xlsx', (string) $resMonthly->headers->get('content-disposition'));
+
+        // 3. Export Tahunan
+        $resYearly = $this->actingAs($admin)->get(route('admin.reports.export', [
+            'period' => 'yearly',
+            'year' => 2026,
+        ]));
+        $resYearly->assertOk();
+        $this->assertStringContainsString('Laporan_Penjualan_Tahunan_2026.xlsx', (string) $resYearly->headers->get('content-disposition'));
+
+        // 4. Export Mingguan
+        $resWeekly = $this->actingAs($admin)->get(route('admin.reports.export', [
+            'period' => 'weekly',
+            'start_date' => '2026-11-10',
+            'end_date' => '2026-11-16',
+        ]));
+        $resWeekly->assertOk();
+        $this->assertStringContainsString('Laporan_Penjualan_Mingguan_2026-11-10_sd_2026-11-16.xlsx', (string) $resWeekly->headers->get('content-disposition'));
+    }
+
+    public function test_admin_reports_export_includes_summary_report_sheet_with_accurate_metrics(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Export ketika tidak ada transaksi (empty state) menghasilkan HTTP 200 valid
+        $resEmpty = $this->actingAs($admin)->get(route('admin.reports.export', [
+            'period' => 'daily',
+            'date' => '2020-01-01',
+        ]));
+        $resEmpty->assertOk();
+
+        // 2. Verifikasi struktur sheets PeriodicReportExport
+        $exportEmpty = new \App\Exports\PeriodicReportExport(collect(), collect(), [
+            'total_omzet' => 0.0,
+            'total_transactions' => 0,
+            'total_items_sold' => 0,
+            'avg_transaction' => 0.0,
+        ], 'Harian: 01 Januari 2020', [
+            'web' => 0,
+            'manual_admin' => 0,
+            'import_excel' => 0,
+            'other' => 0,
+        ]);
+
+        $sheets = $exportEmpty->sheets();
+        $this->assertCount(3, $sheets);
+        $this->assertInstanceOf(\App\Exports\Sheets\SummaryReportSheet::class, $sheets[0]);
+        $this->assertInstanceOf(\App\Exports\Sheets\TransactionsReportSheet::class, $sheets[1]);
+        $this->assertInstanceOf(\App\Exports\Sheets\TopProductsReportSheet::class, $sheets[2]);
+
+        $this->assertSame('Ringkasan Eksekutif', $sheets[0]->title());
+        $summaryData = $sheets[0]->array();
+        $this->assertContains(['Total Omzet Penjualan (Rp)', 'Rp 0'], $summaryData);
+        $this->assertContains(['Jumlah Transaksi Sukses', '0 Pesanan'], $summaryData);
+        $this->assertContains(['Total Produk Terjual (Qty)', '0 Pcs'], $summaryData);
+        $this->assertContains(['Rata-rata Nilai Transaksi (Rp)', 'Rp 0'], $summaryData);
+        $this->assertContains(['Kriteria Data Transaksi', 'Hanya transaksi berstatus SELESAI'], $summaryData);
+
+        // 3. Verifikasi dengan data terisi
+        $exportFilled = new \App\Exports\PeriodicReportExport(collect(), collect(), [
+            'total_omzet' => 150000.0,
+            'total_transactions' => 3,
+            'total_items_sold' => 7,
+            'avg_transaction' => 50000.0,
+        ], 'Bulanan: November 2026', [
+            'web' => 2,
+            'manual_admin' => 1,
+            'import_excel' => 0,
+            'other' => 0,
+        ]);
+
+        $filledSheetData = $exportFilled->sheets()[0]->array();
+        $this->assertContains(['Periode Laporan', 'Bulanan: November 2026'], $filledSheetData);
+        $this->assertContains(['Total Omzet Penjualan (Rp)', 'Rp 150.000'], $filledSheetData);
+        $this->assertContains(['Jumlah Transaksi Sukses', '3 Pesanan'], $filledSheetData);
+        $this->assertContains(['Total Produk Terjual (Qty)', '7 Pcs'], $filledSheetData);
+        $this->assertContains(['Rata-rata Nilai Transaksi (Rp)', 'Rp 50.000'], $filledSheetData);
+        $this->assertContains(['Distribusi: Portal Anggota (QRIS)', '2 Transaksi (66.7%)'], $filledSheetData);
+        $this->assertContains(['Distribusi: Kasir Walk-in', '1 Transaksi (33.3%)'], $filledSheetData);
+    }
+
+    public function test_admin_dashboard_and_reports_handle_invalid_date_inputs_gracefully(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Invalid date string fallback
+        $resInvalidDate = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => 'bukan-tanggal-valid',
+        ]));
+        $resInvalidDate->assertOk();
+
+        // 2. Tanggal kalender tidak valid (misal 31 Februari) harus ditolak dan menggunakan fallback tanggal valid
+        $resInvalidCalendarDate = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2026-02-31',
+        ]));
+        $resInvalidCalendarDate->assertOk();
+        $resInvalidCalendarDate->assertDontSee('31 Februari 2026');
+
+        // 3. Input non-string / array (misal date[]=...) tidak boleh memicu TypeError 500
+        $resArrayDate = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => ['2026-01-01', 'hack'],
+        ]));
+        $resArrayDate->assertOk();
+
+        // 4. Rentang mingguan lebih dari 7 hari dibatasi otomatis maksimal 7 hari
+        $resInvalidWeekly = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'weekly',
+            'start_date' => '2026-01-01',
+            'end_date' => '2026-03-01', // Rentang 2 bulan
+        ]));
+        $resInvalidWeekly->assertOk();
+        $resInvalidWeekly->assertSee('Mingguan: 01/01/2026 - 07/01/2026');
+
+        // 5. Rentang mingguan dengan input array atau kalender tidak valid
+        $resArrayWeekly = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'weekly',
+            'start_date' => ['2026-01-01'],
+            'end_date' => '2026-04-31', // 31 April tidak ada
+        ]));
+        $resArrayWeekly->assertOk();
+
+        // 6. Bulan & tahun di luar batas normal
+        $resInvalidMonthYear = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'monthly',
+            'month' => 999,
+            'year' => -10,
+        ]));
+        $resInvalidMonthYear->assertOk();
+    }
+
+    public function test_admin_dashboard_sales_statistics_calculation_with_controlled_data(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create();
+
+        $p1 = Product::create([
+            'sku' => 'QC-TEST-001',
+            'name' => 'Barang QC 1',
+            'category' => 'Kategori QC',
+            'price' => 25000,
+            'stock' => 100,
+            'is_active' => true,
+        ]);
+
+        $p2 = Product::create([
+            'sku' => 'QC-TEST-002',
+            'name' => 'Barang QC 2',
+            'category' => 'Kategori QC',
+            'price' => 25000,
+            'stock' => 100,
+            'is_active' => true,
+        ]);
+
+        // Order 1: SELESAI, total 50.000, qty 2
+        $order1 = Order::create([
+            'order_code' => 'ORD-QC-001',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 50000,
+            'transaction_date' => '2026-06-15 10:00:00',
+            'paid_at' => '2026-06-15 10:00:00',
+        ]);
+        $order1->items()->create([
+            'product_id' => $p1->id,
+            'qty' => 2,
+            'unit_price' => 25000,
+            'subtotal' => 50000,
+        ]);
+
+        // Order 2: SELESAI, total 75.000, qty 3
+        $order2 = Order::create([
+            'order_code' => 'ORD-QC-002',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'manual_admin',
+            'status' => 'SELESAI',
+            'total_amount' => 75000,
+            'transaction_date' => '2026-06-15 14:00:00',
+            'paid_at' => '2026-06-15 14:00:00',
+        ]);
+        $order2->items()->create([
+            'product_id' => $p2->id,
+            'qty' => 3,
+            'unit_price' => 25000,
+            'subtotal' => 75000,
+        ]);
+
+        // Order 3: MENUNGGU_BAYAR (tidak boleh masuk hitungan statistik penjualan)
+        $order3 = Order::create([
+            'order_code' => 'ORD-QC-003',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'MENUNGGU_BAYAR',
+            'total_amount' => 100000,
+            'transaction_date' => '2026-06-15 16:00:00',
+        ]);
+        $order3->items()->create([
+            'product_id' => $p1->id,
+            'qty' => 4,
+            'unit_price' => 25000,
+            'subtotal' => 100000,
+        ]);
+
+        // Request dashboard harian pada tanggal terkontrol
+        $res = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2026-06-15',
+        ]));
+
+        $res->assertOk();
+        // Total Omzet: 50.000 + 75.000 = 125.000
+        $res->assertSee('Rp 125.000');
+        // Total Transaksi: 2
+        $res->assertSee('2 transaksi selesai');
+        // Produk Terjual: 2 + 3 = 5
+        $res->assertSee('5');
+        // Rata-rata Nilai Transaksi: 125.000 / 2 = 62.500
+        $res->assertSee('Rp 62.500');
+        // Produk terlaris
+        $res->assertSee('Barang QC 2');
+        $res->assertSee('Barang QC 1');
+    }
 }
 
