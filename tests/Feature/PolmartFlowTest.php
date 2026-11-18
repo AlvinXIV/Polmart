@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Imports\OrderExcelChunkImport;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -660,6 +661,626 @@ class PolmartFlowTest extends TestCase
         $this->assertEquals(200000, $totalYearlyChartOmzet);
         $totalYearlyChartCount = collect($yearlyChart['series'])->sum('count');
         $this->assertEquals(3, $totalYearlyChartCount);
+    }
+
+    public function test_admin_can_store_and_update_product_cost_price(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Simpan produk dengan cost_price
+        $resStore = $this->actingAs($admin)->post(route('admin.products.store'), [
+            'sku' => 'TEST-HPP-001',
+            'name' => 'Barang HPP Test',
+            'category' => 'Testing',
+            'cost_price' => 15000,
+            'price' => 20000,
+            'stock' => 50,
+        ]);
+
+        $resStore->assertRedirect(route('admin.products.index'));
+        $this->assertDatabaseHas('products', [
+            'sku' => 'TEST-HPP-001',
+            'cost_price' => 15000.00,
+            'price' => 20000.00,
+        ]);
+
+        $product = Product::where('sku', 'TEST-HPP-001')->firstOrFail();
+
+        // 2. Perbarui cost_price produk
+        $resUpdate = $this->actingAs($admin)->put(route('admin.products.update', $product), [
+            'sku' => 'TEST-HPP-001',
+            'name' => 'Barang HPP Test Updated',
+            'category' => 'Testing',
+            'cost_price' => 17500,
+            'price' => 23000,
+            'is_active' => true,
+        ]);
+
+        $resUpdate->assertRedirect(route('admin.products.index'));
+        $this->assertDatabaseHas('products', [
+            'id' => $product->id,
+            'cost_price' => 17500.00,
+            'price' => 23000.00,
+        ]);
+    }
+
+    public function test_validation_rejects_negative_cost_price(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Store dengan cost_price negatif
+        $resStore = $this->actingAs($admin)->post(route('admin.products.store'), [
+            'sku' => 'TEST-NEG-001',
+            'name' => 'Barang Negatif',
+            'category' => 'Testing',
+            'cost_price' => -5000,
+            'price' => 20000,
+            'stock' => 10,
+        ]);
+        $resStore->assertSessionHasErrors(['cost_price']);
+        $this->assertDatabaseMissing('products', ['sku' => 'TEST-NEG-001']);
+
+        // 2. Update dengan cost_price negatif
+        $product = Product::create([
+            'sku' => 'TEST-NEG-002',
+            'name' => 'Barang Valid Awal',
+            'category' => 'Testing',
+            'cost_price' => 10000,
+            'price' => 15000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $resUpdate = $this->actingAs($admin)->put(route('admin.products.update', $product), [
+            'sku' => 'TEST-NEG-002',
+            'name' => 'Barang Valid Awal',
+            'category' => 'Testing',
+            'cost_price' => -100,
+            'price' => 15000,
+            'is_active' => true,
+        ]);
+        $resUpdate->assertSessionHasErrors(['cost_price']);
+        $this->assertEquals(10000.00, $product->fresh()->cost_price);
+    }
+
+    public function test_member_checkout_snapshots_cost_price_and_subtotal_cost(): void
+    {
+        $member = User::factory()->create(['role' => 'member']);
+        $product = Product::create([
+            'sku' => 'CO-HPP-001',
+            'name' => 'Barang Checkout HPP',
+            'category' => 'Testing',
+            'cost_price' => 12000,
+            'price' => 18000,
+            'stock' => 20,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($member)
+            ->withSession(['polmart_cart' => [$product->id => 3]])
+            ->post(route('anggota.checkout.store'))
+            ->assertRedirect();
+
+        $order = Order::where('user_id', $member->id)->latest()->firstOrFail();
+        $this->assertCount(1, $order->items);
+
+        $item = $order->items->first();
+        $this->assertEquals($product->id, $item->product_id);
+        $this->assertEquals(3, $item->qty);
+        $this->assertEquals(18000.00, $item->unit_price);
+        $this->assertEquals(54000.00, $item->subtotal);
+        // Verifikasi Snapshot HPP
+        $this->assertEquals(12000.00, $item->cost_price);
+        $this->assertEquals(36000.00, $item->subtotal_cost); // 3 * 12000
+    }
+
+    public function test_admin_manual_order_snapshots_cost_price_and_subtotal_cost(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $product = Product::create([
+            'sku' => 'POS-HPP-001',
+            'name' => 'Barang Kasir HPP',
+            'category' => 'Testing',
+            'cost_price' => 7000,
+            'price' => 10000,
+            'stock' => 30,
+            'is_active' => true,
+        ]);
+
+        $res = $this->actingAs($admin)->post(route('admin.manual-orders.store'), [
+            'customer_name' => 'Pembeli Walk-in QC',
+            'items' => [
+                [
+                    'product_id' => $product->id,
+                    'qty' => 4,
+                ],
+            ],
+        ]);
+
+        $res->assertRedirect();
+
+        $order = Order::where('customer_name', 'Pembeli Walk-in QC')->latest()->firstOrFail();
+        $this->assertCount(1, $order->items);
+
+        $item = $order->items->first();
+        $this->assertEquals(4, $item->qty);
+        $this->assertEquals(10000.00, $item->unit_price);
+        $this->assertEquals(40000.00, $item->subtotal);
+        // Verifikasi Snapshot HPP
+        $this->assertEquals(7000.00, $item->cost_price);
+        $this->assertEquals(28000.00, $item->subtotal_cost); // 4 * 7000
+    }
+
+    public function test_excel_import_without_hpp_stores_zero_cost_price(): void
+    {
+        $product = Product::create([
+            'sku' => 'IMP-NOHPP-01',
+            'name' => 'Barang Impor Tanpa HPP',
+            'category' => 'Testing',
+            'cost_price' => 8500, // Master produk punya HPP, tapi impor historis TIDAK boleh mengambilnya
+            'price' => 12000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $importer = new OrderExcelChunkImport(commit: true);
+        $importer->collection(collect([
+            collect([
+                'tanggal_transaksi' => '2026-09-10 10:00:00',
+                'kode_pesanan_lama' => 'OLD-NOHPP-001',
+                'nama_pemesan' => 'Customer Historis A',
+                'kode_barang' => 'IMP-NOHPP-01',
+                'nama_barang' => 'Barang Impor Tanpa HPP',
+                'qty' => 5,
+                'harga_satuan' => 12000,
+            ]),
+        ]));
+
+        $order = Order::where('order_code', 'OLD-NOHPP-001')->firstOrFail();
+        $item = $order->items->first();
+
+        $this->assertNotNull($item);
+        $this->assertEquals(12000.00, $item->unit_price);
+        $this->assertEquals(60000.00, $item->subtotal);
+        // Harus bernilai 0 karena tidak ada kolom HPP di Excel (tidak mengambil cost_price aktif produk)
+        $this->assertEquals(0.00, $item->cost_price);
+        $this->assertEquals(0.00, $item->subtotal_cost);
+    }
+
+    public function test_excel_import_with_hpp_stores_cost_price_from_file(): void
+    {
+        $product = Product::create([
+            'sku' => 'IMP-WITHHPP-01',
+            'name' => 'Barang Impor Dengan HPP',
+            'category' => 'Testing',
+            'cost_price' => 5000, // Master produk punya HPP 5.000
+            'price' => 10000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $importer = new OrderExcelChunkImport(commit: true);
+        $importer->collection(collect([
+            collect([
+                'tanggal_transaksi' => '2026-09-15 14:00:00',
+                'kode_pesanan_lama' => 'OLD-WITHHPP-001',
+                'nama_pemesan' => 'Customer Historis B',
+                'kode_barang' => 'IMP-WITHHPP-01',
+                'nama_barang' => 'Barang Impor Dengan HPP',
+                'qty' => 4,
+                'harga_satuan' => 10000,
+                'cost_price' => 7500, // Nilai HPP eksplisit dari file Excel
+            ]),
+        ]));
+
+        $order = Order::where('order_code', 'OLD-WITHHPP-001')->firstOrFail();
+        $item = $order->items->first();
+
+        $this->assertNotNull($item);
+        $this->assertEquals(10000.00, $item->unit_price);
+        $this->assertEquals(40000.00, $item->subtotal);
+        // Menggunakan nilai HPP dari file Excel (7.500), bukan dari master produk (5.000)
+        $this->assertEquals(7500.00, $item->cost_price);
+        $this->assertEquals(30000.00, $item->subtotal_cost); // 4 * 7500
+    }
+
+    public function test_updating_product_cost_price_does_not_mutate_existing_order_items_snapshot(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        // 1. Buat produk awal dengan harga modal 10.000 dan harga jual 15.000
+        $product = Product::create([
+            'sku' => 'IMMUTABLE-001',
+            'name' => 'Barang Uji Immutabilitas',
+            'category' => 'Testing',
+            'cost_price' => 10000,
+            'price' => 15000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        // 2. Member melakukan transaksi 2 pcs saat harga modal masih 10.000
+        $this->actingAs($member)
+            ->withSession(['polmart_cart' => [$product->id => 2]])
+            ->post(route('anggota.checkout.store'));
+
+        $order = Order::where('user_id', $member->id)->latest()->firstOrFail();
+        $item = $order->items->first();
+
+        $this->assertEquals(10000.00, $item->cost_price);
+        $this->assertEquals(20000.00, $item->subtotal_cost);
+
+        // 3. Admin kemudian menaikkan harga modal produk menjadi 14.000
+        $this->actingAs($admin)->put(route('admin.products.update', $product), [
+            'sku' => 'IMMUTABLE-001',
+            'name' => 'Barang Uji Immutabilitas',
+            'category' => 'Testing',
+            'cost_price' => 14000,
+            'price' => 18000,
+            'is_active' => true,
+        ])->assertRedirect();
+
+        $this->assertEquals(14000.00, $product->fresh()->cost_price);
+
+        // 4. Pastikan snapshot pada pesanan lama TETAP 10.000 dan TIDAK TERUBAH menjadi 14.000
+        $itemRefreshed = $item->fresh();
+        $this->assertEquals(10000.00, $itemRefreshed->cost_price);
+        $this->assertEquals(20000.00, $itemRefreshed->subtotal_cost);
+    }
+
+    public function test_admin_reports_calculates_omzet_hpp_and_gross_profit_only_for_completed_orders(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $p1 = Product::create([
+            'sku' => 'FIN-001',
+            'name' => 'Produk Finansial 1',
+            'category' => 'Testing',
+            'cost_price' => 12000,
+            'price' => 20000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        $p2 = Product::create([
+            'sku' => 'FIN-002',
+            'name' => 'Produk Finansial 2',
+            'category' => 'Testing',
+            'cost_price' => 35000,
+            'price' => 50000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        // 1. Order 1: SELESAI pada 2026-07-15 10:00
+        // Item 1: 2 pcs * 20.000 = 40.000 (HPP: 2 * 12.000 = 24.000)
+        // Item 2: 1 pcs * 50.000 = 50.000 (HPP: 1 * 35.000 = 35.000)
+        // Total Omzet: 90.000, Total HPP: 59.000, Laba Kotor: 31.000
+        $order1 = Order::create([
+            'order_code' => 'ORD-FIN-001',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 90000,
+            'transaction_date' => '2026-07-15 10:00:00',
+            'paid_at' => '2026-07-15 10:00:00',
+        ]);
+        $order1->items()->create([
+            'product_id' => $p1->id,
+            'qty' => 2,
+            'unit_price' => 20000,
+            'subtotal' => 40000,
+            'cost_price' => 12000,
+            'subtotal_cost' => 24000,
+        ]);
+        $order1->items()->create([
+            'product_id' => $p2->id,
+            'qty' => 1,
+            'unit_price' => 50000,
+            'subtotal' => 50000,
+            'cost_price' => 35000,
+            'subtotal_cost' => 35000,
+        ]);
+
+        // 2. Transaksi NON-SELESAI pada tanggal yang sama: TIDAK BOLEH IKUT DIHITUNG
+        // a. SIAP_DIAMBIL
+        $order2 = Order::create([
+            'order_code' => 'ORD-FIN-002',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SIAP_DIAMBIL',
+            'total_amount' => 100000,
+            'transaction_date' => '2026-07-15 11:00:00',
+        ]);
+        $order2->items()->create([
+            'product_id' => $p2->id,
+            'qty' => 2,
+            'unit_price' => 50000,
+            'subtotal' => 100000,
+            'cost_price' => 35000,
+            'subtotal_cost' => 70000,
+        ]);
+
+        // b. MENUNGGU_BAYAR
+        $order3 = Order::create([
+            'order_code' => 'ORD-FIN-003',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'MENUNGGU_BAYAR',
+            'total_amount' => 80000,
+            'transaction_date' => '2026-07-15 12:00:00',
+        ]);
+        $order3->items()->create([
+            'product_id' => $p1->id,
+            'qty' => 4,
+            'unit_price' => 20000,
+            'subtotal' => 80000,
+            'cost_price' => 12000,
+            'subtotal_cost' => 48000,
+        ]);
+
+        // c. BATAL
+        $order4 = Order::create([
+            'order_code' => 'ORD-FIN-004',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'BATAL',
+            'total_amount' => 60000,
+            'transaction_date' => '2026-07-15 13:00:00',
+        ]);
+        $order4->items()->create([
+            'product_id' => $p1->id,
+            'qty' => 3,
+            'unit_price' => 20000,
+            'subtotal' => 60000,
+            'cost_price' => 12000,
+            'subtotal_cost' => 36000,
+        ]);
+
+        // Request laporan harian 2026-07-15
+        $res = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-07-15',
+        ]));
+
+        $res->assertOk();
+        $summary = $res->viewData('summary');
+
+        // Verifikasi metrik: hanya transaksi SELESAI yang dihitung
+        $this->assertEquals(90000.0, $summary['total_omzet']);
+        $this->assertEquals(59000.0, $summary['total_hpp']);
+        $this->assertEquals(31000.0, $summary['gross_profit']);
+        $this->assertEquals(1, $summary['total_transactions']);
+        $this->assertEquals(3, $summary['total_items_sold']);
+        $this->assertFalse($summary['has_unrecorded_hpp']);
+        $this->assertEquals(0, $summary['unrecorded_orders_count']);
+        $this->assertEquals(0, $summary['unrecorded_items_count']);
+        $this->assertEquals(100.0, $summary['completeness_pct']);
+
+        // Verifikasi tampilan blade
+        $res->assertSee('Ringkasan Finansial: Omzet, HPP &amp; Laba Kotor', false);
+        $res->assertSee('Rp 90.000');
+        $res->assertSee('Rp 59.000');
+        $res->assertSee('Rp 31.000');
+        $res->assertSee('Data HPP Lengkap (100%)');
+    }
+
+    public function test_admin_reports_flags_unrecorded_hpp_and_marks_gross_profit_as_provisional(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $product = Product::create([
+            'sku' => 'HIST-NOHPP-001',
+            'name' => 'Barang Historis Tanpa HPP',
+            'category' => 'Testing',
+            'cost_price' => 0,
+            'price' => 25000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        // Transaksi SELESAI dengan HPP bernilai 0 (belum tercatat)
+        $order = Order::create([
+            'order_code' => 'ORD-NOHPP-001',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'import_excel',
+            'status' => 'SELESAI',
+            'total_amount' => 50000,
+            'transaction_date' => '2026-07-20 10:00:00',
+            'paid_at' => '2026-07-20 10:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'qty' => 2,
+            'unit_price' => 25000,
+            'subtotal' => 50000,
+            'cost_price' => 0,
+            'subtotal_cost' => 0,
+        ]);
+
+        $res = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-07-20',
+        ]));
+
+        $res->assertOk();
+        $summary = $res->viewData('summary');
+
+        $this->assertEquals(50000.0, $summary['total_omzet']);
+        $this->assertEquals(0.0, $summary['total_hpp']);
+        $this->assertEquals(50000.0, $summary['gross_profit']);
+        $this->assertTrue($summary['has_unrecorded_hpp']);
+        $this->assertEquals(1, $summary['unrecorded_orders_count']);
+        $this->assertEquals(1, $summary['unrecorded_items_count']);
+        $this->assertEquals(0.0, $summary['completeness_pct']);
+
+        // Verifikasi bahwa status ditandai provisional pada tampilan Blade
+        $res->assertSee('Laba Kotor Provisional');
+        $res->assertSee('Pemberitahuan Data HPP Belum Lengkap:');
+        $res->assertSee('1 transaksi');
+        $res->assertSee('1 item');
+    }
+
+    public function test_admin_reports_period_filters_yield_consistent_financial_aggregations(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $product = Product::create([
+            'sku' => 'FILTER-FIN-01',
+            'name' => 'Produk Periode Filter',
+            'category' => 'Testing',
+            'cost_price' => 15000,
+            'price' => 25000,
+            'stock' => 100,
+            'is_active' => true,
+        ]);
+
+        // Order 1: 2026-05-11 09:00 -> 4 pcs = 100.000 omzet, 60.000 HPP, 40.000 Laba Kotor
+        $order1 = Order::create([
+            'order_code' => 'ORD-PER-001',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 100000,
+            'transaction_date' => '2026-05-11 09:00:00',
+            'paid_at' => '2026-05-11 09:00:00',
+        ]);
+        $order1->items()->create([
+            'product_id' => $product->id,
+            'qty' => 4,
+            'unit_price' => 25000,
+            'subtotal' => 100000,
+            'cost_price' => 15000,
+            'subtotal_cost' => 60000,
+        ]);
+
+        // Order 2: 2026-05-13 14:00 -> 6 pcs = 150.000 omzet, 90.000 HPP, 60.000 Laba Kotor
+        $order2 = Order::create([
+            'order_code' => 'ORD-PER-002',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'manual_admin',
+            'status' => 'SELESAI',
+            'total_amount' => 150000,
+            'transaction_date' => '2026-05-13 14:00:00',
+            'paid_at' => '2026-05-13 14:00:00',
+        ]);
+        $order2->items()->create([
+            'product_id' => $product->id,
+            'qty' => 6,
+            'unit_price' => 25000,
+            'subtotal' => 150000,
+            'cost_price' => 15000,
+            'subtotal_cost' => 90000,
+        ]);
+
+        // 1. Filter Harian: 2026-05-11 (Hanya Order 1)
+        $resDaily = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-05-11',
+        ]));
+        $sumDaily = $resDaily->viewData('summary');
+        $this->assertEquals(100000.0, $sumDaily['total_omzet']);
+        $this->assertEquals(60000.0, $sumDaily['total_hpp']);
+        $this->assertEquals(40000.0, $sumDaily['gross_profit']);
+        $this->assertEquals(1, $sumDaily['total_transactions']);
+
+        // 2. Filter Pekanan: 2026-05-11 s/d 2026-05-17 (Mencakup Order 1 & 2)
+        $resWeekly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'weekly',
+            'start_date' => '2026-05-11',
+            'end_date' => '2026-05-17',
+        ]));
+        $sumWeekly = $resWeekly->viewData('summary');
+        $this->assertEquals(250000.0, $sumWeekly['total_omzet']);
+        $this->assertEquals(150000.0, $sumWeekly['total_hpp']);
+        $this->assertEquals(100000.0, $sumWeekly['gross_profit']);
+        $this->assertEquals(2, $sumWeekly['total_transactions']);
+
+        // 3. Filter Bulanan: Mei 2026 (Mencakup Order 1 & 2)
+        $resMonthly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 5,
+            'year' => 2026,
+        ]));
+        $sumMonthly = $resMonthly->viewData('summary');
+        $this->assertEquals(250000.0, $sumMonthly['total_omzet']);
+        $this->assertEquals(150000.0, $sumMonthly['total_hpp']);
+        $this->assertEquals(100000.0, $sumMonthly['gross_profit']);
+        $this->assertEquals(2, $sumMonthly['total_transactions']);
+
+        // 4. Filter Tahunan: 2026 (Mencakup Order 1 & 2)
+        $resYearly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'yearly',
+            'year' => 2026,
+        ]));
+        $sumYearly = $resYearly->viewData('summary');
+        $this->assertEquals(250000.0, $sumYearly['total_omzet']);
+        $this->assertEquals(150000.0, $sumYearly['total_hpp']);
+        $this->assertEquals(100000.0, $sumYearly['gross_profit']);
+        $this->assertEquals(2, $sumYearly['total_transactions']);
+    }
+
+    public function test_admin_reports_excel_export_includes_consistent_financial_summary(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Verifikasi ekspor sheet dengan HPP lengkap
+        $exportComplete = new \App\Exports\PeriodicReportExport(collect(), collect(), [
+            'total_omzet' => 200000.0,
+            'total_transactions' => 2,
+            'total_items_sold' => 8,
+            'avg_transaction' => 100000.0,
+            'total_hpp' => 130000.0,
+            'gross_profit' => 70000.0,
+            'has_unrecorded_hpp' => false,
+            'unrecorded_items_count' => 0,
+            'unrecorded_orders_count' => 0,
+        ], 'Bulanan: Mei 2026', []);
+
+        $completeSheetData = $exportComplete->sheets()[0]->array();
+        $this->assertContains(['Total Omzet Penjualan (Rp)', 'Rp 200.000'], $completeSheetData);
+        $this->assertContains(['Total HPP Tercatat (Rp)', 'Rp 130.000'], $completeSheetData);
+        $this->assertContains(['Laba Kotor (Rp)', 'Rp 70.000'], $completeSheetData);
+        $this->assertContains(['Status Kelengkapan HPP', 'Lengkap (100% item memiliki catatan HPP)'], $completeSheetData);
+
+        // 2. Verifikasi ekspor sheet dengan HPP provisional
+        $exportProvisional = new \App\Exports\PeriodicReportExport(collect(), collect(), [
+            'total_omzet' => 100000.0,
+            'total_transactions' => 1,
+            'total_items_sold' => 4,
+            'avg_transaction' => 100000.0,
+            'total_hpp' => 0.0,
+            'gross_profit' => 100000.0,
+            'has_unrecorded_hpp' => true,
+            'unrecorded_items_count' => 1,
+            'unrecorded_orders_count' => 1,
+        ], 'Harian: 15 Mei 2026', []);
+
+        $provisionalSheetData = $exportProvisional->sheets()[0]->array();
+        $this->assertContains(['Total HPP Tercatat (Rp)', 'Rp 0'], $provisionalSheetData);
+        $this->assertContains(['Laba Kotor (Rp)', 'Rp 100.000'], $provisionalSheetData);
+        $this->assertContains(['Status Kelengkapan HPP', 'Provisional (1 pesanan / 1 item belum tercatat HPP)'], $provisionalSheetData);
+
+        // 3. Verifikasi HTTP Download route admin.reports.export
+        $resExport = $this->actingAs($admin)->get(route('admin.reports.export', [
+            'period' => 'monthly',
+            'month' => 5,
+            'year' => 2026,
+        ]));
+        $resExport->assertOk();
+        $this->assertStringContainsString('attachment;', $resExport->headers->get('content-disposition'));
+        $this->assertStringContainsString('Laporan_Penjualan_Bulanan_2026-05.xlsx', $resExport->headers->get('content-disposition'));
     }
 }
 

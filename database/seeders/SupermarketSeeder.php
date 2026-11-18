@@ -72,47 +72,55 @@ class SupermarketSeeder extends Seeder
         $memberIds = array_slice($userIds, 1);
 
         $productsData = [
-            ['sku' => 'MNM-001', 'name' => 'Aqua Air Mineral 600ml', 'category' => 'Minuman', 'price' => 4000, 'stock' => 120, 'desc' => 'Air mineral botol kemasan 600ml'],
-            ['sku' => 'MNM-002', 'name' => 'Le Minerale 600ml', 'category' => 'Minuman', 'price' => 4000, 'stock' => 95, 'desc' => 'Air mineral dengan kandungan mineral alami'],
-            ['sku' => 'MNM-003', 'name' => 'Teh Pucuk Harum 350ml', 'category' => 'Minuman', 'price' => 4500, 'stock' => 80, 'desc' => 'Minuman teh melati siap minum'],
-            ['sku' => 'MNM-004', 'name' => 'Teh Botol Sosro Kotak 250ml', 'category' => 'Minuman', 'price' => 4000, 'stock' => 72, 'desc' => 'Teh melati kemasan kotak UHT'],
-            ['sku' => 'MNM-005', 'name' => 'Good Day Cappuccino 250ml', 'category' => 'Minuman', 'price' => 7000, 'stock' => 54, 'desc' => 'Kopi susu cappuccino siap minum'],
-            ['sku' => 'MNM-006', 'name' => 'Ultra Milk Full Cream 250ml', 'category' => 'Minuman', 'price' => 7500, 'stock' => 60, 'desc' => 'Susu UHT segar full cream'],
-            ['sku' => 'MNM-007', 'name' => 'Ultra Milk Cokelat 250ml', 'category' => 'Minuman', 'price' => 7500, 'stock' => 65, 'desc' => 'Susu UHT rasa cokelat'],
-            ['sku' => 'MNM-008', 'name' => 'Pocari Sweat 500ml', 'category' => 'Minuman', 'price' => 8500, 'stock' => 48, 'desc' => 'Minuman isotonik pengganti ion tubuh'],
-            ['sku' => 'MNM-009', 'name' => 'Floridina Orange 350ml', 'category' => 'Minuman', 'price' => 4000, 'stock' => 70, 'desc' => 'Minuman bulir jeruk asli'],
-            ['sku' => 'MNM-010', 'name' => 'Bear Brand Susu Steril 189ml', 'category' => 'Minuman', 'price' => 11000, 'stock' => 40, 'desc' => 'Susu steril murni kaleng'],
-            ['sku' => 'SNK-001', 'name' => 'Chitato Sapi Panggang 68g', 'category' => 'Makanan Ringan', 'price' => 11500, 'stock' => 45, 'desc' => 'Keripik kentang gelombang rasa sapi panggang'],
-            ['sku' => 'SNK-002', 'name' => 'Kusuka Keripik Singkong Keju 60g', 'category' => 'Makanan Ringan', 'price' => 7500, 'stock' => 50, 'desc' => 'Keripik singkong renyah rasa keju bakar'],
-            ['sku' => 'SNK-003', 'name' => 'Oreo Original 119.6g', 'category' => 'Makanan Ringan', 'price' => 9500, 'stock' => 55, 'desc' => 'Biskuit cokelat dengan krim vanila'],
-            ['sku' => 'SNK-004', 'name' => 'Nabati Richeese Wafer 115g', 'category' => 'Makanan Ringan', 'price' => 8500, 'stock' => 60, 'desc' => 'Wafer renyah berlapis krim keju'],
-            ['sku' => 'SNK-005', 'name' => 'Sari Roti Sobek Cokelat Keju', 'category' => 'Roti & Kue', 'price' => 16500, 'stock' => 22, 'desc' => 'Roti lembut isi selai cokelat dan keju'],
-            ['sku' => 'SNK-006', 'name' => 'Sari Roti Dorayaki Cokelat', 'category' => 'Roti & Kue', 'price' => 7500, 'stock' => 30, 'desc' => 'Kue dorayaki lembut isi krim cokelat'],
-            ['sku' => 'SNK-007', 'name' => 'SilverQueen Chunky Bar 30g', 'category' => 'Makanan Ringan', 'price' => 10500, 'stock' => 38, 'desc' => 'Cokelat susu dengan kacang mede'],
-            ['sku' => 'SNK-008', 'name' => 'Beng-Beng Regular 25g', 'category' => 'Makanan Ringan', 'price' => 3000, 'stock' => 100, 'desc' => 'Wafer karamel krispi berlapis cokelat'],
-            ['sku' => 'SNK-009', 'name' => 'Pocky Chocolate 47g', 'category' => 'Makanan Ringan', 'price' => 9000, 'stock' => 42, 'desc' => 'Biskuit stik salut krim cokelat'],
-            ['sku' => 'MIE-001', 'name' => 'Indomie Goreng Original 85g', 'category' => 'Mie & Sembako', 'price' => 3500, 'stock' => 150, 'desc' => 'Mie instan goreng favorit'],
-            ['sku' => 'MIE-002', 'name' => 'Indomie Kuah Soto Mie 70g', 'category' => 'Mie & Sembako', 'price' => 3500, 'stock' => 110, 'desc' => 'Mie instan kuah rasa soto'],
-            ['sku' => 'MIE-003', 'name' => 'Pop Mie Rasa Ayam 75g', 'category' => 'Mie & Sembako', 'price' => 6000, 'stock' => 64, 'desc' => 'Mie instan cup praktis siap seduh'],
-            ['sku' => 'MIE-004', 'name' => 'Pop Mie Pedas Dower 75g', 'category' => 'Mie & Sembako', 'price' => 6500, 'stock' => 48, 'desc' => 'Mie instan cup rasa ayam pedas'],
-            ['sku' => 'MIE-005', 'name' => 'BonCabe Level 15 Botol 45g', 'category' => 'Mie & Sembako', 'price' => 11500, 'stock' => 28, 'desc' => 'Sambal tabur cabai kering pedas'],
-            ['sku' => 'ATK-001', 'name' => 'Buku Tulis Campus 50 Lembar', 'category' => 'Alat Tulis', 'price' => 5500, 'stock' => 85, 'desc' => 'Buku tulis ukuran B5 standar kuliah'],
-            ['sku' => 'ATK-002', 'name' => 'Pulpen Standard AE7 Hitam', 'category' => 'Alat Tulis', 'price' => 3000, 'stock' => 140, 'desc' => 'Bolpoin tinta hitam 0.5mm'],
-            ['sku' => 'ATK-003', 'name' => 'Pensil Faber-Castell 2B', 'category' => 'Alat Tulis', 'price' => 5000, 'stock' => 75, 'desc' => 'Pensil grafit 2B untuk sketsa & ujian'],
-            ['sku' => 'ATK-004', 'name' => 'Penghapus Staedtler Rasoplast', 'category' => 'Alat Tulis', 'price' => 4500, 'stock' => 60, 'desc' => 'Penghapus bersih bebas residu'],
-            ['sku' => 'ATK-005', 'name' => 'Tip-X Cair Joyko CF-S209', 'category' => 'Alat Tulis', 'price' => 6500, 'stock' => 40, 'desc' => 'Correction fluid mata pena logam'],
-            ['sku' => 'ATK-006', 'name' => 'Map Plastik Kancing A4', 'category' => 'Alat Tulis', 'price' => 4000, 'stock' => 90, 'desc' => 'Map dokumen transparan ukuran A4'],
-            ['sku' => 'KSH-001', 'name' => 'Tissue Paseo Smart 250 Sheets', 'category' => 'Kebutuhan Harian', 'price' => 13500, 'stock' => 36, 'desc' => 'Tisu wajah lembut 2 ply'],
-            ['sku' => 'KSH-002', 'name' => 'Tolak Angin Cair Sido Muncul', 'category' => 'Kesehatan', 'price' => 5000, 'stock' => 80, 'desc' => 'Herbal cair pereda masuk angin 15ml'],
-            ['sku' => 'KSH-003', 'name' => 'Panadol Extra Strip 10 Kaplet', 'category' => 'Kesehatan', 'price' => 14500, 'stock' => 25, 'desc' => 'Obat pereda sakit kepala dan demam'],
-            ['sku' => 'KSH-004', 'name' => 'Minyak Kayu Putih Cap Lang 30ml', 'category' => 'Kesehatan', 'price' => 13000, 'stock' => 30, 'desc' => 'Minyak kayu putih penghangat tubuh'],
-            ['sku' => 'KSH-005', 'name' => 'Sabun Mandi Lifebuoy Total 10', 'category' => 'Kebutuhan Harian', 'price' => 5500, 'stock' => 50, 'desc' => 'Sabun batang antibakteri 70g'],
+            ['sku' => 'MNM-001', 'name' => 'Aqua Air Mineral 600ml', 'category' => 'Minuman', 'cost_price' => 2800, 'price' => 4000, 'stock' => 120, 'desc' => 'Air mineral botol kemasan 600ml'],
+            ['sku' => 'MNM-002', 'name' => 'Le Minerale 600ml', 'category' => 'Minuman', 'cost_price' => 2800, 'price' => 4000, 'stock' => 95, 'desc' => 'Air mineral dengan kandungan mineral alami'],
+            ['sku' => 'MNM-003', 'name' => 'Teh Pucuk Harum 350ml', 'category' => 'Minuman', 'cost_price' => 3200, 'price' => 4500, 'stock' => 80, 'desc' => 'Minuman teh melati siap minum'],
+            ['sku' => 'MNM-004', 'name' => 'Teh Botol Sosro Kotak 250ml', 'category' => 'Minuman', 'cost_price' => 2900, 'price' => 4000, 'stock' => 72, 'desc' => 'Teh melati kemasan kotak UHT'],
+            ['sku' => 'MNM-005', 'name' => 'Good Day Cappuccino 250ml', 'category' => 'Minuman', 'cost_price' => 5200, 'price' => 7000, 'stock' => 54, 'desc' => 'Kopi susu cappuccino siap minum'],
+            ['sku' => 'MNM-006', 'name' => 'Ultra Milk Full Cream 250ml', 'category' => 'Minuman', 'cost_price' => 5800, 'price' => 7500, 'stock' => 60, 'desc' => 'Susu UHT segar full cream'],
+            ['sku' => 'MNM-007', 'name' => 'Ultra Milk Cokelat 250ml', 'category' => 'Minuman', 'cost_price' => 5800, 'price' => 7500, 'stock' => 65, 'desc' => 'Susu UHT rasa cokelat'],
+            ['sku' => 'MNM-008', 'name' => 'Pocari Sweat 500ml', 'category' => 'Minuman', 'cost_price' => 6500, 'price' => 8500, 'stock' => 48, 'desc' => 'Minuman isotonik pengganti ion tubuh'],
+            ['sku' => 'MNM-009', 'name' => 'Floridina Orange 350ml', 'category' => 'Minuman', 'cost_price' => 2900, 'price' => 4000, 'stock' => 70, 'desc' => 'Minuman bulir jeruk asli'],
+            ['sku' => 'MNM-010', 'name' => 'Bear Brand Susu Steril 189ml', 'category' => 'Minuman', 'cost_price' => 8800, 'price' => 11000, 'stock' => 40, 'desc' => 'Susu steril murni kaleng'],
+            ['sku' => 'SNK-001', 'name' => 'Chitato Sapi Panggang 68g', 'category' => 'Makanan Ringan', 'cost_price' => 8800, 'price' => 11500, 'stock' => 45, 'desc' => 'Keripik kentang gelombang rasa sapi panggang'],
+            ['sku' => 'SNK-002', 'name' => 'Kusuka Keripik Singkong Keju 60g', 'category' => 'Makanan Ringan', 'cost_price' => 5500, 'price' => 7500, 'stock' => 50, 'desc' => 'Keripik singkong renyah rasa keju bakar'],
+            ['sku' => 'SNK-003', 'name' => 'Oreo Original 119.6g', 'category' => 'Makanan Ringan', 'cost_price' => 7200, 'price' => 9500, 'stock' => 55, 'desc' => 'Biskuit cokelat dengan krim vanila'],
+            ['sku' => 'SNK-004', 'name' => 'Nabati Richeese Wafer 115g', 'category' => 'Makanan Ringan', 'cost_price' => 6400, 'price' => 8500, 'stock' => 60, 'desc' => 'Wafer renyah berlapis krim keju'],
+            ['sku' => 'SNK-005', 'name' => 'Sari Roti Sobek Cokelat Keju', 'category' => 'Roti & Kue', 'cost_price' => 13000, 'price' => 16500, 'stock' => 22, 'desc' => 'Roti lembut isi selai cokelat dan keju'],
+            ['sku' => 'SNK-006', 'name' => 'Sari Roti Dorayaki Cokelat', 'category' => 'Roti & Kue', 'cost_price' => 5800, 'price' => 7500, 'stock' => 30, 'desc' => 'Kue dorayaki lembut isi krim cokelat'],
+            ['sku' => 'SNK-007', 'name' => 'SilverQueen Chunky Bar 30g', 'category' => 'Makanan Ringan', 'cost_price' => 8000, 'price' => 10500, 'stock' => 38, 'desc' => 'Cokelat susu dengan kacang mede'],
+            ['sku' => 'SNK-008', 'name' => 'Beng-Beng Regular 25g', 'category' => 'Makanan Ringan', 'cost_price' => 2200, 'price' => 3000, 'stock' => 100, 'desc' => 'Wafer karamel krispi berlapis cokelat'],
+            ['sku' => 'SNK-009', 'name' => 'Pocky Chocolate 47g', 'category' => 'Makanan Ringan', 'cost_price' => 6800, 'price' => 9000, 'stock' => 42, 'desc' => 'Biskuit stik salut krim cokelat'],
+            ['sku' => 'MIE-001', 'name' => 'Indomie Goreng Original 85g', 'category' => 'Mie & Sembako', 'cost_price' => 2600, 'price' => 3500, 'stock' => 150, 'desc' => 'Mie instan goreng favorit'],
+            ['sku' => 'MIE-002', 'name' => 'Indomie Kuah Soto Mie 70g', 'category' => 'Mie & Sembako', 'cost_price' => 2600, 'price' => 3500, 'stock' => 110, 'desc' => 'Mie instan kuah rasa soto'],
+            ['sku' => 'MIE-003', 'name' => 'Pop Mie Rasa Ayam 75g', 'category' => 'Mie & Sembako', 'cost_price' => 4500, 'price' => 6000, 'stock' => 64, 'desc' => 'Mie instan cup praktis siap seduh'],
+            ['sku' => 'MIE-004', 'name' => 'Pop Mie Pedas Dower 75g', 'category' => 'Mie & Sembako', 'cost_price' => 4900, 'price' => 6500, 'stock' => 48, 'desc' => 'Mie instan cup rasa ayam pedas'],
+            ['sku' => 'MIE-005', 'name' => 'BonCabe Level 15 Botol 45g', 'category' => 'Mie & Sembako', 'cost_price' => 8900, 'price' => 11500, 'stock' => 28, 'desc' => 'Sambal tabur cabai kering pedas'],
+            ['sku' => 'ATK-001', 'name' => 'Buku Tulis Campus 50 Lembar', 'category' => 'Alat Tulis', 'cost_price' => 3800, 'price' => 5500, 'stock' => 85, 'desc' => 'Buku tulis ukuran B5 standar kuliah'],
+            ['sku' => 'ATK-002', 'name' => 'Pulpen Standard AE7 Hitam', 'category' => 'Alat Tulis', 'cost_price' => 2000, 'price' => 3000, 'stock' => 140, 'desc' => 'Bolpoin tinta hitam 0.5mm'],
+            ['sku' => 'ATK-003', 'name' => 'Pensil Faber-Castell 2B', 'category' => 'Alat Tulis', 'cost_price' => 3500, 'price' => 5000, 'stock' => 75, 'desc' => 'Pensil grafit 2B untuk sketsa & ujian'],
+            ['sku' => 'ATK-004', 'name' => 'Penghapus Staedtler Rasoplast', 'category' => 'Alat Tulis', 'cost_price' => 3000, 'price' => 4500, 'stock' => 60, 'desc' => 'Penghapus bersih bebas residu'],
+            ['sku' => 'ATK-005', 'name' => 'Tip-X Cair Joyko CF-S209', 'category' => 'Alat Tulis', 'cost_price' => 4600, 'price' => 6500, 'stock' => 40, 'desc' => 'Correction fluid mata pena logam'],
+            ['sku' => 'ATK-006', 'name' => 'Map Plastik Kancing A4', 'category' => 'Alat Tulis', 'cost_price' => 2700, 'price' => 4000, 'stock' => 90, 'desc' => 'Map dokumen transparan ukuran A4'],
+            ['sku' => 'KSH-001', 'name' => 'Tissue Paseo Smart 250 Sheets', 'category' => 'Kebutuhan Harian', 'cost_price' => 10200, 'price' => 13500, 'stock' => 36, 'desc' => 'Tisu wajah lembut 2 ply'],
+            ['sku' => 'KSH-002', 'name' => 'Tolak Angin Cair Sido Muncul', 'category' => 'Kesehatan', 'cost_price' => 3800, 'price' => 5000, 'stock' => 80, 'desc' => 'Herbal cair pereda masuk angin 15ml'],
+            ['sku' => 'KSH-003', 'name' => 'Panadol Extra Strip 10 Kaplet', 'category' => 'Kesehatan', 'cost_price' => 11500, 'price' => 14500, 'stock' => 25, 'desc' => 'Obat pereda sakit kepala dan demam'],
+            ['sku' => 'KSH-004', 'name' => 'Minyak Kayu Putih Cap Lang 30ml', 'category' => 'Kesehatan', 'cost_price' => 10000, 'price' => 13000, 'stock' => 30, 'desc' => 'Minyak kayu putih penghangat tubuh'],
+            ['sku' => 'KSH-005', 'name' => 'Sabun Mandi Lifebuoy Total 10', 'category' => 'Kebutuhan Harian', 'cost_price' => 4000, 'price' => 5500, 'stock' => 50, 'desc' => 'Sabun batang antibakteri 70g'],
         ];
 
         $productRecords = [];
         foreach ($productsData as $p) {
             $existing = DB::table('products')->where('sku', $p['sku'])->first();
             if ($existing) {
+                // Jangan menimpa harga modal yang sudah diatur admin ketika seeder dijalankan ulang.
+                // Hanya perbarui jika kolom cost_price tersedia di database dan nilainya saat ini masih 0 atau null.
+                if (Schema::hasColumn('products', 'cost_price') && ((float) ($existing->cost_price ?? 0)) <= 0 && isset($p['cost_price'])) {
+                    DB::table('products')->where('id', $existing->id)->update([
+                        'cost_price' => $p['cost_price'],
+                    ]);
+                    $existing->cost_price = $p['cost_price'];
+                }
                 $productRecords[$p['sku']] = $existing;
                 continue;
             }
@@ -122,6 +130,7 @@ class SupermarketSeeder extends Seeder
                 'name' => $p['name'],
                 'category' => $p['category'],
                 'description' => $p['desc'],
+                'cost_price' => $p['cost_price'] ?? 0,
                 'price' => $p['price'],
                 'stock' => $p['stock'],
                 'is_active' => true,
@@ -148,6 +157,7 @@ class SupermarketSeeder extends Seeder
                 'id' => $productId,
                 'name' => $p['name'],
                 'price' => $p['price'],
+                'cost_price' => $p['cost_price'] ?? 0,
             ];
         }
 
@@ -192,6 +202,9 @@ class SupermarketSeeder extends Seeder
                 $prod = $productRecords[$sku];
                 $subtotal = $prod->price * $qty;
                 $total += $subtotal;
+                $isImport = ($ord['source'] ?? '') === 'import_excel';
+                $costPrice = $isImport ? 0.0 : (float) ($prod->cost_price ?? 0);
+                $subtotalCost = $costPrice * $qty;
                 $preparedItems[] = [
                     'product_id' => $prod->id,
                     'product_name' => $prod->name,
@@ -199,6 +212,8 @@ class SupermarketSeeder extends Seeder
                     'quantity' => $qty,
                     'unit_price' => $prod->price,
                     'subtotal' => $subtotal,
+                    'cost_price' => $costPrice,
+                    'subtotal_cost' => $subtotalCost,
                 ];
             }
 
@@ -238,6 +253,8 @@ class SupermarketSeeder extends Seeder
                     'quantity' => $item['quantity'],
                     'unit_price' => $item['unit_price'],
                     'subtotal' => $item['subtotal'],
+                    'cost_price' => $item['cost_price'] ?? 0,
+                    'subtotal_cost' => $item['subtotal_cost'] ?? 0,
                     'created_at' => $orderTime,
                     'updated_at' => $orderTime,
                 ]));
