@@ -12,6 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'qty',
     'unit_price',
     'subtotal',
+    'cost_price',
+    'subtotal_cost',
 ])]
 class OrderItem extends Model
 {
@@ -21,6 +23,8 @@ class OrderItem extends Model
             'qty' => 'integer',
             'unit_price' => 'decimal:2',
             'subtotal' => 'decimal:2',
+            'cost_price' => 'decimal:2',
+            'subtotal_cost' => 'decimal:2',
         ];
     }
 

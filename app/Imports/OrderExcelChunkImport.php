@@ -151,6 +151,10 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
         $cleanPrice = is_numeric($unitPrice) ? (float) $unitPrice : 0.0;
         $subtotal = $cleanQty * $cleanPrice;
 
+        $rawCost = $raw['harga_modal'] ?? $raw['cost_price'] ?? null;
+        $cleanCost = is_numeric($rawCost) && (float) $rawCost >= 0 ? (float) $rawCost : 0.0;
+        $subtotalCost = $cleanQty * $cleanCost;
+
         return [
             'row_number' => $rowNumber,
             'is_valid' => empty($errors),
@@ -165,6 +169,8 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
             'qty' => $cleanQty,
             'unit_price' => $cleanPrice,
             'subtotal' => $subtotal,
+            'cost_price' => $cleanCost,
+            'subtotal_cost' => $subtotalCost,
         ];
     }
 
@@ -212,12 +218,15 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
                     $this->importedOrdersCount++;
                 }
 
-                // Simpan detail item pesanan historis tanpa memotong stok fisik gudang (FR-10)
+                // Simpan detail item pesanan historis tanpa memotong stok fisik gudang (FR-10).
+                // HPP historis bernilai 0 jika tidak ada pada file Excel impor (tidak mengambil cost_price aktif produk).
                 $order->items()->create([
                     'product_id' => $row['product_id'],
                     'qty' => $row['qty'],
                     'unit_price' => $row['unit_price'],
                     'subtotal' => $row['subtotal'],
+                    'cost_price' => $row['cost_price'] ?? 0.0,
+                    'subtotal_cost' => $row['subtotal_cost'] ?? 0.0,
                 ]);
 
                 $order->increment('total_amount', $row['subtotal']);

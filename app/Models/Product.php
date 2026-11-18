@@ -6,13 +6,14 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['sku', 'name', 'category', 'price', 'stock', 'image', 'is_active'])]
+#[Fillable(['sku', 'name', 'category', 'price', 'cost_price', 'stock', 'image', 'is_active'])]
 class Product extends Model
 {
     protected function casts(): array
     {
         return [
             'price' => 'decimal:2',
+            'cost_price' => 'decimal:2',
             'stock' => 'integer',
             'is_active' => 'boolean',
         ];

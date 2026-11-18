@@ -99,11 +99,16 @@ class ManualOrderController extends Controller
                     $subtotal = $unitPrice * $qty;
                     $totalAmount += $subtotal;
 
+                    $costPrice = (float) ($product->cost_price ?? 0);
+                    $subtotalCost = $costPrice * $qty;
+
                     $order->items()->create([
                         'product_id' => $product->id,
                         'qty' => $qty,
                         'unit_price' => $unitPrice,
                         'subtotal' => $subtotal,
+                        'cost_price' => $costPrice,
+                        'subtotal_cost' => $subtotalCost,
                     ]);
 
                     $stockService->recordMutation(
