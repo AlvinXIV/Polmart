@@ -1282,5 +1282,327 @@ class PolmartFlowTest extends TestCase
         $this->assertStringContainsString('attachment;', $resExport->headers->get('content-disposition'));
         $this->assertStringContainsString('Laporan_Penjualan_Bulanan_2026-05.xlsx', $resExport->headers->get('content-disposition'));
     }
+
+    public function test_admin_dashboard_sales_analytics_calculates_omzet_hpp_and_profit_only_for_completed_orders(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $p1 = Product::create([
+            'sku' => 'DASH-FIN-01',
+            'name' => 'Produk Dashboard Finansial 1',
+            'category' => 'Testing',
+            'cost_price' => 15000,
+            'price' => 25000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        $p2 = Product::create([
+            'sku' => 'DASH-FIN-02',
+            'name' => 'Produk Dashboard Finansial 2',
+            'category' => 'Testing',
+            'cost_price' => 40000,
+            'price' => 60000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        // 1. Order SELESAI pada 2026-06-20 10:00:
+        // Item 1: 2 pcs * 25.000 = 50.000 (HPP: 2 * 15.000 = 30.000)
+        // Item 2: 1 pcs * 60.000 = 60.000 (HPP: 1 * 40.000 = 40.000)
+        // Total Omzet = 110.000, Total HPP = 70.000, Gross Profit = 40.000
+        $order1 = Order::create([
+            'order_code' => 'ORD-DASH-FIN-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 110000,
+            'transaction_date' => '2026-06-20 10:00:00',
+            'paid_at' => '2026-06-20 10:00:00',
+        ]);
+        $order1->items()->create([
+            'product_id' => $p1->id,
+            'qty' => 2,
+            'unit_price' => 25000,
+            'subtotal' => 50000,
+            'cost_price' => 15000,
+            'subtotal_cost' => 30000,
+        ]);
+        $order1->items()->create([
+            'product_id' => $p2->id,
+            'qty' => 1,
+            'unit_price' => 60000,
+            'subtotal' => 60000,
+            'cost_price' => 40000,
+            'subtotal_cost' => 40000,
+        ]);
+
+        // 2. Transaksi NON-SELESAI pada tanggal yang sama: TIDAK BOLEH IKUT DIHITUNG
+        // a. SIAP_DIAMBIL (Omzet: 50.000, HPP: 30.000)
+        $order2 = Order::create([
+            'order_code' => 'ORD-DASH-FIN-02',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SIAP_DIAMBIL',
+            'total_amount' => 50000,
+            'transaction_date' => '2026-06-20 11:00:00',
+        ]);
+        $order2->items()->create([
+            'product_id' => $p1->id,
+            'qty' => 2,
+            'unit_price' => 25000,
+            'subtotal' => 50000,
+            'cost_price' => 15000,
+            'subtotal_cost' => 30000,
+        ]);
+
+        // b. MENUNGGU_BAYAR (Omzet: 60.000, HPP: 40.000)
+        $order3 = Order::create([
+            'order_code' => 'ORD-DASH-FIN-03',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'MENUNGGU_BAYAR',
+            'total_amount' => 60000,
+            'transaction_date' => '2026-06-20 12:00:00',
+        ]);
+        $order3->items()->create([
+            'product_id' => $p2->id,
+            'qty' => 1,
+            'unit_price' => 60000,
+            'subtotal' => 60000,
+            'cost_price' => 40000,
+            'subtotal_cost' => 40000,
+        ]);
+
+        // c. BATAL (Omzet: 25.000, HPP: 15.000)
+        $order4 = Order::create([
+            'order_code' => 'ORD-DASH-FIN-04',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'BATAL',
+            'total_amount' => 25000,
+            'transaction_date' => '2026-06-20 13:00:00',
+        ]);
+        $order4->items()->create([
+            'product_id' => $p1->id,
+            'qty' => 1,
+            'unit_price' => 25000,
+            'subtotal' => 25000,
+            'cost_price' => 15000,
+            'subtotal_cost' => 15000,
+        ]);
+
+        // Request dashboard admin harian 2026-06-20
+        $res = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2026-06-20',
+        ]));
+
+        $res->assertOk();
+        $summary = $res->viewData('periodSummary');
+
+        // Verifikasi periodSummary
+        $this->assertEquals(110000.0, $summary['total_omzet']);
+        $this->assertEquals(70000.0, $summary['total_hpp']);
+        $this->assertEquals(40000.0, $summary['gross_profit']);
+        $this->assertEquals(1, $summary['total_transactions']);
+        $this->assertEquals(3, $summary['total_items_sold']);
+        $this->assertFalse($summary['has_unrecorded_hpp']);
+        $this->assertEquals(0, $summary['unrecorded_orders_count']);
+        $this->assertEquals(0, $summary['unrecorded_items_count']);
+        $this->assertEquals(100.0, $summary['completeness_pct']);
+
+        // Verifikasi elemen antarmuka Blade pada dashboard
+        $res->assertSee('Ringkasan Finansial (HPP &amp; Laba Kotor)', false);
+        $res->assertSee('Rp 110.000');
+        $res->assertSee('Rp 70.000');
+        $res->assertSee('Rp 40.000');
+        $res->assertSee('Data HPP Lengkap (100%)');
+
+        // Pastikan empat kartu operasional lama tetap ada dan akurat
+        $res->assertSee('Total Omzet');
+        $res->assertSee('Jumlah Transaksi');
+        $res->assertSee('Produk Terjual');
+        $res->assertSee('Rata-rata Nilai Transaksi');
+    }
+
+    public function test_admin_dashboard_sales_analytics_flags_unrecorded_hpp_as_provisional(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $product = Product::create([
+            'sku' => 'DASH-NOHPP-01',
+            'name' => 'Produk Tanpa HPP Dashboard',
+            'category' => 'Testing',
+            'cost_price' => 0,
+            'price' => 30000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'order_code' => 'ORD-DASH-NOHPP-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'import_excel',
+            'status' => 'SELESAI',
+            'total_amount' => 60000,
+            'transaction_date' => '2026-06-25 10:00:00',
+            'paid_at' => '2026-06-25 10:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'qty' => 2,
+            'unit_price' => 30000,
+            'subtotal' => 60000,
+            'cost_price' => 0,
+            'subtotal_cost' => 0,
+        ]);
+
+        $res = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2026-06-25',
+        ]));
+
+        $res->assertOk();
+        $summary = $res->viewData('periodSummary');
+
+        $this->assertEquals(60000.0, $summary['total_omzet']);
+        $this->assertEquals(0.0, $summary['total_hpp']);
+        $this->assertEquals(60000.0, $summary['gross_profit']);
+        $this->assertTrue($summary['has_unrecorded_hpp']);
+        $this->assertEquals(1, $summary['unrecorded_orders_count']);
+        $this->assertEquals(1, $summary['unrecorded_items_count']);
+        $this->assertEquals(0.0, $summary['completeness_pct']);
+
+        // Verifikasi badge dan peringatan provisional pada dashboard
+        $res->assertSee('Laba Kotor Provisional');
+        $res->assertSee('Perhatian Data HPP:');
+        $res->assertSee('1 transaksi');
+        $res->assertSee('1 item');
+    }
+
+    public function test_admin_dashboard_period_filters_strictly_isolate_hpp_and_financial_aggregations(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $product = Product::create([
+            'sku' => 'DASH-ISOL-01',
+            'name' => 'Produk Isolasi Periode Dashboard',
+            'category' => 'Testing',
+            'cost_price' => 12000,
+            'price' => 20000,
+            'stock' => 100,
+            'is_active' => true,
+        ]);
+
+        // Order 1 pada 2026-04-10 09:00: 6 pcs = 120.000 omzet, 72.000 HPP, 48.000 profit
+        $order1 = Order::create([
+            'order_code' => 'ORD-ISOL-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 120000,
+            'transaction_date' => '2026-04-10 09:00:00',
+            'paid_at' => '2026-04-10 09:00:00',
+        ]);
+        $order1->items()->create([
+            'product_id' => $product->id,
+            'qty' => 6,
+            'unit_price' => 20000,
+            'subtotal' => 120000,
+            'cost_price' => 12000,
+            'subtotal_cost' => 72000,
+        ]);
+
+        // Order 2 pada 2026-04-14 14:00: 9 pcs = 180.000 omzet, 108.000 HPP, 72.000 profit
+        $order2 = Order::create([
+            'order_code' => 'ORD-ISOL-02',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'manual_admin',
+            'status' => 'SELESAI',
+            'total_amount' => 180000,
+            'transaction_date' => '2026-04-14 14:00:00',
+            'paid_at' => '2026-04-14 14:00:00',
+        ]);
+        $order2->items()->create([
+            'product_id' => $product->id,
+            'qty' => 9,
+            'unit_price' => 20000,
+            'subtotal' => 180000,
+            'cost_price' => 12000,
+            'subtotal_cost' => 108000,
+        ]);
+
+        // 1. Filter Harian: 2026-04-10 (hanya Order 1)
+        $resDaily = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2026-04-10',
+        ]));
+        $sumDaily = $resDaily->viewData('periodSummary');
+        $this->assertEquals(120000.0, $sumDaily['total_omzet']);
+        $this->assertEquals(72000.0, $sumDaily['total_hpp']);
+        $this->assertEquals(48000.0, $sumDaily['gross_profit']);
+        $this->assertEquals(1, $sumDaily['total_transactions']);
+
+        // 2. Filter Pekanan: 2026-04-10 s/d 2026-04-16 (mencakup Order 1 dan 2)
+        $resWeekly = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'weekly',
+            'start_date' => '2026-04-10',
+            'end_date' => '2026-04-16',
+        ]));
+        $sumWeekly = $resWeekly->viewData('periodSummary');
+        $this->assertEquals(300000.0, $sumWeekly['total_omzet']);
+        $this->assertEquals(180000.0, $sumWeekly['total_hpp']);
+        $this->assertEquals(120000.0, $sumWeekly['gross_profit']);
+        $this->assertEquals(2, $sumWeekly['total_transactions']);
+
+        // 3. Filter Bulanan: April 2026 (mencakup Order 1 dan 2)
+        $resMonthly = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'monthly',
+            'month' => 4,
+            'year' => 2026,
+        ]));
+        $sumMonthly = $resMonthly->viewData('periodSummary');
+        $this->assertEquals(300000.0, $sumMonthly['total_omzet']);
+        $this->assertEquals(180000.0, $sumMonthly['total_hpp']);
+        $this->assertEquals(120000.0, $sumMonthly['gross_profit']);
+        $this->assertEquals(2, $sumMonthly['total_transactions']);
+
+        // 4. Filter Tahunan: 2026 (mencakup Order 1 dan 2)
+        $resYearly = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'yearly',
+            'year' => 2026,
+        ]));
+        $sumYearly = $resYearly->viewData('periodSummary');
+        $this->assertEquals(300000.0, $sumYearly['total_omzet']);
+        $this->assertEquals(180000.0, $sumYearly['total_hpp']);
+        $this->assertEquals(120000.0, $sumYearly['gross_profit']);
+        $this->assertEquals(2, $sumYearly['total_transactions']);
+
+        // 5. Penanganan data kosong pada tanggal di masa depan
+        $resEmpty = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'daily',
+            'date' => '2035-01-01',
+        ]));
+        $sumEmpty = $resEmpty->viewData('periodSummary');
+        $this->assertEquals(0.0, $sumEmpty['total_omzet']);
+        $this->assertEquals(0.0, $sumEmpty['total_hpp']);
+        $this->assertEquals(0.0, $sumEmpty['gross_profit']);
+        $this->assertEquals(0, $sumEmpty['total_transactions']);
+        $this->assertFalse($sumEmpty['has_unrecorded_hpp']);
+        $this->assertNull($sumEmpty['completeness_pct']);
+        $resEmpty->assertSee('—');
+        $resEmpty->assertDontSee('Data HPP Lengkap (100%)');
+    }
 }
 

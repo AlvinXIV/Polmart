@@ -177,6 +177,85 @@
                 </form>
             </div>
 
+            <!-- Ringkasan Finansial: HPP & Laba Kotor (Task 2B) -->
+            <div class="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-3">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-200/80">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="text-sm font-extrabold text-slate-900">Ringkasan Finansial (HPP &amp; Laba Kotor)</h3>
+                            @if ($periodSummary['has_unrecorded_hpp'])
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200" title="Terdapat transaksi tanpa data HPP tercatat">
+                                    <span>⚠️</span>
+                                    <span>Laba Kotor Provisional</span>
+                                </span>
+                            @elseif ($periodSummary['total_transactions'] > 0)
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                    <span>✓</span>
+                                    <span>Data HPP Lengkap (100%)</span>
+                                </span>
+                            @endif
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            Berdasarkan snapshot biaya modal (HPP) riil transaksi SELESAI periode {{ strtolower($periodLabel) }}.
+                        </p>
+                    </div>
+                    <div class="text-xs text-slate-500">
+                        Kelengkapan HPP:
+                        @if ($periodSummary['completeness_pct'] !== null)
+                            <strong class="{{ $periodSummary['has_unrecorded_hpp'] ? 'text-amber-600' : 'text-emerald-600' }}">{{ $periodSummary['completeness_pct'] }}%</strong>
+                            ({{ $periodSummary['total_order_items_count'] - $periodSummary['unrecorded_items_count'] }}/{{ $periodSummary['total_order_items_count'] }} item)
+                        @else
+                            <strong class="text-slate-400">—</strong>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="p-3.5 rounded-lg border border-emerald-200 bg-white shadow-sm">
+                        <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Total Omzet</p>
+                        <p class="text-xl font-extrabold text-emerald-900 mt-1">
+                            Rp {{ number_format($periodSummary['total_omzet'], 0, ',', '.') }}
+                        </p>
+                        <p class="text-[10px] text-emerald-600 mt-0.5">
+                            Subtotal penjualan transaksi selesai
+                        </p>
+                    </div>
+
+                    <div class="p-3.5 rounded-lg border border-rose-200 bg-white shadow-sm">
+                        <p class="text-[11px] font-bold text-rose-700 uppercase tracking-wider">HPP Tercatat</p>
+                        <p class="text-xl font-extrabold text-rose-900 mt-1">
+                            Rp {{ number_format($periodSummary['total_hpp'], 0, ',', '.') }}
+                        </p>
+                        <p class="text-[10px] text-rose-600 mt-0.5">
+                            Snapshot modal barang terjual
+                        </p>
+                    </div>
+
+                    <div class="p-3.5 rounded-lg border border-blue-200 bg-white shadow-sm">
+                        <p class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Laba Kotor</p>
+                        <p class="text-xl font-extrabold text-blue-900 mt-1">
+                            Rp {{ number_format($periodSummary['gross_profit'], 0, ',', '.') }}
+                        </p>
+                        <p class="text-[10px] text-blue-600 mt-0.5">
+                            @if ($periodSummary['has_unrecorded_hpp'])
+                                <span class="text-amber-700 font-semibold">*Provisional (Omzet - HPP Tercatat)</span>
+                            @else
+                                <span>Omzet dikurangi HPP Tercatat</span>
+                            @endif
+                        </p>
+                    </div>
+                </div>
+
+                @if ($periodSummary['has_unrecorded_hpp'])
+                    <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2">
+                        <span class="text-sm select-none">⚠️</span>
+                        <div class="leading-relaxed">
+                            <strong>Perhatian Data HPP:</strong> Terdapat <strong>{{ $periodSummary['unrecorded_orders_count'] }} transaksi</strong> (<strong>{{ $periodSummary['unrecorded_items_count'] }} item</strong>) dengan HPP belum tercatat. Nilai laba kotor di atas bersifat <em>provisional</em> dan tidak mengasumsikan biaya modal historis bernilai nol.
+                        </div>
+                    </div>
+                @endif
+            </div>
+
             <!-- 4 Kartu Ringkasan Penjualan Periode Aktif -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="p-4 rounded-xl border border-emerald-100 bg-emerald-50/40 flex items-center justify-between shadow-sm">
