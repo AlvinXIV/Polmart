@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -29,14 +30,29 @@ class ReportController extends Controller
         $orderService->cancelExpiredOrders();
 
         $report = $this->buildReportData($request);
-        $filename = sprintf(
-            'laporan_polmart_%s_%s.xlsx',
-            $report['period'],
-            now()->format('Ymd_His')
-        );
+
+        $period = $report['period'];
+        $date = $report['date'];
+        $startDate = $report['startDate'];
+        $endDate = $report['endDate'];
+        $month = sprintf('%02d', (int) $report['month']);
+        $year = (int) $report['year'];
+
+        $filename = match ($period) {
+            'daily' => "Laporan_Penjualan_Harian_{$date}.xlsx",
+            'weekly' => "Laporan_Penjualan_Mingguan_{$startDate}_sd_{$endDate}.xlsx",
+            'yearly' => "Laporan_Penjualan_Tahunan_{$year}.xlsx",
+            default => "Laporan_Penjualan_Bulanan_{$year}-{$month}.xlsx",
+        };
 
         return Excel::download(
-            new PeriodicReportExport($report['orders'], $report['topProducts']),
+            new PeriodicReportExport(
+                $report['orders'],
+                $report['topProducts'],
+                $report['summary'],
+                $report['periodLabel'],
+                $report['sourceCounts']
+            ),
             $filename
         );
     }
@@ -51,32 +67,39 @@ class ReportController extends Controller
             $period = 'monthly';
         }
 
-        $date = $request->input('date', now()->toDateString());
-        $startDateInput = $request->input('start_date', now()->startOfWeek()->toDateString());
-        $endDateInput = $request->input('end_date', now()->endOfWeek()->toDateString());
+        $rawDate = $request->input('date');
+        $rawStartDate = $request->input('start_date');
+        $rawEndDate = $request->input('end_date');
         $month = (int) $request->input('month', now()->month);
         $year = (int) $request->input('year', now()->year);
 
         if ($month < 1 || $month > 12) {
-            $month = now()->month;
+            $month = (int) now()->month;
         }
         if ($year < 2000 || $year > 2100) {
-            $year = now()->year;
+            $year = (int) now()->year;
         }
 
         [$start, $end, $periodLabel] = match ($period) {
-            'daily' => [
-                Carbon::parse($date)->startOfDay(),
-                Carbon::parse($date)->endOfDay(),
-                'Harian: ' . Carbon::parse($date)->translatedFormat('d F Y'),
-            ],
-            'weekly' => (function () use ($startDateInput, $endDateInput) {
-                $s = Carbon::parse($startDateInput)->startOfDay();
-                $e = Carbon::parse($endDateInput)->endOfDay();
+            'daily' => (function () use ($rawDate) {
+                $parsed = $this->safeParseDate($rawDate, now());
+                return [
+                    $parsed->copy()->startOfDay(),
+                    $parsed->copy()->endOfDay(),
+                    'Harian: ' . $parsed->translatedFormat('d F Y'),
+                ];
+            })(),
+            'weekly' => (function () use ($rawStartDate, $rawEndDate) {
+                $s = $this->safeParseDate($rawStartDate, now()->startOfWeek())->startOfDay();
+                $e = $this->safeParseDate($rawEndDate, now()->endOfWeek())->endOfDay();
                 if ($e->lt($s)) {
                     [$s, $e] = [$e->copy()->startOfDay(), $s->copy()->endOfDay()];
                 }
-                return [$s, $e, 'Pekanan: ' . $s->format('d/m/Y') . ' - ' . $e->format('d/m/Y')];
+                // Batasi rentang mingguan agar benar-benar maksimal 7 hari
+                if ($s->diffInDays($e) > 6) {
+                    $e = $s->copy()->addDays(6)->endOfDay();
+                }
+                return [$s, $e, 'Mingguan: ' . $s->format('d/m/Y') . ' - ' . $e->format('d/m/Y')];
             })(),
             'yearly' => [
                 Carbon::create($year, 1, 1)->startOfYear(),
@@ -89,6 +112,10 @@ class ReportController extends Controller
                 'Bulanan: ' . Carbon::create($year, $month, 1)->translatedFormat('F Y'),
             ],
         };
+
+        $date = $start->toDateString();
+        $startDate = $start->toDateString();
+        $endDate = $end->toDateString();
 
         $orders = Order::with(['user', 'items.product'])
             ->where('status', 'SELESAI')
@@ -105,6 +132,7 @@ class ReportController extends Controller
             'web' => $orders->where('source', 'web')->count(),
             'manual_admin' => $orders->where('source', 'manual_admin')->count(),
             'import_excel' => $orders->where('source', 'import_excel')->count(),
+            'other' => $orders->whereNotIn('source', ['web', 'manual_admin', 'import_excel'])->count(),
         ];
 
         $topProducts = DB::table('order_items')
@@ -131,16 +159,19 @@ class ReportController extends Controller
             ->orderByDesc('total_sold')
             ->get();
 
+        $chartData = $this->buildChartDataFromDb($period, $start, $end, $orders);
+
         return [
             'period' => $period,
             'date' => $date,
-            'startDate' => $start->toDateString(),
-            'endDate' => $end->toDateString(),
+            'startDate' => $startDate,
+            'endDate' => $endDate,
             'month' => $month,
             'year' => $year,
             'periodLabel' => $periodLabel,
             'orders' => $orders,
             'topProducts' => $topProducts,
+            'chartData' => $chartData,
             'summary' => [
                 'total_omzet' => $totalOmzet,
                 'total_transactions' => $totalTransactions,
@@ -149,6 +180,158 @@ class ReportController extends Controller
             ],
             'sourceCounts' => $sourceCounts,
         ];
+    }
+
+    /**
+     * Membangun dataset deret waktu untuk grafik tren penjualan sesuai periode aktif.
+     *
+     * @param Collection<int, object> $orders
+     * @return array<string, mixed>
+     */
+    private function buildChartDataFromDb(string $period, Carbon $start, Carbon $end, Collection $orders): array
+    {
+        $items = [];
+
+        if ($period === 'daily') {
+            for ($h = 0; $h < 24; $h++) {
+                $hourKey = sprintf('%02d', $h);
+                $items[$hourKey] = [
+                    'label' => sprintf('%02d:00', $h),
+                    'short_label' => sprintf('%02d', $h),
+                    'omzet' => 0.0,
+                    'count' => 0,
+                ];
+            }
+
+            foreach ($orders as $order) {
+                if (! empty($order->transaction_date)) {
+                    $dt = Carbon::parse($order->transaction_date);
+                    $hourKey = $dt->format('H');
+                    if (isset($items[$hourKey])) {
+                        $items[$hourKey]['omzet'] += (float) $order->total_amount;
+                        $items[$hourKey]['count']++;
+                    }
+                }
+            }
+        } elseif ($period === 'weekly') {
+            $cursor = $start->copy();
+            while ($cursor->lte($end)) {
+                $dateKey = $cursor->toDateString();
+                $items[$dateKey] = [
+                    'label' => $cursor->translatedFormat('D, d M'),
+                    'short_label' => $cursor->translatedFormat('D'),
+                    'omzet' => 0.0,
+                    'count' => 0,
+                ];
+                $cursor->addDay();
+            }
+
+            foreach ($orders as $order) {
+                if (! empty($order->transaction_date)) {
+                    $dt = Carbon::parse($order->transaction_date);
+                    $dateKey = $dt->toDateString();
+                    if (isset($items[$dateKey])) {
+                        $items[$dateKey]['omzet'] += (float) $order->total_amount;
+                        $items[$dateKey]['count']++;
+                    }
+                }
+            }
+        } elseif ($period === 'yearly') {
+            for ($m = 1; $m <= 12; $m++) {
+                $monthKey = sprintf('%02d', $m);
+                $items[$monthKey] = [
+                    'label' => Carbon::create(null, $m, 1)->translatedFormat('F'),
+                    'short_label' => Carbon::create(null, $m, 1)->translatedFormat('M'),
+                    'omzet' => 0.0,
+                    'count' => 0,
+                ];
+            }
+
+            foreach ($orders as $order) {
+                if (! empty($order->transaction_date)) {
+                    $dt = Carbon::parse($order->transaction_date);
+                    $monthKey = $dt->format('m');
+                    if (isset($items[$monthKey])) {
+                        $items[$monthKey]['omzet'] += (float) $order->total_amount;
+                        $items[$monthKey]['count']++;
+                    }
+                }
+            }
+        } else {
+            // Default: monthly
+            $daysInMonth = (int) $start->daysInMonth;
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $dayKey = sprintf('%02d', $d);
+                $items[$dayKey] = [
+                    'label' => 'Tgl ' . $d . ' ' . $start->translatedFormat('M'),
+                    'short_label' => (string) $d,
+                    'omzet' => 0.0,
+                    'count' => 0,
+                ];
+            }
+
+            foreach ($orders as $order) {
+                if (! empty($order->transaction_date)) {
+                    $dt = Carbon::parse($order->transaction_date);
+                    $dayKey = $dt->format('d');
+                    if (isset($items[$dayKey])) {
+                        $items[$dayKey]['omzet'] += (float) $order->total_amount;
+                        $items[$dayKey]['count']++;
+                    }
+                }
+            }
+        }
+
+        $series = array_values($items);
+        $maxOmzet = 0.0;
+        $maxCount = 0;
+
+        foreach ($series as $point) {
+            if ($point['omzet'] > $maxOmzet) {
+                $maxOmzet = $point['omzet'];
+            }
+            if ($point['count'] > $maxCount) {
+                $maxCount = $point['count'];
+            }
+        }
+
+        return [
+            'period' => $period,
+            'unit_name' => match ($period) {
+                'daily' => 'Jam',
+                'weekly' => 'Hari',
+                'yearly' => 'Bulan',
+                default => 'Tanggal',
+            },
+            'series' => $series,
+            'max_omzet' => $maxOmzet > 0 ? $maxOmzet : 1.0,
+            'max_count' => $maxCount > 0 ? $maxCount : 1,
+            'has_data' => $orders->isNotEmpty(),
+        ];
+    }
+
+    /**
+     * Parsing tanggal aman dengan validasi kalender ketat (menolak non-string/array, format non-YYYY-MM-DD, dan tanggal kalender tidak valid).
+     */
+    private function safeParseDate(mixed $value, Carbon $fallback): Carbon
+    {
+        if (! is_string($value) || ! preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $value, $matches)) {
+            return $fallback->copy();
+        }
+
+        $year = (int) $matches[1];
+        $month = (int) $matches[2];
+        $day = (int) $matches[3];
+
+        if (! checkdate($month, $day, $year)) {
+            return $fallback->copy();
+        }
+
+        try {
+            return Carbon::create($year, $month, $day);
+        } catch (\Throwable) {
+            return $fallback->copy();
+        }
     }
 }
 

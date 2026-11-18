@@ -30,17 +30,23 @@
                         <x-input-error :messages="$errors->get('category')" class="mt-1" />
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <x-input-label for="price" value="Harga Satuan (Rp)" />
+                            <x-input-label for="cost_price" value="Harga Modal (Rp)" />
+                            <x-text-input id="cost_price" name="cost_price" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('cost_price', 0)" required />
+                            <x-input-error :messages="$errors->get('cost_price')" class="mt-1" />
+                        </div>
+                        <div>
+                            <x-input-label for="price" value="Harga Jual Satuan (Rp)" />
                             <x-text-input id="price" name="price" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('price')" required />
                             <x-input-error :messages="$errors->get('price')" class="mt-1" />
                         </div>
-                        <div>
-                            <x-input-label for="stock" value="Jumlah Stok Awal" />
-                            <x-text-input id="stock" name="stock" type="number" min="0" class="mt-1 block w-full" :value="old('stock', 0)" required />
-                            <x-input-error :messages="$errors->get('stock')" class="mt-1" />
-                        </div>
+                    </div>
+
+                    <div>
+                        <x-input-label for="stock" value="Jumlah Stok Awal" />
+                        <x-text-input id="stock" name="stock" type="number" min="0" class="mt-1 block w-full" :value="old('stock', 0)" required />
+                        <x-input-error :messages="$errors->get('stock')" class="mt-1" />
                     </div>
 
                     <div>

@@ -101,7 +101,8 @@
                         <th>SKU</th>
                         <th>Nama Barang</th>
                         <th>Kategori</th>
-                        <th class="text-right">Harga Satuan</th>
+                        <th class="text-right">Harga Modal</th>
+                        <th class="text-right">Harga Jual</th>
                         <th class="text-center">Stok</th>
                         <th class="text-center">Status</th>
                         <th>Restock Cepat</th>
@@ -125,7 +126,8 @@
                             <td>
                                 <span class="polmart-badge polmart-badge-blue">{{ $product->category }}</span>
                             </td>
-                            <td class="text-right font-semibold">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
+                            <td class="text-right font-medium text-slate-600">Rp {{ number_format($product->cost_price, 0, ',', '.') }}</td>
+                            <td class="text-right font-semibold text-slate-900">Rp {{ number_format($product->price, 0, ',', '.') }}</td>
                             <td class="text-center">
                                 @if ($product->stock > 10)
                                     <span class="polmart-badge polmart-badge-green">{{ $product->stock }}</span>
@@ -171,7 +173,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-8 text-center text-slate-400">Belum ada data barang yang sesuai.</td>
+                            <td colspan="10" class="px-4 py-8 text-center text-slate-400">Belum ada data barang yang sesuai.</td>
                         </tr>
                     @endforelse
                 </tbody>

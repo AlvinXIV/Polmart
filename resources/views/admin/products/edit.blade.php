@@ -31,10 +31,17 @@
                         <x-input-error :messages="$errors->get('category')" class="mt-1" />
                     </div>
 
-                    <div>
-                        <x-input-label for="price" value="Harga Satuan (Rp)" />
-                        <x-text-input id="price" name="price" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('price', $product->price)" required />
-                        <x-input-error :messages="$errors->get('price')" class="mt-1" />
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <x-input-label for="cost_price" value="Harga Modal (Rp)" />
+                            <x-text-input id="cost_price" name="cost_price" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('cost_price', $product->cost_price)" required />
+                            <x-input-error :messages="$errors->get('cost_price')" class="mt-1" />
+                        </div>
+                        <div>
+                            <x-input-label for="price" value="Harga Jual Satuan (Rp)" />
+                            <x-text-input id="price" name="price" type="number" step="0.01" min="0" class="mt-1 block w-full" :value="old('price', $product->price)" required />
+                            <x-input-error :messages="$errors->get('price')" class="mt-1" />
+                        </div>
                     </div>
 
                     <div>

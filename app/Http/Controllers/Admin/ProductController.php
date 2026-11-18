@@ -73,6 +73,7 @@ class ProductController extends Controller
             'sku' => ['required', 'string', 'max:50', 'unique:products,sku'],
             'name' => ['required', 'string', 'max:150'],
             'category' => ['required', 'string', 'max:80'],
+            'cost_price' => ['required', 'numeric', 'min:0'],
             'price' => ['required', 'numeric', 'min:0'],
             'stock' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -90,6 +91,7 @@ class ProductController extends Controller
                 'sku' => strtoupper(trim($validated['sku'])),
                 'name' => trim($validated['name']),
                 'category' => trim($validated['category']),
+                'cost_price' => $validated['cost_price'],
                 'price' => $validated['price'],
                 'stock' => 0,
                 'image' => $imagePath,
@@ -124,6 +126,7 @@ class ProductController extends Controller
             'sku' => ['required', 'string', 'max:50', Rule::unique('products', 'sku')->ignore($product->id)],
             'name' => ['required', 'string', 'max:150'],
             'category' => ['required', 'string', 'max:80'],
+            'cost_price' => ['required', 'numeric', 'min:0'],
             'price' => ['required', 'numeric', 'min:0'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'is_active' => ['nullable', 'boolean'],
@@ -139,6 +142,7 @@ class ProductController extends Controller
         $product->sku = strtoupper(trim($validated['sku']));
         $product->name = trim($validated['name']);
         $product->category = trim($validated['category']);
+        $product->cost_price = $validated['cost_price'];
         $product->price = $validated['price'];
         $product->is_active = $request->boolean('is_active');
         $product->save();
