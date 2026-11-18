@@ -10,13 +10,14 @@
                 <p class="text-sm text-slate-500 mt-1">Pantau status pesanan Anda, selesaikan pembayaran QRIS, atau tunjukkan kode pengambilan 4-digit di loket.</p>
             </div>
             <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-primary">
-                🛍️ Belanja Lagi
+                <x-icon name="shopping-bag" class="w-4 h-4" />
+                <span>Belanja Lagi</span>
             </a>
         </div>
 
         @if ($orders->isEmpty())
             <div class="polmart-card text-center py-14 space-y-4">
-                <div class="text-5xl">📋</div>
+                <div class="flex justify-center text-slate-400"><x-icon name="clipboard-list" class="w-12 h-12" /></div>
                 <h2 class="text-lg font-extrabold text-slate-900">Belum ada pesanan</h2>
                 <p class="text-sm text-slate-500">Anda belum pernah melakukan pemesanan di Polmart.</p>
                 <div>

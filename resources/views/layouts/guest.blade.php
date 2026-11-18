@@ -211,7 +211,7 @@
     <section class="auth-hero">
         <a href="{{ route('home') }}" class="auth-brand">
             <div class="auth-brand-icon">P</div>
-            <div class="auth-brand-text">POLMART.</div>
+            <div class="auth-brand-text">POLMART</div>
         </a>
 
         <div class="auth-hero-content">
@@ -226,7 +226,7 @@
         </div>
 
         <div class="auth-hero-footer">
-            &copy; {{ date('Y') }} Polmart. Sistem Koperasi Terintegrasi.
+            &copy; {{ date('Y') }} Polmart - Sistem Koperasi Terintegrasi.
         </div>
     </section>
 

@@ -5,8 +5,9 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">Impor Riwayat Pesanan Excel</h2>
-            <a href="{{ route('admin.order-imports.template') }}" class="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-semibold">
-                ↓ Download Template Excel (.xlsx)
+            <a href="{{ route('admin.order-imports.template') }}" class="px-4 py-2 bg-emerald-600 text-white rounded-md text-sm font-semibold inline-flex items-center gap-2">
+                <x-icon name="download" class="w-4 h-4" />
+                <span>Download Template Excel (.xlsx)</span>
             </a>
         </div>
     </x-slot>
@@ -54,8 +55,9 @@
                             <form method="POST" action="{{ route('admin.order-imports.store') }}">
                                 @csrf
                                 <input type="hidden" name="temp_path" value="{{ $preview['temp_path'] }}">
-                                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-semibold">
-                                    ✓ Konfirmasi & Impor {{ $preview['valid_count'] }} Baris Valid
+                                <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-semibold inline-flex items-center gap-2">
+                                    <x-icon name="check" class="w-4 h-4" />
+                                    <span>Konfirmasi & Impor {{ $preview['valid_count'] }} Baris Valid</span>
                                 </button>
                             </form>
                         @endif

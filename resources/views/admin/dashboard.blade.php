@@ -22,18 +22,23 @@
                 </h1>
 
                 <div class="flex flex-wrap gap-3 mt-5">
-                    <a href="{{ route('admin.products.index') }}" class="px-4 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-lg shadow hover:bg-blue-50 transition">
-                        📦 Master Barang
+                    <a href="{{ route('admin.products.index') }}" class="px-4 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-lg shadow hover:bg-blue-50 transition inline-flex items-center gap-2">
+                        <x-icon name="package" class="w-4 h-4" />
+                        <span>Master Barang</span>
                     </a>
-                    <a href="{{ route('admin.manual-orders.create') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white font-semibold text-sm rounded-lg hover:bg-white/25 transition">
-                        🛒 Kasir Walk-in
+                    <a href="{{ route('admin.manual-orders.create') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white font-semibold text-sm rounded-lg hover:bg-white/25 transition inline-flex items-center gap-2">
+                        <x-icon name="shopping-cart" class="w-4 h-4" />
+                        <span>Kasir Walk-in</span>
                     </a>
-                    <a href="{{ route('admin.pickup.index') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white font-semibold text-sm rounded-lg hover:bg-white/25 transition">
-                        🔢 Validasi Loket ({{ $stats['ready_pickup_count'] }})
+                    <a href="{{ route('admin.pickup.index') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white font-semibold text-sm rounded-lg hover:bg-white/25 transition inline-flex items-center gap-2">
+                        <x-icon name="check-circle" class="w-4 h-4" />
+                        <span>Validasi Loket ({{ $stats['ready_pickup_count'] }})</span>
                     </a>
                 </div>
             </div>
-            <div class="hidden lg:block text-7xl relative z-10 select-none">📊</div>
+            <div class="hidden lg:flex items-center justify-center w-20 h-20 rounded-2xl bg-white/15 text-white relative z-10 select-none">
+                <x-icon name="bar-chart-3" class="w-10 h-10" />
+            </div>
         </section>
 
         <!-- =========================================================================
@@ -76,25 +81,25 @@
                                 :class="currentPeriod === 'daily' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
                                 style="padding: 8px 16px;"
                                 class="text-xs rounded-lg transition flex items-center gap-1.5">
-                            <span>📅</span> Harian
+                            <x-icon name="calendar" class="w-4 h-4" /> Harian
                         </button>
                         <button type="button" @click="currentPeriod = 'weekly'"
                                 :class="currentPeriod === 'weekly' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
                                 style="padding: 8px 16px;"
                                 class="text-xs rounded-lg transition flex items-center gap-1.5">
-                            <span>📆</span> Mingguan
+                            <x-icon name="calendar-days" class="w-4 h-4" /> Mingguan
                         </button>
                         <button type="button" @click="currentPeriod = 'monthly'"
                                 :class="currentPeriod === 'monthly' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
                                 style="padding: 8px 16px;"
                                 class="text-xs rounded-lg transition flex items-center gap-1.5">
-                            <span>📊</span> Bulanan
+                            <x-icon name="bar-chart-3" class="w-4 h-4" /> Bulanan
                         </button>
                         <button type="button" @click="currentPeriod = 'yearly'"
                                 :class="currentPeriod === 'yearly' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
                                 style="padding: 8px 16px;"
                                 class="text-xs rounded-lg transition flex items-center gap-1.5">
-                            <span>📈</span> Tahunan
+                            <x-icon name="trending-up" class="w-4 h-4" /> Tahunan
                         </button>
                     </div>
 
@@ -135,10 +140,12 @@
                         <!-- Tombol Aksi Filter -->
                         <div class="flex items-center gap-2 sm:col-span-2">
                             <button type="submit" class="polmart-btn polmart-btn-primary polmart-btn-sm whitespace-nowrap">
-                                🔍 Tampilkan Analisis
+                                <x-icon name="search" class="w-4 h-4" />
+                                <span>Tampilkan Analisis</span>
                             </button>
                             <a href="{{ route('admin.dashboard') }}#sales-analytics" class="polmart-btn polmart-btn-secondary polmart-btn-sm whitespace-nowrap" title="Reset ke Bulan Berjalan">
-                                ↺ Reset
+                                <x-icon name="rotate-ccw" class="w-4 h-4" />
+                                <span>Reset</span>
                             </a>
                         </div>
                     </div>
@@ -236,7 +243,7 @@
                             Pesanan status SELESAI
                         </p>
                     </div>
-                    <div class="polmart-stat-icon blue">🧾</div>
+                    <div class="polmart-stat-icon blue"><x-icon name="receipt" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
@@ -249,7 +256,7 @@
                             Total unit fisik keluar
                         </p>
                     </div>
-                    <div class="polmart-stat-icon purple">📦</div>
+                    <div class="polmart-stat-icon purple"><x-icon name="package" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
@@ -262,7 +269,7 @@
                             Rata-rata per pesanan
                         </p>
                     </div>
-                    <div class="polmart-stat-icon amber">📊</div>
+                    <div class="polmart-stat-icon amber"><x-icon name="bar-chart-3" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
@@ -271,7 +278,7 @@
                         <p class="text-xl font-extrabold text-blue-600 mt-1">{{ $stats['ready_pickup_count'] }}</p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['pending_payment_count'] }} menunggu QRIS</p>
                     </div>
-                    <div class="polmart-stat-icon blue">🔢</div>
+                    <div class="polmart-stat-icon blue"><x-icon name="hash" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
@@ -280,7 +287,7 @@
                         <p class="text-xl font-extrabold text-slate-900 mt-1">{{ $stats['total_products'] }}</p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['active_products'] }} aktif • {{ $stats['categories_count'] }} kategori</p>
                     </div>
-                    <div class="polmart-stat-icon purple">🏷️</div>
+                    <div class="polmart-stat-icon purple"><x-icon name="tag" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
@@ -289,7 +296,7 @@
                         <p class="text-xl font-extrabold text-amber-600 mt-1">{{ $stats['low_stock_count'] }}</p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['out_of_stock_count'] }} stok habis (0)</p>
                     </div>
-                    <div class="polmart-stat-icon amber">⚠</div>
+                    <div class="polmart-stat-icon amber"><x-icon name="alert-triangle" class="w-5 h-5" /></div>
                 </div>
             </div>
 
@@ -379,7 +386,7 @@
                         </div>
                     @else
                         <div class="flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl" style="height: 224px;">
-                            <span class="text-3xl mb-2">📉</span>
+                            <div class="mb-2 text-slate-400"><x-icon name="trending-down" class="w-8 h-8" /></div>
                             <p class="text-sm font-semibold text-slate-700">Tidak ada transaksi SELESAI pada periode ini.</p>
                             <p class="text-xs text-slate-400 mt-1">Pilih tanggal atau rentang periode lain untuk memuat data penjualan.</p>
                         </div>

@@ -328,7 +328,7 @@
     <header class="landing-nav">
         <a href="{{ route('home') }}" class="landing-brand">
             <div class="landing-brand-icon">P</div>
-            <div class="landing-brand-text">Polmart.</div>
+            <div class="landing-brand-text">Polmart</div>
         </a>
 
         <div class="landing-nav-links">
@@ -382,37 +382,37 @@
 
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon-box">📦</div>
+                <div class="feature-icon-box"><x-icon name="package" class="w-6 h-6" /></div>
                 <h3>Stok Real-Time</h3>
                 <p>Lihat ketersediaan barang dan harga satuan terkini langsung dari inventaris koperasi sebelum memesan.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-box">🛍️</div>
+                <div class="feature-icon-box"><x-icon name="shopping-bag" class="w-6 h-6" /></div>
                 <h3>Katalog & Keranjang Mandiri</h3>
                 <p>Pilih barang kebutuhan Anda, atur kuantitas di keranjang belanja, dan lakukan checkout kapan saja.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-box">📱</div>
+                <div class="feature-icon-box"><x-icon name="qr-code" class="w-6 h-6" /></div>
                 <h3>Pembayaran QRIS Dinamis</h3>
                 <p>Setiap pesanan dilengkapi kode QR pembayaran unik dengan validasi status otomatis dalam hitungan detik.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-box">🔢</div>
+                <div class="feature-icon-box"><x-icon name="hash" class="w-6 h-6" /></div>
                 <h3>Kode Pengambilan 4-Digit</h3>
                 <p>Setelah pembayaran terkonfirmasi, dapatkan kode ambil unik 4-digit untuk penukaran cepat di loket Polmart.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-box">🧾</div>
+                <div class="feature-icon-box"><x-icon name="receipt" class="w-6 h-6" /></div>
                 <h3>Riwayat & Struk Digital</h3>
                 <p>Pantau seluruh status pesanan aktif hingga selesai beserta bukti transaksi digital di portal anggota.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon-box">⏱️</div>
+                <div class="feature-icon-box"><x-icon name="clock" class="w-6 h-6" /></div>
                 <h3>Reservasi Stok Otomatis</h3>
                 <p>Stok langsung diamankan selama 15 menit saat Anda checkout agar tidak kehabisan barang sebelum pembayaran selesai.</p>
             </div>

@@ -9,7 +9,8 @@
                 <p class="text-sm text-slate-500 mt-1">Input pembelian langsung di loket koperasi. Status otomatis SELESAI dan stok fisik langsung berkurang.</p>
             </div>
             <a href="{{ route('admin.manual-orders.index') }}" class="polmart-btn polmart-btn-secondary">
-                📋 Riwayat Walk-in
+                <x-icon name="clipboard-list" class="w-4 h-4" />
+                <span>Riwayat Walk-in</span>
             </a>
         </div>
 
@@ -47,8 +48,8 @@
                                 <button type="button" x-show="selectedUserId || memberSearch"
                                         @click="clearMember()"
                                         title="Reset ke Walk-in / Non-Akun"
-                                        class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-rose-600 font-bold text-sm">
-                                    ✕
+                                        class="absolute inset-y-0 right-0 px-3 text-slate-400 hover:text-rose-600 flex items-center">
+                                    <x-icon name="x" class="w-4 h-4" />
                                 </button>
                             </div>
 
@@ -57,7 +58,7 @@
                                 <button type="button" @click="clearMember(); memberDropdownOpen = false"
                                         class="w-full text-left px-3.5 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 flex items-center justify-between">
                                     <span>-- Walk-in / Non-Akun --</span>
-                                    <span x-show="!selectedUserId" class="text-blue-600 font-bold">✓</span>
+                                    <span x-show="!selectedUserId" class="text-blue-600"><x-icon name="check" class="w-4 h-4" /></span>
                                 </button>
                                 <template x-for="member in filteredMembers()" :key="member.id">
                                     <button type="button" @click="selectMember(member)"
@@ -66,7 +67,7 @@
                                             <span class="font-semibold text-slate-900" x-text="member.name"></span>
                                             <span class="font-mono text-xs text-slate-500 ml-1.5" x-text="'(' + member.member_code + ')'"></span>
                                         </div>
-                                        <span x-show="String(selectedUserId) === String(member.id)" class="text-blue-600 font-bold text-xs">✓</span>
+                                        <span x-show="String(selectedUserId) === String(member.id)" class="text-blue-600"><x-icon name="check" class="w-4 h-4" /></span>
                                     </button>
                                 </template>
                                 <div x-show="filteredMembers().length === 0" class="px-3.5 py-3 text-xs text-slate-400 text-center">
@@ -139,8 +140,8 @@
                                             <div class="font-bold text-sm text-slate-900" x-text="row.name"></div>
                                             <div class="text-xs text-slate-500" x-text="row.sku + ' • ' + formatRupiah(row.price) + ' (Max: ' + row.stock + ')'"></div>
                                         </div>
-                                        <button type="button" @click="removeRow(index)" class="text-rose-600 font-bold text-xs px-2 py-1 rounded hover:bg-rose-50">
-                                            ✕
+                                        <button type="button" @click="removeRow(index)" class="text-rose-600 p-1 rounded hover:bg-rose-50 inline-flex items-center">
+                                            <x-icon name="x" class="w-4 h-4" />
                                         </button>
                                     </div>
                                     <div class="flex items-center justify-between gap-3">

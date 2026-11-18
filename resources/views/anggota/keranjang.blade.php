@@ -5,7 +5,7 @@
     <div class="space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h1 class="text-2xl font-extrabold text-slate-900">Keranjang Belanja 🧺</h1>
+                <h1 class="text-2xl font-extrabold text-slate-900">Keranjang Belanja</h1>
                 <p class="text-sm text-slate-500 mt-1">Periksa kembali daftar barang dan kuantitas sebelum melakukan checkout.</p>
             </div>
             @if (! empty($items))
@@ -14,7 +14,8 @@
                     @method('DELETE')
                     <button type="submit" class="polmart-btn polmart-btn-danger polmart-btn-sm"
                             onclick="return confirm('Kosongkan seluruh keranjang belanja?')">
-                        🗑 Kosongkan Keranjang
+                        <x-icon name="trash-2" class="w-4 h-4" />
+                        <span>Kosongkan Keranjang</span>
                     </button>
                 </form>
             @endif
@@ -31,19 +32,21 @@
             </div>
         @endif
         @foreach ($warnings as $warning)
-            <div class="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm font-medium">
-                ⚠ {{ $warning }}
+            <div class="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-xl text-sm font-medium flex items-center gap-2">
+                <x-icon name="alert-triangle" class="w-4 h-4 shrink-0" />
+                <span>{{ $warning }}</span>
             </div>
         @endforeach
 
         @if (empty($items))
             <div class="polmart-card text-center py-14 space-y-4">
-                <div class="text-5xl">🧺</div>
+                <div class="flex justify-center text-slate-400"><x-icon name="shopping-basket" class="w-12 h-12" /></div>
                 <h2 class="text-lg font-extrabold text-slate-900">Keranjang belanja masih kosong</h2>
                 <p class="text-sm text-slate-500 max-w-md mx-auto">Jelajahi katalog Polmart untuk memilih produk kebutuhan Anda.</p>
                 <div>
                     <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-primary">
-                        🛍️ Belanja di Katalog
+                        <x-icon name="shopping-bag" class="w-4 h-4" />
+                        <span>Belanja di Katalog</span>
                     </a>
                 </div>
             </div>
@@ -58,7 +61,7 @@
                                 @if ($product->image)
                                     <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                                 @else
-                                    <span class="text-4xl">📦</span>
+                                    <span class="text-slate-400"><x-icon name="package" class="w-8 h-8" /></span>
                                 @endif
                             </div>
 

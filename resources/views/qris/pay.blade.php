@@ -67,7 +67,7 @@
             <!-- Status: SIAP_DIAMBIL / SELESAI -->
             <div id="simPaid" class="{{ in_array($order->status, ['SIAP_DIAMBIL', 'SELESAI'], true) ? '' : 'hidden' }} space-y-4 text-center">
                 <div class="p-5 rounded-2xl bg-emerald-50 border border-emerald-200">
-                    <div class="text-3xl mb-1">✓</div>
+                    <div class="mb-2 flex justify-center text-emerald-600"><x-icon name="check-circle" class="w-8 h-8" /></div>
                     <h2 class="text-lg font-extrabold text-emerald-900">Pembayaran Lunas!</h2>
                     <p class="text-xs text-emerald-700 mt-1">
                         Waktu Bayar: <strong id="simPaidAt">{{ $order->paid_at?->format('d/m/Y H:i:s') }}</strong>

@@ -16,18 +16,23 @@
                     Halo, {{ Auth::user()->name }}!
                 </h1>
                 <div class="flex flex-wrap gap-3 mt-5">
-                    <a href="{{ route('anggota.katalog') }}" class="px-4 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-lg shadow hover:bg-blue-50 transition">
-                        🛍️ Belanja di Katalog
+                    <a href="{{ route('anggota.katalog') }}" class="px-4 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-lg shadow hover:bg-blue-50 transition inline-flex items-center gap-2">
+                        <x-icon name="shopping-bag" class="w-4 h-4" />
+                        <span>Belanja di Katalog</span>
                     </a>
-                    <a href="{{ route('anggota.keranjang') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white font-semibold text-sm rounded-lg hover:bg-white/25 transition">
-                        🧺 Keranjang ({{ $stats['cart_count'] }})
+                    <a href="{{ route('anggota.keranjang') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white font-semibold text-sm rounded-lg hover:bg-white/25 transition inline-flex items-center gap-2">
+                        <x-icon name="shopping-basket" class="w-4 h-4" />
+                        <span>Keranjang ({{ $stats['cart_count'] }})</span>
                     </a>
-                    <a href="{{ route('anggota.pesanan') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white font-semibold text-sm rounded-lg hover:bg-white/25 transition">
-                        📋 Riwayat Pesanan
+                    <a href="{{ route('anggota.pesanan') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white font-semibold text-sm rounded-lg hover:bg-white/25 transition inline-flex items-center gap-2">
+                        <x-icon name="clipboard-list" class="w-4 h-4" />
+                        <span>Riwayat Pesanan</span>
                     </a>
                 </div>
             </div>
-            <div class="hidden lg:block text-7xl relative z-10 select-none">🛍️</div>
+            <div class="hidden lg:flex items-center justify-center w-20 h-20 rounded-2xl bg-white/15 text-white relative z-10 select-none">
+                <x-icon name="shopping-bag" class="w-10 h-10" />
+            </div>
         </section>
 
         <!-- Ringkasan Statistik Anggota -->
@@ -38,7 +43,7 @@
                     <p class="text-2xl font-extrabold text-emerald-600 mt-1">{{ $stats['ready_count'] }}</p>
                     <p class="text-xs text-slate-400 mt-1">Tunjukkan kode di loket</p>
                 </div>
-                <div class="polmart-stat-icon green">🔢</div>
+                <div class="polmart-stat-icon green"><x-icon name="hash" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
@@ -46,7 +51,7 @@
                     <p class="text-2xl font-extrabold text-amber-600 mt-1">{{ $stats['pending_count'] }}</p>
                     <p class="text-xs text-slate-400 mt-1">Segera selesaikan QRIS</p>
                 </div>
-                <div class="polmart-stat-icon amber">⏱</div>
+                <div class="polmart-stat-icon amber"><x-icon name="clock" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
@@ -54,7 +59,7 @@
                     <p class="text-2xl font-extrabold text-blue-600 mt-1">{{ $stats['cart_count'] }}</p>
                     <p class="text-xs text-slate-400 mt-1">Item siap checkout</p>
                 </div>
-                <div class="polmart-stat-icon blue">🧺</div>
+                <div class="polmart-stat-icon blue"><x-icon name="shopping-basket" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
@@ -62,7 +67,7 @@
                     <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['completed_count'] }}</p>
                     <p class="text-xs text-slate-400 mt-1">Telah diambil</p>
                 </div>
-                <div class="polmart-stat-icon purple">✓</div>
+                <div class="polmart-stat-icon purple"><x-icon name="check-circle" class="w-5 h-5" /></div>
             </div>
         </section>
 

@@ -571,7 +571,7 @@
             <a href="{{ $homeRoute }}" class="brand">
                 <div class="brand-icon">P</div>
                 <div>
-                    <div class="brand-name">Polmart.</div>
+                    <div class="brand-name">Polmart</div>
                     <div class="brand-subtitle">{{ $isAdmin ? 'Admin & Pengurus' : 'Portal Anggota' }}</div>
                 </div>
             </a>
@@ -584,7 +584,7 @@
 
                     <a href="{{ route('admin.dashboard') }}"
                        class="menu-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                        <span class="menu-icon">▦</span>
+                        <span class="menu-icon"><x-icon name="layout-dashboard" class="w-5 h-5" /></span>
                         <span>Dashboard Analitik</span>
                     </a>
 
@@ -592,25 +592,25 @@
 
                     <a href="{{ route('admin.products.index') }}"
                        class="menu-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
-                        <span class="menu-icon">📦</span>
+                        <span class="menu-icon"><x-icon name="package" class="w-5 h-5" /></span>
                         <span>Master Barang</span>
                     </a>
 
                     <a href="{{ route('admin.stock-mutations.index') }}"
                        class="menu-link {{ request()->routeIs('admin.stock-mutations.*') ? 'active' : '' }}">
-                        <span class="menu-icon">⇄</span>
+                        <span class="menu-icon"><x-icon name="arrow-left-right" class="w-5 h-5" /></span>
                         <span>Log Mutasi Stok</span>
                     </a>
 
                     <a href="{{ route('admin.manual-orders.index') }}"
                        class="menu-link {{ request()->routeIs('admin.manual-orders.*') ? 'active' : '' }}">
-                        <span class="menu-icon">🛒</span>
+                        <span class="menu-icon"><x-icon name="shopping-cart" class="w-5 h-5" /></span>
                         <span>Transaksi Walk-in</span>
                     </a>
 
                     <a href="{{ route('admin.pickup.index') }}"
                        class="menu-link {{ request()->routeIs('admin.pickup.*') ? 'active' : '' }}">
-                        <span class="menu-icon">⌕</span>
+                        <span class="menu-icon"><x-icon name="check-circle" class="w-5 h-5" /></span>
                         <span>Validasi Loket Ambil</span>
                     </a>
 
@@ -618,19 +618,19 @@
 
                     <a href="{{ route('admin.order-imports.index') }}"
                        class="menu-link {{ request()->routeIs('admin.order-imports.*') ? 'active' : '' }}">
-                        <span class="menu-icon">▤</span>
+                        <span class="menu-icon"><x-icon name="file-spreadsheet" class="w-5 h-5" /></span>
                         <span>Impor Data Excel</span>
                     </a>
 
                     <a href="{{ route('admin.transactions.index') }}"
                        class="menu-link {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
-                        <span class="menu-icon">▧</span>
+                        <span class="menu-icon"><x-icon name="receipt" class="w-5 h-5" /></span>
                         <span>Riwayat Transaksi</span>
                     </a>
 
                     <a href="{{ route('admin.reports.index') }}"
                        class="menu-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                        <span class="menu-icon">▥</span>
+                        <span class="menu-icon"><x-icon name="bar-chart-3" class="w-5 h-5" /></span>
                         <span>Laporan & Export Excel</span>
                     </a>
                 @else
@@ -638,19 +638,19 @@
 
                     <a href="{{ route('anggota.dashboard') }}"
                        class="menu-link {{ request()->routeIs('anggota.dashboard') ? 'active' : '' }}">
-                        <span class="menu-icon">▦</span>
+                        <span class="menu-icon"><x-icon name="layout-dashboard" class="w-5 h-5" /></span>
                         <span>Dashboard Anggota</span>
                     </a>
 
                     <a href="{{ route('anggota.katalog') }}"
                        class="menu-link {{ request()->routeIs('anggota.katalog') ? 'active' : '' }}">
-                        <span class="menu-icon">🛍️</span>
+                        <span class="menu-icon"><x-icon name="shopping-bag" class="w-5 h-5" /></span>
                         <span>Katalog Belanja</span>
                     </a>
 
                     <a href="{{ route('anggota.keranjang') }}"
                        class="menu-link {{ request()->routeIs('anggota.keranjang*') ? 'active' : '' }}">
-                        <span class="menu-icon">🧺</span>
+                        <span class="menu-icon"><x-icon name="shopping-basket" class="w-5 h-5" /></span>
                         <span>Keranjang Belanja</span>
                         @if ($cartItemCount > 0)
                             <span class="menu-badge">{{ $cartItemCount }}</span>
@@ -659,7 +659,7 @@
 
                     <a href="{{ route('anggota.pesanan') }}"
                        class="menu-link {{ request()->routeIs('anggota.pesanan*', 'anggota.checkout*', 'anggota.pembayaran*') ? 'active' : '' }}">
-                        <span class="menu-icon">📋</span>
+                        <span class="menu-icon"><x-icon name="clipboard-list" class="w-5 h-5" /></span>
                         <span>Pesanan Saya</span>
                     </a>
 
@@ -667,7 +667,7 @@
 
                     <a href="{{ route('profile.edit') }}"
                        class="menu-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                        <span class="menu-icon">👤</span>
+                        <span class="menu-icon"><x-icon name="user" class="w-5 h-5" /></span>
                         <span>Profil Akun</span>
                     </a>
                 @endif
@@ -695,7 +695,7 @@
                 <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                     @csrf
                     <button type="submit" class="btn-logout-sidebar" title="Keluar / Logout" onclick="return confirm('Apakah Anda yakin ingin keluar?')">
-                        ⏻
+                        <x-icon name="power" class="w-4 h-4" />
                     </button>
                 </form>
             </div>
@@ -713,7 +713,7 @@
         <header class="topbar">
             <div class="topbar-left">
                 <button type="button" class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Toggle Menu">
-                    ☰
+                    <x-icon name="menu" class="w-5 h-5" />
                 </button>
 
                 <div class="page-context">
@@ -727,20 +727,20 @@
                 @if ($isAdmin)
                     <!-- Search Box -->
                     <div class="search-box">
-                        <span class="search-box-icon">🔍</span>
+                        <span class="search-box-icon flex items-center"><x-icon name="search" class="w-4 h-4" /></span>
                         <input type="text" id="globalSearchInput" placeholder="Cari SKU atau nama barang..." onkeyup="handleGlobalSearch(event)">
-                        <span class="search-box-kbd">⌘K</span>
+                        <span class="search-box-kbd">Ctrl+K</span>
                     </div>
                 @endif
 
                 @if ($isAdmin)
                     <a href="{{ route('admin.manual-orders.create') }}" class="portal-switch-pill">
-                        <span class="icon">🛒</span>
+                        <span class="icon flex items-center"><x-icon name="shopping-cart" class="w-4 h-4" /></span>
                         <span>+ Kasir Walk-in</span>
                     </a>
                 @else
                     <a href="{{ route('anggota.keranjang') }}" class="portal-switch-pill">
-                        <span class="icon">🧺</span>
+                        <span class="icon flex items-center"><x-icon name="shopping-basket" class="w-4 h-4" /></span>
                         <span>Keranjang ({{ $cartItemCount }})</span>
                     </a>
                 @endif
@@ -785,7 +785,7 @@
         }
     }
 
-    // Keyboard shortcut ⌘K or Ctrl+K to focus search
+    // Keyboard shortcut Ctrl+K or Cmd+K to focus search
     document.addEventListener('keydown', function(e) {
         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
             e.preventDefault();

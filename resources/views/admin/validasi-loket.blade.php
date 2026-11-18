@@ -9,7 +9,8 @@
                 <p class="text-sm text-slate-500 mt-1">Klik tombol Selesai pada pesanan berstatus SIAP DIAMBIL untuk menandakan barang telah diambil anggota.</p>
             </div>
             <a href="{{ route('admin.transactions.index') }}" class="polmart-btn polmart-btn-secondary">
-                ▧ Riwayat Transaksi
+                <x-icon name="receipt" class="w-4 h-4" />
+                <span>Riwayat Transaksi</span>
             </a>
         </div>
 
@@ -31,28 +32,28 @@
                     <p class="text-xs font-semibold text-slate-500 uppercase">Siap Diambil</p>
                     <p class="text-2xl font-extrabold text-blue-600 mt-1">{{ $stats['ready_count'] }}</p>
                 </div>
-                <div class="polmart-stat-icon blue">🔢</div>
+                <div class="polmart-stat-icon blue"><x-icon name="hash" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Selesai</p>
                     <p class="text-2xl font-extrabold text-emerald-600 mt-1">{{ $stats['completed_count'] }}</p>
                 </div>
-                <div class="polmart-stat-icon green">✓</div>
+                <div class="polmart-stat-icon green"><x-icon name="check-circle" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Menunggu Bayar</p>
                     <p class="text-2xl font-extrabold text-amber-600 mt-1">{{ $stats['pending_count'] }}</p>
                 </div>
-                <div class="polmart-stat-icon amber">⏱</div>
+                <div class="polmart-stat-icon amber"><x-icon name="clock" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Dibatalkan</p>
                     <p class="text-2xl font-extrabold text-rose-600 mt-1">{{ $stats['cancelled_count'] }}</p>
                 </div>
-                <div class="polmart-stat-icon purple">✕</div>
+                <div class="polmart-stat-icon purple"><x-icon name="x-circle" class="w-5 h-5" /></div>
             </div>
         </section>
 

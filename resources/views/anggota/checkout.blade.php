@@ -23,7 +23,7 @@
                                         @if ($product->image)
                                             <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                                         @else
-                                            <span class="text-2xl">📦</span>
+                                            <span class="text-slate-400"><x-icon name="package" class="w-6 h-6" /></span>
                                         @endif
                                     </div>
                                     <div>
@@ -73,7 +73,7 @@
                             <p class="font-bold text-slate-900 text-sm">QRIS</p>
                             <p class="text-xs text-slate-600 mt-0.5">Kode QR unik dibuat otomatis dengan batas pembayaran 15 menit.</p>
                         </div>
-                        <span class="text-blue-700 font-extrabold">✓</span>
+                        <span class="text-blue-700"><x-icon name="check" class="w-5 h-5" /></span>
                     </div>
                 </section>
             </div>

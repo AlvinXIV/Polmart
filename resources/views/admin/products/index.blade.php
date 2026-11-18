@@ -6,15 +6,17 @@
         <!-- Hero Header -->
         <section class="polmart-banner flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="relative z-10">
-                <h1 class="text-2xl font-extrabold">Master Barang & Inventaris 📦</h1>
+                <h1 class="text-2xl font-extrabold">Master Barang & Inventaris</h1>
                 <p class="text-blue-100 text-sm mt-1">Kelola katalog master barang, SKU, harga satuan, status aktif, restock, dan mutasi stok.</p>
             </div>
             <div class="relative z-10 flex flex-wrap gap-2">
-                <a href="{{ route('admin.stock-mutations.index') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white rounded-lg text-sm font-semibold hover:bg-white/25">
-                    ⇄ Log Mutasi Stok
+                <a href="{{ route('admin.stock-mutations.index') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white rounded-lg text-sm font-semibold hover:bg-white/25 inline-flex items-center gap-2">
+                    <x-icon name="arrow-left-right" class="w-4 h-4" />
+                    <span>Log Mutasi Stok</span>
                 </a>
-                <a href="{{ route('admin.products.create') }}" class="px-4 py-2.5 bg-white text-blue-700 rounded-lg text-sm font-bold shadow hover:bg-blue-50">
-                    + Tambah Barang
+                <a href="{{ route('admin.products.create') }}" class="px-4 py-2.5 bg-white text-blue-700 rounded-lg text-sm font-bold shadow hover:bg-blue-50 inline-flex items-center gap-2">
+                    <x-icon name="plus" class="w-4 h-4" />
+                    <span>Tambah Barang</span>
                 </a>
             </div>
         </section>
@@ -37,28 +39,28 @@
                     <p class="text-xs font-semibold text-slate-500 uppercase">Total Produk</p>
                     <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['total'] }}</p>
                 </div>
-                <div class="polmart-stat-icon blue">📦</div>
+                <div class="polmart-stat-icon blue"><x-icon name="package" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Stok Aman (&gt;10)</p>
                     <p class="text-2xl font-extrabold text-emerald-600 mt-1">{{ $stats['available'] }}</p>
                 </div>
-                <div class="polmart-stat-icon green">✓</div>
+                <div class="polmart-stat-icon green"><x-icon name="check-circle" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Stok Menipis (1–10)</p>
                     <p class="text-2xl font-extrabold text-amber-600 mt-1">{{ $stats['low'] }}</p>
                 </div>
-                <div class="polmart-stat-icon amber">⚠</div>
+                <div class="polmart-stat-icon amber"><x-icon name="alert-triangle" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Stok Habis (0)</p>
                     <p class="text-2xl font-extrabold text-rose-600 mt-1">{{ $stats['empty'] }}</p>
                 </div>
-                <div class="polmart-stat-icon purple">!</div>
+                <div class="polmart-stat-icon purple"><x-icon name="x-circle" class="w-5 h-5" /></div>
             </div>
         </section>
 
@@ -116,8 +118,8 @@
                                 @if ($product->image)
                                     <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-12 h-12 object-cover rounded-lg border border-slate-200">
                                 @else
-                                    <div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 text-xs font-semibold">
-                                        📦
+                                    <div class="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400">
+                                        <x-icon name="package" class="w-6 h-6" />
                                     </div>
                                 @endif
                             </td>

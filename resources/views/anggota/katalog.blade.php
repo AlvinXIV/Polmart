@@ -6,11 +6,12 @@
         <!-- Header Katalog -->
         <section class="polmart-banner flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div class="relative z-10">
-                <h1 class="text-2xl sm:text-3xl font-extrabold">Katalog Produk Polmart 🛍️</h1>
+                <h1 class="text-2xl sm:text-3xl font-extrabold">Katalog Produk Polmart</h1>
             </div>
             <div class="relative z-10">
                 <a href="{{ route('anggota.keranjang') }}" class="px-5 py-3 bg-white text-blue-700 font-extrabold text-sm rounded-xl shadow hover:bg-blue-50 transition inline-flex items-center gap-2">
-                    🧺 Lihat Keranjang ({{ $cartCount }})
+                    <x-icon name="shopping-basket" class="w-4 h-4" />
+                    <span>Lihat Keranjang ({{ $cartCount }})</span>
                 </a>
             </div>
         </section>
@@ -76,7 +77,7 @@
                             @if ($product->image)
                                 <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover">
                             @else
-                                <span class="text-6xl">📦</span>
+                                <span class="text-slate-400"><x-icon name="package" class="w-12 h-12" /></span>
                             @endif
                             <span class="absolute top-3 left-3 px-2.5 py-1 rounded-full text-xs font-bold bg-white/90 text-blue-700 shadow-sm">
                                 {{ $product->category }}
@@ -129,7 +130,7 @@
                 </div>
             @empty
                 <div class="col-span-full polmart-card text-center py-12">
-                    <div class="text-4xl mb-3">🔍</div>
+                    <div class="mb-3 flex justify-center text-slate-400"><x-icon name="search" class="w-10 h-10" /></div>
                     <h3 class="font-bold text-slate-800">Tidak ada produk tersedia</h3>
                     <p class="text-sm text-slate-500 mt-1">Coba ubah kata kunci pencarian atau kategori.</p>
                 </div>

@@ -9,7 +9,8 @@
                 <p class="text-sm text-slate-500 mt-1">Rekap seluruh pesanan dari portal anggota (QRIS), kasir walk-in, dan impor Excel.</p>
             </div>
             <a href="{{ route('admin.reports.index') }}" class="polmart-btn polmart-btn-primary">
-                ▥ Laporan & Export Excel
+                <x-icon name="bar-chart-3" class="w-4 h-4" />
+                <span>Laporan & Export Excel</span>
             </a>
         </div>
 
@@ -20,35 +21,35 @@
                     <p class="text-xs font-semibold text-slate-500 uppercase">Total</p>
                     <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['total'] }}</p>
                 </div>
-                <div class="polmart-stat-icon blue">📋</div>
+                <div class="polmart-stat-icon blue"><x-icon name="clipboard-list" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Selesai</p>
                     <p class="text-2xl font-extrabold text-emerald-600 mt-1">{{ $stats['completed'] }}</p>
                 </div>
-                <div class="polmart-stat-icon green">✓</div>
+                <div class="polmart-stat-icon green"><x-icon name="check-circle" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Siap Diambil</p>
                     <p class="text-2xl font-extrabold text-blue-600 mt-1">{{ $stats['ready'] }}</p>
                 </div>
-                <div class="polmart-stat-icon blue">🔢</div>
+                <div class="polmart-stat-icon blue"><x-icon name="hash" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Menunggu</p>
                     <p class="text-2xl font-extrabold text-amber-600 mt-1">{{ $stats['pending'] }}</p>
                 </div>
-                <div class="polmart-stat-icon amber">⏱</div>
+                <div class="polmart-stat-icon amber"><x-icon name="clock" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Dibatalkan</p>
                     <p class="text-2xl font-extrabold text-rose-600 mt-1">{{ $stats['cancelled'] }}</p>
                 </div>
-                <div class="polmart-stat-icon purple">✕</div>
+                <div class="polmart-stat-icon purple"><x-icon name="x-circle" class="w-5 h-5" /></div>
             </div>
         </section>
 

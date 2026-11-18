@@ -13,7 +13,7 @@
     <!-- Quick Credentials Helper for Testing -->
     <div style="background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 14px 16px; margin-bottom: 24px; font-size: 12.5px; color: #1e40af;">
         <div style="font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-            <span>💡</span> Akun Demo Pengujian (Seeder):
+            <x-icon name="lightbulb" class="w-4 h-4" /> Akun Demo Pengujian (Seeder):
         </div>
         <div style="display: flex; flex-direction: column; gap: 8px;">
             <div style="display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 8px 12px; border-radius: 8px; border: 1px solid #dbeafe;">

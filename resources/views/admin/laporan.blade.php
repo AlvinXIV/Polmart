@@ -10,7 +10,8 @@
             </div>
             <a href="{{ route('admin.reports.export', request()->query()) }}"
                class="polmart-btn polmart-btn-success whitespace-nowrap">
-                ↓ Export Excel (.xlsx) Multi-Sheet
+                <x-icon name="download" class="w-4 h-4" />
+                <span>Export Excel (.xlsx) Multi-Sheet</span>
             </a>
         </div>
 
@@ -76,12 +77,12 @@
                         <span>Ringkasan Finansial: Omzet, HPP &amp; Laba Kotor</span>
                         @if ($summary['has_unrecorded_hpp'])
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200" title="Terdapat transaksi tanpa data HPP tercatat">
-                                <span>⚠️</span>
+                                <x-icon name="alert-triangle" class="w-3.5 h-3.5" />
                                 <span>Laba Kotor Provisional</span>
                             </span>
                         @else
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                <span>✓</span>
+                                <x-icon name="check" class="w-3.5 h-3.5" />
                                 <span>Data HPP Lengkap (100%)</span>
                             </span>
                         @endif
@@ -173,7 +174,7 @@
             <!-- Keterangan Status HPP & Indikator Transaksi Belum Tercatat -->
             @if ($summary['has_unrecorded_hpp'])
                 <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
-                    <span class="text-base select-none mt-0.5">⚠️</span>
+                    <span class="text-amber-700 mt-0.5 shrink-0"><x-icon name="alert-triangle" class="w-4 h-4" /></span>
                     <div class="space-y-1">
                         <p class="font-bold">
                             Pemberitahuan Data HPP Belum Lengkap:
@@ -188,7 +189,7 @@
                 </div>
             @elseif ($summary['total_transactions'] > 0)
                 <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2">
-                    <span class="text-emerald-600 font-bold">✓</span>
+                    <span class="text-emerald-600 shrink-0"><x-icon name="check-circle" class="w-4 h-4" /></span>
                     <span><strong>Data HPP Lengkap:</strong> Seluruh item dari <strong>{{ $summary['total_transactions'] }} transaksi</strong> berstatus SELESAI pada periode ini memiliki snapshot HPP yang tercatat valid.</span>
                 </div>
             @endif
@@ -201,28 +202,28 @@
                     <p class="text-xs font-semibold text-slate-500 uppercase">Total Omzet</p>
                     <p class="text-2xl font-extrabold text-emerald-600 mt-1">Rp {{ number_format($summary['total_omzet'], 0, ',', '.') }}</p>
                 </div>
-                <div class="polmart-stat-icon green">💰</div>
+                <div class="polmart-stat-icon green"><x-icon name="banknote" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Jumlah Transaksi</p>
                     <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ number_format($summary['total_transactions']) }}</p>
                 </div>
-                <div class="polmart-stat-icon blue">🧾</div>
+                <div class="polmart-stat-icon blue"><x-icon name="receipt" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Total Item Terjual</p>
                     <p class="text-2xl font-extrabold text-blue-600 mt-1">{{ number_format($summary['total_items_sold']) }} pcs</p>
                 </div>
-                <div class="polmart-stat-icon purple">📦</div>
+                <div class="polmart-stat-icon purple"><x-icon name="package" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Rata-Rata Transaksi</p>
                     <p class="text-2xl font-extrabold text-slate-900 mt-1">Rp {{ number_format($summary['avg_transaction'], 0, ',', '.') }}</p>
                 </div>
-                <div class="polmart-stat-icon amber">📊</div>
+                <div class="polmart-stat-icon amber"><x-icon name="bar-chart-3" class="w-5 h-5" /></div>
             </div>
         </section>
 
@@ -323,7 +324,7 @@
                 </div>
             @else
                 <div class="h-56 flex flex-col items-center justify-center text-center p-6 border border-dashed border-slate-200 rounded-xl">
-                    <span class="text-3xl mb-2">📉</span>
+                    <div class="mb-2 text-slate-400"><x-icon name="trending-down" class="w-8 h-8" /></div>
                     <p class="text-sm font-semibold text-slate-700">Tidak ada transaksi SELESAI pada periode ini.</p>
                     <p class="text-xs text-slate-400 mt-1">Pilih tanggal atau rentang periode lain untuk memuat data penjualan.</p>
                 </div>
@@ -446,8 +447,8 @@
                                     <td class="text-right font-bold text-emerald-700">Rp {{ number_format($itemProfit, 0, ',', '.') }}</td>
                                     <td class="text-center font-bold text-blue-700">{{ $itemMargin }}%</td>
                                     <td class="text-center">
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
-                                            ✓ Lengkap
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                                            <x-icon name="check" class="w-3 h-3" /> Lengkap
                                         </span>
                                     </td>
                                 </tr>
@@ -469,8 +470,9 @@
             @if ($provisionalProfitable->isNotEmpty())
                 <div class="mt-4 pt-4 border-t border-slate-100 space-y-2">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full">
-                            ⚠️ Data Produk Provisional (HPP Belum Lengkap)
+                        <span class="inline-flex items-center gap-1 text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full">
+                            <x-icon name="alert-triangle" class="w-3.5 h-3.5" />
+                            <span>Data Produk Provisional (HPP Belum Lengkap)</span>
                         </span>
                         <span class="text-xs text-slate-500">
                             Produk di bawah ini memiliki transaksi dengan HPP belum tercatat, sehingga angka labanya belum final:

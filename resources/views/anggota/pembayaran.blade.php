@@ -17,7 +17,8 @@
                 <p class="text-sm text-slate-500 mt-1">Pesanan <strong class="font-mono text-slate-900">{{ $order->order_code }}</strong></p>
             </div>
             <a href="{{ route('anggota.pesanan', ['order_code' => $order->order_code]) }}" class="polmart-btn polmart-btn-secondary">
-                📋 Daftar Pesanan Saya
+                <x-icon name="clipboard-list" class="w-4 h-4" />
+                <span>Daftar Pesanan Saya</span>
             </a>
         </div>
 
@@ -31,7 +32,9 @@
         <div id="waitingSection" class="{{ $order->status === 'MENUNGGU_BAYAR' ? '' : 'hidden' }} space-y-6">
             <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold">⏱</div>
+                    <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-700">
+                        <x-icon name="clock" class="w-5 h-5" />
+                    </div>
                     <div>
                         <p class="font-bold text-amber-900 text-sm">Menunggu Pembayaran QRIS</p>
                         <p class="text-xs text-amber-800 mt-0.5">Halaman akan otomatis beralih ke Struk Lunas & Kode Pengambilan 4-digit begitu pembayaran dikonfirmasi.</p>
@@ -57,11 +60,13 @@
                     <div class="space-y-3">
                         <button type="button" id="simulatePayBtn" onclick="simulatePayment()"
                                 class="polmart-btn polmart-btn-primary w-full py-3 text-sm">
-                            ✓ Simulasikan Bayar QRIS
+                            <x-icon name="check-circle" class="w-4 h-4" />
+                            <span id="simulatePayBtnLabel">Simulasikan Bayar QRIS</span>
                         </button>
                         <a href="{{ $qrisUrl }}" target="_blank"
                            class="polmart-btn polmart-btn-secondary w-full py-2.5 text-xs">
-                            Buka Halaman Simulasi QRIS (/qris/pay/{{ $order->order_code }}) ↗
+                            <span>Buka Halaman Simulasi QRIS (/qris/pay/{{ $order->order_code }})</span>
+                            <x-icon name="external-link" class="w-3.5 h-3.5" />
                         </a>
                         <p id="paymentFeedback" class="text-xs text-slate-500"></p>
                     </div>
@@ -101,8 +106,8 @@
         <div id="paidSection" class="{{ in_array($order->status, ['SIAP_DIAMBIL', 'SELESAI'], true) ? '' : 'hidden' }} space-y-6">
             <div class="p-6 bg-emerald-50 border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div class="flex items-start gap-4">
-                    <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-2xl font-bold shrink-0">
-                        ✓
+                    <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                        <x-icon name="check-circle" class="w-6 h-6" />
                     </div>
                     <div>
                         <span class="polmart-badge polmart-badge-green mb-1" id="paidStatusBadge">{{ str_replace('_', ' ', $order->status) }}</span>
@@ -276,7 +281,8 @@
                             showCancelledState();
                         } else if (payBtn) {
                             payBtn.disabled = false;
-                            payBtn.textContent = '✓ Simulasikan Bayar QRIS';
+                            const lbl = document.getElementById('simulatePayBtnLabel');
+                            if (lbl) lbl.textContent = 'Simulasikan Bayar QRIS';
                         }
                     }
                 } catch (error) {
@@ -286,7 +292,8 @@
                     }
                     if (payBtn) {
                         payBtn.disabled = false;
-                        payBtn.textContent = '✓ Simulasikan Bayar QRIS';
+                        const lbl = document.getElementById('simulatePayBtnLabel');
+                        if (lbl) lbl.textContent = 'Simulasikan Bayar QRIS';
                     }
                 }
             };
