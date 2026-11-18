@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Exports\PeriodicReportExport;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\FinancialSummaryService;
 use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -16,6 +17,11 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ReportController extends Controller
 {
+    public function __construct(
+        private readonly FinancialSummaryService $financialSummaryService = new FinancialSummaryService()
+    ) {
+    }
+
     public function index(Request $request, OrderService $orderService): View
     {
         $orderService->cancelExpiredOrders();
@@ -162,6 +168,16 @@ class ReportController extends Controller
         $gpm = $totalOmzet > 0 ? round(($grossProfit / $totalOmzet) * 100, 1) : null;
         $markup = $totalHpp > 0 ? round(($grossProfit / $totalHpp) * 100, 1) : null;
 
+        $opexSummary = $this->financialSummaryService->getOpexSummary($start, $end);
+        $netProfitData = $this->financialSummaryService->calculateNetProfit(
+            grossProfit: $grossProfit,
+            totalOmzet: $totalOmzet,
+            totalOpex: $opexSummary['total_opex'],
+            opexCount: $opexSummary['opex_count'],
+            hasUnrecordedHpp: $hasUnrecordedHpp,
+            totalTransactions: $totalTransactions
+        );
+
         $sourceCounts = [
             'web' => $orders->where('source', 'web')->count(),
             'manual_admin' => $orders->where('source', 'manual_admin')->count(),
@@ -250,6 +266,13 @@ class ReportController extends Controller
                 'unrecorded_orders_count' => $unrecordedHppOrdersCount,
                 'total_order_items_count' => $totalOrderItemsCount,
                 'completeness_pct' => $completenessPct,
+                'total_opex' => $opexSummary['total_opex'],
+                'opex_count' => $opexSummary['opex_count'],
+                'has_opex' => $opexSummary['has_opex'],
+                'net_profit' => $netProfitData['net_profit'],
+                'npm' => $netProfitData['npm'],
+                'is_net_profit_provisional' => $netProfitData['is_net_profit_provisional'],
+                'provisional_reasons' => $netProfitData['provisional_reasons'],
             ],
             'sourceCounts' => $sourceCounts,
         ];

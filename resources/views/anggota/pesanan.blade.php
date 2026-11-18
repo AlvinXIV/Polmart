@@ -46,7 +46,7 @@
                                 <strong class="text-sm text-slate-900">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</strong>
                             </div>
                             @if ($order->status === 'SIAP_DIAMBIL' && $order->pickup_code)
-                                <div class="mt-2 text-xs font-bold text-emerald-700">
+                                <div class="mt-2 text-xs font-bold text-blue-600">
                                     Kode Ambil: <span class="font-mono tracking-widest">#{{ $order->pickup_code }}</span>
                                 </div>
                             @endif
@@ -126,11 +126,11 @@
                             <h3 class="text-sm font-extrabold text-slate-900">Kode Pengambilan</h3>
                             <p class="text-xs text-slate-500">Tunjukkan kode ini kepada petugas di loket koperasi.</p>
 
-                            <div class="p-6 rounded-2xl border {{ $selectedOrder->pickup_code ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200' }}">
-                                <p class="text-3xl font-extrabold font-mono tracking-[0.25em] {{ $selectedOrder->pickup_code ? 'text-emerald-700' : 'text-slate-400' }}">
+                            <div class="p-6 rounded-2xl border bg-slate-50 border-slate-200">
+                                <p class="text-3xl font-extrabold font-mono tracking-[0.25em] {{ $selectedOrder->pickup_code ? 'text-slate-900' : 'text-slate-400' }}">
                                     {{ $selectedOrder->pickup_code ? ('#' . $selectedOrder->pickup_code) : '----' }}
                                 </p>
-                                <p class="text-xs mt-2 {{ $selectedOrder->pickup_code ? 'text-emerald-700' : 'text-slate-500' }}">
+                                <p class="text-xs mt-2 text-slate-500">
                                     @if ($selectedOrder->status === 'SIAP_DIAMBIL')
                                         Pesanan siap diambil di loket!
                                     @elseif ($selectedOrder->status === 'SELESAI')

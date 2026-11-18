@@ -614,6 +614,12 @@
                         <span>Validasi Loket Ambil</span>
                     </a>
 
+                    <a href="{{ route('admin.operating-expenses.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.operating-expenses.*') ? 'active' : '' }}">
+                        <span class="menu-icon"><x-icon name="banknote" class="w-5 h-5" /></span>
+                        <span>Biaya Operasional</span>
+                    </a>
+
                     <div class="menu-label">Data & Laporan</div>
 
                     <a href="{{ route('admin.order-imports.index') }}"
@@ -723,35 +729,21 @@
                 </div>
             </div>
 
-            <div class="topbar-right">
-                @if ($isAdmin)
-                    <!-- Search Box -->
-                    <div class="search-box">
-                        <span class="search-box-icon flex items-center"><x-icon name="search" class="w-4 h-4" /></span>
-                        <input type="text" id="globalSearchInput" placeholder="Cari SKU atau nama barang..." onkeyup="handleGlobalSearch(event)">
-                        <span class="search-box-kbd">Ctrl+K</span>
-                    </div>
-                @endif
-
-                @if ($isAdmin)
-                    <a href="{{ route('admin.manual-orders.create') }}" class="portal-switch-pill">
-                        <span class="icon flex items-center"><x-icon name="shopping-cart" class="w-4 h-4" /></span>
-                        <span>+ Kasir Walk-in</span>
-                    </a>
-                @else
+            @if (!$isAdmin)
+                <div class="topbar-right">
                     <a href="{{ route('anggota.keranjang') }}" class="portal-switch-pill">
                         <span class="icon flex items-center"><x-icon name="shopping-basket" class="w-4 h-4" /></span>
                         <span>Keranjang ({{ $cartItemCount }})</span>
                     </a>
-                @endif
 
-                <!-- User Avatar Pill -->
-                <a href="{{ route('profile.edit') }}" title="Profil Saya" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
-                    <div class="avatar" style="width: 34px; height: 34px; font-size: 13px;">
-                        {{ strtoupper(substr($currentUser->name ?? 'U', 0, 1)) }}
-                    </div>
-                </a>
-            </div>
+                    <!-- User Avatar Pill -->
+                    <a href="{{ route('profile.edit') }}" title="Profil Saya" style="display: flex; align-items: center; gap: 8px; text-decoration: none;">
+                        <div class="avatar" style="width: 34px; height: 34px; font-size: 13px;">
+                            {{ strtoupper(substr($currentUser->name ?? 'U', 0, 1)) }}
+                        </div>
+                    </a>
+                </div>
+            @endif
         </header>
 
         <!-- PAGE CONTAINER -->

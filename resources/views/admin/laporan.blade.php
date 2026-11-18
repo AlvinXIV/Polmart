@@ -102,64 +102,127 @@
                 </div>
             </div>
 
-            <!-- 5 Kartu Metrik Finansial (Task 2C: Ditambahkan GPM & Markup) -->
+            <!-- Baris 1: Arus Finansial Nominal (5 Kartu) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                <div class="p-3.5 rounded-xl border border-emerald-200/80 bg-emerald-50/40">
-                    <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Total Omzet</p>
-                    <p class="text-xl font-extrabold text-emerald-900 mt-1">
+                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Omzet</p>
+                    <p class="text-xl font-extrabold text-slate-900 mt-1">
                         Rp {{ number_format($summary['total_omzet'], 0, ',', '.') }}
                     </p>
-                    <p class="text-[10px] text-emerald-700 mt-0.5">
+                    <p class="text-[11px] text-slate-500 mt-1">
                         Subtotal penjualan SELESAI
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-rose-200/80 bg-rose-50/40">
-                    <p class="text-[11px] font-bold text-rose-700 uppercase tracking-wider">HPP Tercatat</p>
-                    <p class="text-xl font-extrabold text-rose-900 mt-1">
+                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">HPP Tercatat</p>
+                    <p class="text-xl font-extrabold text-slate-900 mt-1">
                         Rp {{ number_format($summary['total_hpp'], 0, ',', '.') }}
                     </p>
-                    <p class="text-[10px] text-rose-700 mt-0.5">
+                    <p class="text-[11px] text-slate-500 mt-1">
                         Snapshot modal barang terjual
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-blue-200/80 bg-blue-50/40">
-                    <p class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Laba Kotor</p>
-                    <p class="text-xl font-extrabold text-blue-900 mt-1">
+                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Laba Kotor</p>
+                    <p class="text-xl font-extrabold text-slate-900 mt-1">
                         Rp {{ number_format($summary['gross_profit'], 0, ',', '.') }}
                     </p>
-                    <p class="text-[10px] text-blue-700 mt-0.5">
+                    <p class="text-[11px] text-slate-500 mt-1">
                         @if ($summary['has_unrecorded_hpp'])
-                            <span class="text-amber-700 font-semibold">*Provisional (Omzet - HPP)</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (Omzet - HPP)</span>
                         @else
                             <span>Omzet dikurangi HPP</span>
                         @endif
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-indigo-200/80 bg-indigo-50/40">
-                    <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Gross Profit Margin</p>
-                    <p class="text-xl font-extrabold text-indigo-900 mt-1">
-                        {{ $summary['gpm'] !== null ? $summary['gpm'] . '%' : '—' }}
+                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Beban Operasional (OPEX)</p>
+                    <p class="text-xl font-extrabold text-slate-900 mt-1">
+                        Rp {{ number_format($summary['total_opex'], 0, ',', '.') }}
                     </p>
-                    <p class="text-[10px] text-indigo-700 mt-0.5">
-                        @if ($summary['has_unrecorded_hpp'] && $summary['gpm'] !== null)
-                            <span class="text-amber-700 font-semibold">*Provisional (Laba / Omzet)</span>
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        @if ($summary['opex_count'] > 0)
+                            <span>Ada catatan OPEX sebanyak {{ $summary['opex_count'] }} transaksi</span>
                         @else
-                            <span>(Laba Kotor / Omzet)</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">Belum ada catatan OPEX</span>
                         @endif
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-amber-200/80 bg-amber-50/40">
-                    <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Markup Penjualan</p>
-                    <p class="text-xl font-extrabold text-amber-900 mt-1">
+                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Laba Bersih (Net Profit)</p>
+                    <p class="text-xl font-extrabold {{ $summary['net_profit'] < 0 ? 'text-rose-600' : 'text-slate-900' }} mt-1">
+                        @if ($summary['net_profit'] < 0)
+                            -Rp {{ number_format(abs($summary['net_profit']), 0, ',', '.') }}
+                        @else
+                            Rp {{ number_format($summary['net_profit'], 0, ',', '.') }}
+                        @endif
+                    </p>
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        @if ($summary['net_profit'] < 0)
+                            <span class="text-rose-600 font-semibold">Defisit / Rugi Bersih</span>
+                        @elseif ($summary['is_net_profit_provisional'])
+                            @if ($summary['has_unrecorded_hpp'] && $summary['opex_count'] === 0)
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (HPP &amp; OPEX)</span>
+                            @elseif ($summary['has_unrecorded_hpp'])
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (HPP belum lengkap)</span>
+                            @else
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (OPEX belum dicatat)</span>
+                            @endif
+                        @else
+                            <span>Laba Kotor dikurangi OPEX</span>
+                        @endif
+                    </p>
+                </div>
+            </div>
+
+            <!-- Baris 2: Rasio & Analisis Profitabilitas (3 Kartu) -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Gross Profit Margin (GPM)</p>
+                    <p class="text-xl font-extrabold text-slate-900 mt-1">
+                        {{ $summary['gpm'] !== null ? $summary['gpm'] . '%' : '—' }}
+                    </p>
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        @if ($summary['has_unrecorded_hpp'] && $summary['gpm'] !== null)
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (Laba / Omzet)</span>
+                        @else
+                            <span>(Laba Kotor / Total Omzet)</span>
+                        @endif
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Net Profit Margin (NPM)</p>
+                    <p class="text-xl font-extrabold {{ $summary['npm'] !== null && $summary['npm'] < 0 ? 'text-rose-600' : 'text-slate-900' }} mt-1">
+                        {{ $summary['npm'] !== null ? $summary['npm'] . '%' : '—' }}
+                    </p>
+                    <p class="text-[11px] text-slate-500 mt-1">
+                        @if ($summary['npm'] !== null && $summary['is_net_profit_provisional'])
+                            @if ($summary['has_unrecorded_hpp'] && $summary['opex_count'] === 0)
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (Laba Bersih / Omzet)</span>
+                            @elseif ($summary['has_unrecorded_hpp'])
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (HPP belum lengkap)</span>
+                            @else
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (OPEX belum dicatat)</span>
+                            @endif
+                        @else
+                            <span>(Laba Bersih / Total Omzet)</span>
+                        @endif
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                    <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Markup Penjualan</p>
+                    <p class="text-xl font-extrabold text-slate-900 mt-1">
                         {{ $summary['markup'] !== null ? $summary['markup'] . '%' : '—' }}
                     </p>
-                    <p class="text-[10px] text-amber-700 mt-0.5">
+                    <p class="text-[11px] text-slate-500 mt-1">
                         @if ($summary['has_unrecorded_hpp'] && $summary['markup'] !== null)
-                            <span class="text-amber-700 font-semibold">*Provisional (Laba / HPP)</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (Laba / HPP)</span>
                         @else
                             <span>(Laba Kotor / HPP)</span>
                         @endif
@@ -168,7 +231,7 @@
             </div>
 
             <p class="text-[11px] text-slate-400">
-                *Catatan Analisis: <strong>GPM (Gross Profit Margin)</strong> dihitung terhadap Total Omzet Penjualan; <strong>Markup</strong> dihitung terhadap Total HPP Tercatat.
+                *Catatan Analisis: <strong>GPM (Gross Profit Margin)</strong> dihitung terhadap Total Omzet Penjualan; <strong>NPM (Net Profit Margin)</strong> dihitung dari Laba Bersih terhadap Total Omzet; <strong>Markup</strong> dihitung terhadap Total HPP Tercatat. Pembelian stok barang tidak termasuk OPEX (masuk ke HPP saat barang terjual).
             </p>
 
             <!-- Keterangan Status HPP & Indikator Transaksi Belum Tercatat -->
@@ -183,7 +246,7 @@
                             Terdapat <strong>{{ $summary['unrecorded_orders_count'] }} transaksi</strong> (mencakup <strong>{{ $summary['unrecorded_items_count'] }} item</strong>) yang belum memiliki catatan HPP/harga modal (misal: riwayat impor Excel tanpa HPP atau transaksi sebelum sistem HPP aktif).
                         </p>
                         <p class="leading-relaxed text-amber-800">
-                            Angka <strong>Laba Kotor</strong> di atas bersifat <em>provisional / belum lengkap</em> karena sistem tidak mengasumsikan biaya modal transaksi lama bernilai nol secara riil dan tidak mengarang HPP historis dari harga modal produk saat ini.
+                            Angka <strong>Laba Kotor</strong> dan <strong>Laba Bersih</strong> di atas bersifat <em>provisional / belum lengkap</em> karena sistem tidak mengasumsikan biaya modal transaksi lama bernilai nol secara riil (Net Profit provisional karena HPP belum lengkap).
                         </p>
                     </div>
                 </div>
@@ -193,6 +256,26 @@
                     <span><strong>Data HPP Lengkap:</strong> Seluruh item dari <strong>{{ $summary['total_transactions'] }} transaksi</strong> berstatus SELESAI pada periode ini memiliki snapshot HPP yang tercatat valid.</span>
                 </div>
             @endif
+
+            <!-- Keterangan Status Pencatatan Beban Operasional (OPEX) -->
+            @if ($summary['opex_count'] === 0 && ($summary['total_transactions'] > 0 || $summary['total_omzet'] > 0))
+                <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+                    <span class="text-amber-700 mt-0.5 shrink-0"><x-icon name="info" class="w-4 h-4" /></span>
+                    <div class="space-y-1">
+                        <p class="font-bold">
+                            Pemberitahuan Beban Operasional Belum Dicatat:
+                        </p>
+                        <p class="leading-relaxed">
+                            Belum ada catatan OPEX untuk periode ini. Nilai Laba Bersih yang ditampilkan mengasumsikan beban operasional sebesar Rp 0 sehingga bersifat <em>provisional</em> (Net Profit provisional karena belum ada catatan OPEX). Silakan catat biaya operasional melalui menu Biaya Operasional.
+                        </p>
+                    </div>
+                </div>
+            @elseif ($summary['opex_count'] > 0)
+                <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-xs flex items-center gap-2">
+                    <span class="text-slate-500 shrink-0"><x-icon name="clipboard-list" class="w-4 h-4" /></span>
+                    <span><strong>Status Beban Operasional:</strong> Ada catatan OPEX sebanyak <strong>{{ $summary['opex_count'] }} transaksi</strong> (Total Rp {{ number_format($summary['total_opex'], 0, ',', '.') }}) yang diperhitungkan ke dalam laba bersih periode aktif.</span>
+                </div>
+            @endif
         </section>
 
         <!-- Ringkasan Statistik -->
@@ -200,30 +283,30 @@
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Total Omzet</p>
-                    <p class="text-2xl font-extrabold text-emerald-600 mt-1">Rp {{ number_format($summary['total_omzet'], 0, ',', '.') }}</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">Rp {{ number_format($summary['total_omzet'], 0, ',', '.') }}</p>
                 </div>
-                <div class="polmart-stat-icon green"><x-icon name="banknote" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="banknote" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Jumlah Transaksi</p>
                     <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ number_format($summary['total_transactions']) }}</p>
                 </div>
-                <div class="polmart-stat-icon blue"><x-icon name="receipt" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="receipt" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Total Item Terjual</p>
-                    <p class="text-2xl font-extrabold text-blue-600 mt-1">{{ number_format($summary['total_items_sold']) }} pcs</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ number_format($summary['total_items_sold']) }} pcs</p>
                 </div>
-                <div class="polmart-stat-icon purple"><x-icon name="package" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="package" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Rata-Rata Transaksi</p>
                     <p class="text-2xl font-extrabold text-slate-900 mt-1">Rp {{ number_format($summary['avg_transaction'], 0, ',', '.') }}</p>
                 </div>
-                <div class="polmart-stat-icon amber"><x-icon name="bar-chart-3" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="bar-chart-3" class="w-5 h-5" /></div>
             </div>
         </section>
 
@@ -244,7 +327,7 @@
                         Omzet (Rp)
                     </button>
                     <button type="button" @click="chartMetric = 'count'"
-                            :class="chartMetric === 'count' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+                            :class="chartMetric === 'count' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'"
                             class="px-3 py-1.5 rounded-md transition">
                         Jumlah Transaksi
                     </button>
@@ -296,7 +379,7 @@
                                         <div class="w-full rounded-t-md transition-all duration-300 cursor-pointer"
                                              x-show="chartMetric === 'count'"
                                              title="{{ $pt['label'] }} - Transaksi: {{ number_format($valCount) }} pesanan (Omzet: Rp {{ number_format($valOmzet, 0, ',', '.') }})"
-                                             style="height: {{ $hCountPx }}px; background: {{ $valCount > 0 ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)' : '#e2e8f0' }};">
+                                             style="height: {{ $hCountPx }}px; background: {{ $valCount > 0 ? 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)' : '#e2e8f0' }};">
                                         </div>
                                     </div>
 
@@ -316,7 +399,7 @@
                             <span :class="chartMetric === 'omzet' ? 'font-bold text-slate-900' : 'text-slate-500'">Tren Omzet</span>
                         </span>
                         <span class="inline-flex items-center gap-1.5 cursor-pointer" @click="chartMetric = 'count'">
-                            <span class="w-2.5 h-2.5 rounded-sm bg-emerald-600 inline-block shadow-sm"></span>
+                            <span class="w-2.5 h-2.5 rounded-sm bg-blue-600 inline-block shadow-sm"></span>
                             <span :class="chartMetric === 'count' ? 'font-bold text-slate-900' : 'text-slate-500'">Jumlah Transaksi</span>
                         </span>
                     </div>
@@ -338,15 +421,15 @@
                 <div class="space-y-3 text-sm">
                     <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
                         <span class="text-slate-600">Portal Anggota (QRIS)</span>
-                        <strong class="text-blue-700">{{ $sourceCounts['web'] }} transaksi</strong>
+                        <strong class="text-slate-900">{{ $sourceCounts['web'] }} transaksi</strong>
                     </div>
                     <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
                         <span class="text-slate-600">Kasir Walk-in</span>
-                        <strong class="text-emerald-700">{{ $sourceCounts['manual_admin'] }} transaksi</strong>
+                        <strong class="text-slate-900">{{ $sourceCounts['manual_admin'] }} transaksi</strong>
                     </div>
                     <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
                         <span class="text-slate-600">Impor Excel Historis</span>
-                        <strong class="text-purple-700">{{ $sourceCounts['import_excel'] }} transaksi</strong>
+                        <strong class="text-slate-900">{{ $sourceCounts['import_excel'] }} transaksi</strong>
                     </div>
                 </div>
             </div>
@@ -394,7 +477,7 @@
                 <div>
                     <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
                         <span>Produk Paling Menguntungkan (Sheet 4)</span>
-                        <span class="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
+                        <span class="px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-600">
                             Berdasarkan Laba Kotor
                         </span>
                     </h2>
@@ -440,14 +523,14 @@
                                     <td class="font-semibold">{{ $item->name }}</td>
                                     <td class="text-xs text-slate-600">{{ $item->category }}</td>
                                     <td class="text-center">
-                                        <span class="polmart-badge polmart-badge-blue">{{ number_format($item->total_sold) }} pcs</span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700">{{ number_format($item->total_sold) }} pcs</span>
                                     </td>
-                                    <td class="text-right font-medium">Rp {{ number_format($itemRev, 0, ',', '.') }}</td>
-                                    <td class="text-right text-rose-700 font-medium">Rp {{ number_format($itemCost, 0, ',', '.') }}</td>
-                                    <td class="text-right font-bold text-emerald-700">Rp {{ number_format($itemProfit, 0, ',', '.') }}</td>
-                                    <td class="text-center font-bold text-blue-700">{{ $itemMargin }}%</td>
+                                    <td class="text-right font-medium text-slate-700">Rp {{ number_format($itemRev, 0, ',', '.') }}</td>
+                                    <td class="text-right text-slate-500 font-medium">Rp {{ number_format($itemCost, 0, ',', '.') }}</td>
+                                    <td class="text-right font-bold text-slate-900">Rp {{ number_format($itemProfit, 0, ',', '.') }}</td>
+                                    <td class="text-center font-semibold text-slate-700">{{ $itemMargin }}%</td>
                                     <td class="text-center">
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                                             <x-icon name="check" class="w-3 h-3" /> Lengkap
                                         </span>
                                     </td>
@@ -498,9 +581,9 @@
                                         <td class="font-semibold">{{ $pItem->name }}</td>
                                         <td class="text-center">{{ number_format($pItem->total_sold) }} pcs</td>
                                         <td class="text-right">Rp {{ number_format($pItem->total_revenue, 0, ',', '.') }}</td>
-                                        <td class="text-right text-rose-700">Rp {{ number_format($pItem->total_cost, 0, ',', '.') }}</td>
-                                        <td class="text-right font-bold text-amber-800">Rp {{ number_format($pItem->total_profit, 0, ',', '.') }}*</td>
-                                        <td class="text-center text-amber-700 font-medium">
+                                        <td class="text-right text-slate-500">Rp {{ number_format($pItem->total_cost, 0, ',', '.') }}</td>
+                                        <td class="text-right font-bold text-slate-900">Rp {{ number_format($pItem->total_profit, 0, ',', '.') }}*</td>
+                                        <td class="text-center text-slate-500 font-medium">
                                             {{ $pItem->unrecorded_items_count }} item transaksi belum tercatat HPP
                                         </td>
                                     </tr>
@@ -550,13 +633,13 @@
                                 </td>
                                 <td class="text-center">{{ $order->items->sum('qty') }}</td>
                                 <td class="text-right font-bold">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
-                                <td class="text-right font-semibold text-rose-700">
+                                <td class="text-right font-medium text-slate-500">
                                     Rp {{ number_format($orderHpp, 0, ',', '.') }}
                                     @if ($orderHasZeroHpp)
                                         <span class="block text-[10px] text-amber-700 font-normal" title="Sebagian atau seluruh item pesanan ini belum tercatat HPP">*provisional</span>
                                     @endif
                                 </td>
-                                <td class="text-right font-bold text-emerald-700">
+                                <td class="text-right font-bold text-slate-900">
                                     Rp {{ number_format($orderProfit, 0, ',', '.') }}
                                 </td>
                             </tr>

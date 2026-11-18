@@ -30,30 +30,30 @@
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Siap Diambil</p>
-                    <p class="text-2xl font-extrabold text-blue-600 mt-1">{{ $stats['ready_count'] }}</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['ready_count'] }}</p>
                 </div>
-                <div class="polmart-stat-icon blue"><x-icon name="hash" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-blue-50 text-blue-600"><x-icon name="hash" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Selesai</p>
-                    <p class="text-2xl font-extrabold text-emerald-600 mt-1">{{ $stats['completed_count'] }}</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['completed_count'] }}</p>
                 </div>
-                <div class="polmart-stat-icon green"><x-icon name="check-circle" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="check-circle" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Menunggu Bayar</p>
-                    <p class="text-2xl font-extrabold text-amber-600 mt-1">{{ $stats['pending_count'] }}</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['pending_count'] }}</p>
                 </div>
-                <div class="polmart-stat-icon amber"><x-icon name="clock" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="clock" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Dibatalkan</p>
-                    <p class="text-2xl font-extrabold text-rose-600 mt-1">{{ $stats['cancelled_count'] }}</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['cancelled_count'] }}</p>
                 </div>
-                <div class="polmart-stat-icon purple"><x-icon name="x-circle" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="x-circle" class="w-5 h-5" /></div>
             </div>
         </section>
 

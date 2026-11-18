@@ -39,28 +39,28 @@
                     <p class="text-xs font-semibold text-slate-500 uppercase">Total Produk</p>
                     <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['total'] }}</p>
                 </div>
-                <div class="polmart-stat-icon blue"><x-icon name="package" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="package" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Stok Aman (&gt;10)</p>
-                    <p class="text-2xl font-extrabold text-emerald-600 mt-1">{{ $stats['available'] }}</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['available'] }}</p>
                 </div>
-                <div class="polmart-stat-icon green"><x-icon name="check-circle" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="check-circle" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Stok Menipis (1–10)</p>
-                    <p class="text-2xl font-extrabold text-amber-600 mt-1">{{ $stats['low'] }}</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['low'] }}</p>
                 </div>
-                <div class="polmart-stat-icon amber"><x-icon name="alert-triangle" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="alert-triangle" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Stok Habis (0)</p>
-                    <p class="text-2xl font-extrabold text-rose-600 mt-1">{{ $stats['empty'] }}</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['empty'] }}</p>
                 </div>
-                <div class="polmart-stat-icon purple"><x-icon name="x-circle" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="x-circle" class="w-5 h-5" /></div>
             </div>
         </section>
 

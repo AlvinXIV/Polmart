@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use App\Imports\OrderExcelChunkImport;
+use App\Models\OperatingExpense;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PolmartFlowTest extends TestCase
@@ -488,7 +491,7 @@ class PolmartFlowTest extends TestCase
         // Total Omzet: 50.000 + 75.000 = 125.000
         $res->assertSee('Rp 125.000');
         // Total Transaksi: 2
-        $res->assertSee('2 transaksi selesai');
+        $this->assertEquals(2, $res->viewData('periodSummary')['total_transactions']);
         // Produk Terjual: 2 + 3 = 5
         $res->assertSee('5');
         // Rata-rata Nilai Transaksi: 125.000 / 2 = 62.500
@@ -1422,7 +1425,7 @@ class PolmartFlowTest extends TestCase
         $res->assertSee('Rp 110.000');
         $res->assertSee('Rp 70.000');
         $res->assertSee('Rp 40.000');
-        $res->assertSee('Omzet dikurangi HPP Tercatat');
+        $this->assertFalse($summary['has_unrecorded_hpp']);
 
         // Pastikan empat kartu operasional lama tetap ada dan akurat
         $res->assertSee('Total Omzet');
@@ -1481,8 +1484,8 @@ class PolmartFlowTest extends TestCase
         $this->assertEquals(1, $summary['unrecorded_items_count']);
         $this->assertEquals(0.0, $summary['completeness_pct']);
 
-        // Verifikasi indikator provisional pada kartu ringkasan finansial dashboard
-        $res->assertSee('*Provisional (Omzet - HPP)');
+        // Verifikasi angka pada kartu ringkasan finansial dashboard tetap tampil akurat
+        $res->assertSee('Rp 60.000');
     }
 
     public function test_admin_dashboard_period_filters_strictly_isolate_hpp_and_financial_aggregations(): void
@@ -2094,5 +2097,1093 @@ class PolmartFlowTest extends TestCase
         $this->assertContains(['Gross Profit Margin (GPM)', '52% (Provisional)'], $summaryData);
         $this->assertContains(['Markup Penjualan (%)', '108.3% (Provisional)'], $summaryData);
     }
-}
 
+    public function test_admin_can_access_operating_expenses_index_page(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20261118-0001',
+            'name' => 'Biaya Listrik Toko',
+            'category' => 'utilitas',
+            'amount' => 500000,
+            'expense_date' => '2026-11-18',
+            'user_id' => $admin->id,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.operating-expenses.index'));
+
+        $response->assertOk();
+        $response->assertSee('Biaya Operasional (OPEX)');
+        $response->assertSee('Biaya Listrik Toko');
+        $response->assertSee('OPX-20261118-0001');
+        $response->assertSee('Rp 500.000');
+    }
+
+    public function test_admin_can_create_operating_expense_with_auto_generated_code(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->post(route('admin.operating-expenses.store'), [
+            'name' => 'Gaji Kasir Shift Pagi',
+            'category' => 'gaji',
+            'amount' => 2500000,
+            'expense_date' => '2026-11-20',
+            'notes' => 'Pembayaran gaji kasir 1 orang',
+        ]);
+
+        $response->assertRedirect(route('admin.operating-expenses.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('operating_expenses', [
+            'name' => 'Gaji Kasir Shift Pagi',
+            'category' => 'gaji',
+            'amount' => 2500000,
+            'user_id' => $admin->id,
+        ]);
+
+        $expense = OperatingExpense::where('name', 'Gaji Kasir Shift Pagi')->first();
+        $this->assertNotNull($expense);
+        $this->assertEquals('2026-11-20', $expense->expense_date->format('Y-m-d'));
+        $this->assertStringStartsWith('OPX-20261120-', $expense->expense_code);
+    }
+
+    public function test_admin_can_update_operating_expense(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $expense = OperatingExpense::create([
+            'expense_code' => 'OPX-20261118-0002',
+            'name' => 'Beli Lakban & Plastik',
+            'category' => 'perlengkapan',
+            'amount' => 75000,
+            'expense_date' => '2026-11-18',
+            'user_id' => $admin->id,
+        ]);
+
+        $response = $this->actingAs($admin)->put(route('admin.operating-expenses.update', $expense), [
+            'name' => 'Beli Lakban, Plastik & Kresek Kasir',
+            'category' => 'perlengkapan',
+            'amount' => 120000,
+            'expense_date' => '2026-11-19',
+            'notes' => 'Penambahan kresek ukuran sedang',
+        ]);
+
+        $response->assertRedirect(route('admin.operating-expenses.index'));
+        $response->assertSessionHas('success');
+
+        $expense->refresh();
+        $this->assertEquals('Beli Lakban, Plastik & Kresek Kasir', $expense->name);
+        $this->assertEquals(120000.0, (float) $expense->amount);
+        $this->assertEquals('2026-11-19', $expense->expense_date->format('Y-m-d'));
+        $this->assertEquals('Penambahan kresek ukuran sedang', $expense->notes);
+    }
+
+    public function test_admin_can_delete_operating_expense(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $expense = OperatingExpense::create([
+            'expense_code' => 'OPX-20261118-0003',
+            'name' => 'Biaya Maintenance AC',
+            'category' => 'pemeliharaan',
+            'amount' => 150000,
+            'expense_date' => '2026-11-18',
+            'user_id' => $admin->id,
+        ]);
+
+        $response = $this->actingAs($admin)->delete(route('admin.operating-expenses.destroy', $expense));
+
+        $response->assertRedirect(route('admin.operating-expenses.index'));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseMissing('operating_expenses', [
+            'id' => $expense->id,
+        ]);
+    }
+
+    public function test_member_cannot_access_operating_expenses_crud(): void
+    {
+        $member = User::factory()->create(['role' => 'member']);
+        $admin = User::factory()->admin()->create();
+
+        $expense = OperatingExpense::create([
+            'expense_code' => 'OPX-20261118-0004',
+            'name' => 'Sewa Gudang',
+            'category' => 'sewa',
+            'amount' => 3000000,
+            'expense_date' => '2026-11-18',
+            'user_id' => $admin->id,
+        ]);
+
+        $this->actingAs($member)->get(route('admin.operating-expenses.index'))->assertForbidden();
+        $this->actingAs($member)->get(route('admin.operating-expenses.create'))->assertForbidden();
+        $this->actingAs($member)->post(route('admin.operating-expenses.store'), [
+            'name' => 'Hack Expense',
+            'category' => 'lainnya',
+            'amount' => 100000,
+            'expense_date' => '2026-11-18',
+        ])->assertForbidden();
+        $this->actingAs($member)->get(route('admin.operating-expenses.edit', $expense))->assertForbidden();
+        $this->actingAs($member)->put(route('admin.operating-expenses.update', $expense), [
+            'name' => 'Hack Update',
+            'category' => 'lainnya',
+            'amount' => 200000,
+            'expense_date' => '2026-11-18',
+        ])->assertForbidden();
+        $this->actingAs($member)->delete(route('admin.operating-expenses.destroy', $expense))->assertForbidden();
+    }
+
+    public function test_operating_expense_rejects_zero_or_negative_amount(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Amount 0 ditolak
+        $responseZero = $this->actingAs($admin)->post(route('admin.operating-expenses.store'), [
+            'name' => 'Uji Biaya Nol',
+            'category' => 'utilitas',
+            'amount' => 0,
+            'expense_date' => '2026-11-18',
+        ]);
+        $responseZero->assertSessionHasErrors('amount');
+
+        // 2. Amount negatif ditolak
+        $responseNegative = $this->actingAs($admin)->post(route('admin.operating-expenses.store'), [
+            'name' => 'Uji Biaya Negatif',
+            'category' => 'utilitas',
+            'amount' => -50000,
+            'expense_date' => '2026-11-18',
+        ]);
+        $responseNegative->assertSessionHasErrors('amount');
+    }
+
+    public function test_operating_expense_rejects_invalid_category(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin)->post(route('admin.operating-expenses.store'), [
+            'name' => 'Beli Stok Barang Dagang',
+            'category' => 'pembelian_persediaan_ilegal',
+            'amount' => 1000000,
+            'expense_date' => '2026-11-18',
+        ]);
+
+        $response->assertSessionHasErrors('category');
+    }
+
+    public function test_operating_expense_upload_valid_receipt_image_succeeds(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+
+        $receiptFile = UploadedFile::fake()->image('struk_pembayaran.png', 600, 800);
+
+        $response = $this->actingAs($admin)->post(route('admin.operating-expenses.store'), [
+            'name' => 'Bensin Kendaraan Operasional',
+            'category' => 'transportasi',
+            'amount' => 150000,
+            'expense_date' => '2026-11-18',
+            'receipt' => $receiptFile,
+        ]);
+
+        $response->assertRedirect(route('admin.operating-expenses.index'));
+        $response->assertSessionHas('success');
+
+        $expense = OperatingExpense::where('name', 'Bensin Kendaraan Operasional')->first();
+        $this->assertNotNull($expense);
+        $this->assertNotNull($expense->receipt_path);
+
+        Storage::disk('local')->assertExists($expense->receipt_path);
+    }
+
+    public function test_operating_expense_rejects_disallowed_file_types_like_pdf_or_txt(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+
+        $disallowedPdf = UploadedFile::fake()->create('dokumen_tagihan.pdf', 500, 'application/pdf');
+
+        $response = $this->actingAs($admin)->post(route('admin.operating-expenses.store'), [
+            'name' => 'Tagihan Internet',
+            'category' => 'utilitas',
+            'amount' => 350000,
+            'expense_date' => '2026-11-18',
+            'receipt' => $disallowedPdf,
+        ]);
+
+        $response->assertSessionHasErrors('receipt');
+        $this->assertDatabaseMissing('operating_expenses', [
+            'name' => 'Tagihan Internet',
+        ]);
+    }
+
+    public function test_operating_expenses_filters_by_category_and_date(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Beban utilitas pada 2026-11-10
+        $expUtilitas = OperatingExpense::create([
+            'expense_code' => 'OPX-20261110-0001',
+            'name' => 'Tagihan Air PDAM',
+            'category' => 'utilitas',
+            'amount' => 200000,
+            'expense_date' => '2026-11-10',
+            'user_id' => $admin->id,
+        ]);
+
+        // 2. Beban gaji pada 2026-11-25
+        $expGaji = OperatingExpense::create([
+            'expense_code' => 'OPX-20261125-0001',
+            'name' => 'Gaji Karyawan Gudang',
+            'category' => 'gaji',
+            'amount' => 3000000,
+            'expense_date' => '2026-11-25',
+            'user_id' => $admin->id,
+        ]);
+
+        // Filter kategori: 'utilitas'
+        $resCat = $this->actingAs($admin)->get(route('admin.operating-expenses.index', [
+            'category' => 'utilitas',
+        ]));
+        $resCat->assertOk();
+        $resCat->assertSee('Tagihan Air PDAM');
+        $resCat->assertDontSee('Gaji Karyawan Gudang');
+
+        // Filter rentang tanggal: 2026-11-20 s/d 2026-11-30 (Hanya Gaji)
+        $resDate = $this->actingAs($admin)->get(route('admin.operating-expenses.index', [
+            'date_from' => '2026-11-20',
+            'date_to' => '2026-11-30',
+        ]));
+        $resDate->assertOk();
+        $resDate->assertSee('Gaji Karyawan Gudang');
+        $resDate->assertDontSee('Tagihan Air PDAM');
+    }
+
+    public function test_operating_expense_receipt_route_authorization_and_streaming(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $receiptFile = UploadedFile::fake()->image('nota_asli.png', 400, 400);
+        $path = $receiptFile->store('operating-expenses', 'local');
+
+        $expense = OperatingExpense::create([
+            'expense_code' => 'OPX-20261118-0088',
+            'name' => 'Pembelian Alat Kebersihan',
+            'category' => 'perlengkapan',
+            'amount' => 85000,
+            'expense_date' => '2026-11-18',
+            'user_id' => $admin->id,
+            'receipt_path' => $path,
+        ]);
+
+        // 1. Member dilarang mengakses rute berkas bukti (403 Forbidden)
+        $this->actingAs($member)
+            ->get(route('admin.operating-expenses.receipt', $expense))
+            ->assertForbidden();
+
+        // 2. Unauthenticated user juga ditolak (403 Forbidden)
+        $this->get(route('admin.operating-expenses.receipt', $expense))
+            ->assertForbidden();
+
+        // 3. Admin dapat mengakses dan mengunduh/streaming berkas bukti
+        $responseAdmin = $this->actingAs($admin)
+            ->get(route('admin.operating-expenses.receipt', $expense));
+
+        $responseAdmin->assertOk();
+        $this->assertStringContainsString('image/png', $responseAdmin->headers->get('content-type'));
+    }
+
+    public function test_operating_expense_date_filter_validation_rejects_invalid_date_inputs(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Input date_from invalid ditolak validasi
+        $resFrom = $this->actingAs($admin)->get(route('admin.operating-expenses.index', [
+            'date_from' => 'bukan-tanggal-valid',
+        ]));
+        $resFrom->assertSessionHasErrors('date_from');
+
+        // 2. Input date_to invalid ditolak validasi
+        $resTo = $this->actingAs($admin)->get(route('admin.operating-expenses.index', [
+            'date_to' => '9999-99-99-invalid',
+        ]));
+        $resTo->assertSessionHasErrors('date_to');
+    }
+
+    public function test_operating_expenses_search_by_name_code_and_notes(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20261118-1111',
+            'name' => 'Servis Printer Kasir',
+            'category' => 'pemeliharaan',
+            'amount' => 150000,
+            'expense_date' => '2026-11-18',
+            'user_id' => $admin->id,
+            'notes' => 'Ganti cartridge hitam',
+        ]);
+
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20261118-2222',
+            'name' => 'Beli Sapu dan Kain Pel',
+            'category' => 'perlengkapan',
+            'amount' => 50000,
+            'expense_date' => '2026-11-18',
+            'user_id' => $admin->id,
+            'notes' => 'Kebersihan lantai kasir',
+        ]);
+
+        // Cari berdasarkan nama "Printer"
+        $resName = $this->actingAs($admin)->get(route('admin.operating-expenses.index', ['search' => 'Printer']));
+        $resName->assertSee('Servis Printer Kasir');
+        $resName->assertDontSee('Beli Sapu dan Kain Pel');
+
+        // Cari berdasarkan kode "2222"
+        $resCode = $this->actingAs($admin)->get(route('admin.operating-expenses.index', ['search' => '2222']));
+        $resCode->assertSee('Beli Sapu dan Kain Pel');
+        $resCode->assertDontSee('Servis Printer Kasir');
+
+        // Cari berdasarkan catatan "cartridge"
+        $resNotes = $this->actingAs($admin)->get(route('admin.operating-expenses.index', ['search' => 'cartridge']));
+        $resNotes->assertSee('Servis Printer Kasir');
+        $resNotes->assertDontSee('Beli Sapu dan Kain Pel');
+    }
+
+    public function test_operating_expense_receipt_lifecycle_update_replacement_and_deletion(): void
+    {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+
+        // 1. Simpan pengeluaran dengan bukti awal
+        $initialFile = UploadedFile::fake()->image('bukti_awal.png', 400, 400);
+        $initialPath = $initialFile->store('operating-expenses', 'local');
+
+        $expense = OperatingExpense::create([
+            'expense_code' => 'OPX-20261118-0099',
+            'name' => 'Tagihan Listrik Awal',
+            'category' => 'utilitas',
+            'amount' => 450000,
+            'expense_date' => '2026-11-18',
+            'user_id' => $admin->id,
+            'receipt_path' => $initialPath,
+        ]);
+
+        Storage::disk('local')->assertExists($initialPath);
+
+        // 2. Update dengan penggantian file bukti baru (file lama harus dihapus, file baru ada)
+        $newFile = UploadedFile::fake()->image('bukti_baru.png', 400, 400);
+        $resUpdate = $this->actingAs($admin)->put(route('admin.operating-expenses.update', $expense), [
+            'name' => 'Tagihan Listrik Revisi',
+            'category' => 'utilitas',
+            'amount' => 480000,
+            'expense_date' => '2026-11-18',
+            'receipt' => $newFile,
+        ]);
+        $resUpdate->assertRedirect(route('admin.operating-expenses.index'));
+
+        $expense->refresh();
+        $this->assertNotEquals($initialPath, $expense->receipt_path);
+        Storage::disk('local')->assertMissing($initialPath);
+        Storage::disk('local')->assertExists($expense->receipt_path);
+
+        $currentPath = $expense->receipt_path;
+
+        // 3. Update dengan opsi hapus bukti (delete_receipt) tanpa unggah file baru
+        $resDeleteReceipt = $this->actingAs($admin)->put(route('admin.operating-expenses.update', $expense), [
+            'name' => 'Tagihan Listrik Revisi',
+            'category' => 'utilitas',
+            'amount' => 480000,
+            'expense_date' => '2026-11-18',
+            'delete_receipt' => 1,
+        ]);
+        $resDeleteReceipt->assertRedirect(route('admin.operating-expenses.index'));
+
+        $expense->refresh();
+        $this->assertNull($expense->receipt_path);
+        Storage::disk('local')->assertMissing($currentPath);
+
+        // 4. Tambahkan bukti lagi lalu uji destroy menghapus berkas dan record secara konsisten
+        $readdFile = UploadedFile::fake()->image('bukti_akhir.png', 400, 400);
+        $readdPath = $readdFile->store('operating-expenses', 'local');
+        $expense->update(['receipt_path' => $readdPath]);
+        Storage::disk('local')->assertExists($readdPath);
+
+        $resDestroy = $this->actingAs($admin)->delete(route('admin.operating-expenses.destroy', $expense));
+        $resDestroy->assertRedirect(route('admin.operating-expenses.index'));
+
+        $this->assertDatabaseMissing('operating_expenses', ['id' => $expense->id]);
+        Storage::disk('local')->assertMissing($readdPath);
+    }
+
+    public function test_operating_expense_code_collision_handling_and_retry_offset(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20261118-0001',
+            'name' => 'Biaya Eksisting 1',
+            'category' => 'utilitas',
+            'amount' => 100000,
+            'expense_date' => '2026-11-18',
+            'user_id' => $admin->id,
+        ]);
+
+        // Attempt 0: normal next sequence -> OPX-20261118-0002
+        $codeAttempt0 = OperatingExpense::generateExpenseCode('2026-11-18', 0);
+        $this->assertEquals('OPX-20261118-0002', $codeAttempt0);
+
+        // Attempt 1: retry offset increment -> OPX-20261118-0003
+        $codeAttempt1 = OperatingExpense::generateExpenseCode('2026-11-18', 1);
+        $this->assertEquals('OPX-20261118-0003', $codeAttempt1);
+    }
+
+    public function test_reports_and_dashboard_calculate_opex_net_profit_and_npm_with_identical_results(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $product = Product::create([
+            'sku' => 'PROFIT-OPX-01',
+            'name' => 'Produk Tes Laba Bersih',
+            'category' => 'Testing',
+            'cost_price' => 10000,
+            'price' => 15000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        // Transaksi SELESAI pada 2026-09-10
+        // 4 pcs * 15.000 = 60.000 (HPP: 4 * 10.000 = 40.000)
+        // Laba Kotor = 20.000
+        $order = Order::create([
+            'order_code' => 'ORD-OPX-INT-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 60000,
+            'transaction_date' => '2026-09-10 14:00:00',
+            'paid_at' => '2026-09-10 14:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'qty' => 4,
+            'unit_price' => 15000,
+            'subtotal' => 60000,
+            'cost_price' => 10000,
+            'subtotal_cost' => 40000,
+        ]);
+
+        // OPEX 1: 2026-09-10 (Rp 5.000)
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20260910-0001',
+            'name' => 'Beban Listrik Toko',
+            'category' => 'utilitas',
+            'amount' => 5000,
+            'expense_date' => '2026-09-10',
+            'user_id' => $admin->id,
+        ]);
+
+        // OPEX 2: 2026-09-12 (Rp 3.000)
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20260912-0001',
+            'name' => 'Beban Kebersihan',
+            'category' => 'pemeliharaan',
+            'amount' => 3000,
+            'expense_date' => '2026-09-12',
+            'user_id' => $admin->id,
+        ]);
+
+        // OPEX 3: 2026-10-05 (Rp 10.000 - di luar periode September 2026)
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20261005-0001',
+            'name' => 'Beban Sewa Oktober',
+            'category' => 'sewa',
+            'amount' => 10000,
+            'expense_date' => '2026-10-05',
+            'user_id' => $admin->id,
+        ]);
+
+        // 1. Verifikasi Laporan Penjualan (admin.reports.index)
+        $resReport = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 9,
+            'year' => 2026,
+        ]));
+        $resReport->assertOk();
+        $reportSummary = $resReport->viewData('summary');
+
+        // 2. Verifikasi Dashboard Admin (admin.dashboard)
+        $resDashboard = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'monthly',
+            'month' => 9,
+            'year' => 2026,
+        ]));
+        $resDashboard->assertOk();
+        $dashboardSummary = $resDashboard->viewData('periodSummary');
+
+        // Verifikasi keselarasan hasil (Single Source of Truth)
+        $this->assertEquals($reportSummary['total_omzet'], $dashboardSummary['total_omzet']);
+        $this->assertEquals($reportSummary['total_hpp'], $dashboardSummary['total_hpp']);
+        $this->assertEquals($reportSummary['gross_profit'], $dashboardSummary['gross_profit']);
+        $this->assertEquals($reportSummary['total_opex'], $dashboardSummary['total_opex']);
+        $this->assertEquals($reportSummary['opex_count'], $dashboardSummary['opex_count']);
+        $this->assertEquals($reportSummary['net_profit'], $dashboardSummary['net_profit']);
+        $this->assertEquals($reportSummary['npm'], $dashboardSummary['npm']);
+        $this->assertEquals($reportSummary['is_net_profit_provisional'], $dashboardSummary['is_net_profit_provisional']);
+
+        // Nilai ekspektasi matematis:
+        // Omzet = 60.000, HPP = 40.000, Laba Kotor = 20.000
+        // Total OPEX = 5.000 + 3.000 = 8.000 (tidak memasukkan OPEX Oktober)
+        // Net Profit = 20.000 - 8.000 = 12.000
+        // NPM = (12.000 / 60.000) * 100 = 20.0%
+        // GPM = (20.000 / 60.000) * 100 = 33.3%
+        // Markup = (20.000 / 40.000) * 100 = 50.0%
+        $this->assertEquals(60000.0, $reportSummary['total_omzet']);
+        $this->assertEquals(40000.0, $reportSummary['total_hpp']);
+        $this->assertEquals(20000.0, $reportSummary['gross_profit']);
+        $this->assertEquals(8000.0, $reportSummary['total_opex']);
+        $this->assertEquals(2, $reportSummary['opex_count']);
+        $this->assertTrue($reportSummary['has_opex']);
+        $this->assertEquals(12000.0, $reportSummary['net_profit']);
+        $this->assertEquals(20.0, $reportSummary['npm']);
+        $this->assertEquals(33.3, $reportSummary['gpm']);
+        $this->assertEquals(50.0, $reportSummary['markup']);
+        $this->assertFalse($reportSummary['is_net_profit_provisional']);
+
+        // Assert keterangan status di Blade laporan dan angka konsisten di dashboard
+        $resReport->assertSee('Ada catatan OPEX sebanyak 2 transaksi');
+        $resReport->assertSee('Rp 12.000');
+        $resDashboard->assertSee('Rp 12.000');
+        $resReport->assertSee('20%');
+        $resDashboard->assertSee('20%');
+    }
+
+    public function test_net_profit_and_npm_provisional_when_no_opex_recorded_for_active_period(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        $product = Product::create([
+            'sku' => 'NO-OPX-01',
+            'name' => 'Produk Tanpa OPEX',
+            'category' => 'Testing',
+            'cost_price' => 60000,
+            'price' => 100000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'order_code' => 'ORD-NO-OPX-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 100000,
+            'transaction_date' => '2026-06-15 11:00:00',
+            'paid_at' => '2026-06-15 11:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'qty' => 1,
+            'unit_price' => 100000,
+            'subtotal' => 100000,
+            'cost_price' => 60000,
+            'subtotal_cost' => 60000,
+        ]);
+
+        // Tidak ada OPEX dibuat untuk bulan Juni 2026
+        $res = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 6,
+            'year' => 2026,
+        ]));
+        $res->assertOk();
+        $summary = $res->viewData('summary');
+
+        $this->assertEquals(100000.0, $summary['total_omzet']);
+        $this->assertEquals(60000.0, $summary['total_hpp']);
+        $this->assertEquals(40000.0, $summary['gross_profit']);
+        $this->assertEquals(0.0, $summary['total_opex']);
+        $this->assertEquals(0, $summary['opex_count']);
+        $this->assertFalse($summary['has_opex']);
+        $this->assertEquals(40000.0, $summary['net_profit']);
+        $this->assertEquals(40.0, $summary['npm']);
+        $this->assertTrue($summary['is_net_profit_provisional']);
+        $this->assertTrue($summary['provisional_reasons']['no_opex']);
+        $this->assertFalse($summary['provisional_reasons']['unrecorded_hpp']);
+
+        $res->assertSee('Belum ada catatan OPEX');
+        $res->assertSee('Net Profit provisional karena belum ada catatan OPEX');
+
+        // Periksa juga dashboard
+        $resDash = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'monthly',
+            'month' => 6,
+            'year' => 2026,
+        ]));
+        $resDash->assertOk();
+        $dashSummary = $resDash->viewData('periodSummary');
+        $this->assertTrue($dashSummary['is_net_profit_provisional']);
+        $this->assertTrue($dashSummary['provisional_reasons']['no_opex']);
+    }
+
+    public function test_net_profit_and_npm_when_omzet_is_zero_and_npm_is_null_avoiding_zero_division(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Kondisi Kosong Sepenuhnya (Tanpa order, tanpa OPEX pada Januari 2026)
+        $resEmpty = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 1,
+            'year' => 2026,
+        ]));
+        $resEmpty->assertOk();
+        $summaryEmpty = $resEmpty->viewData('summary');
+
+        $this->assertEquals(0.0, $summaryEmpty['total_omzet']);
+        $this->assertEquals(0.0, $summaryEmpty['gross_profit']);
+        $this->assertEquals(0.0, $summaryEmpty['total_opex']);
+        $this->assertEquals(0.0, $summaryEmpty['net_profit']);
+        $this->assertNull($summaryEmpty['npm']);
+        $this->assertFalse($summaryEmpty['is_net_profit_provisional']);
+
+        // 2. Kondisi Omzet Nol tapi ada OPEX (Toko tutup/tidak ada pesanan, tapi bayar sewa Rp 500.000)
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20260120-0001',
+            'name' => 'Sewa Gudang Januari',
+            'category' => 'sewa',
+            'amount' => 500000,
+            'expense_date' => '2026-01-20',
+            'user_id' => $admin->id,
+        ]);
+
+        $resWithOpex = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 1,
+            'year' => 2026,
+        ]));
+        $resWithOpex->assertOk();
+        $summaryWithOpex = $resWithOpex->viewData('summary');
+
+        $this->assertEquals(0.0, $summaryWithOpex['total_omzet']);
+        $this->assertEquals(0.0, $summaryWithOpex['gross_profit']);
+        $this->assertEquals(500000.0, $summaryWithOpex['total_opex']);
+        $this->assertEquals(1, $summaryWithOpex['opex_count']);
+        // Net Profit = 0 - 500.000 = -500.000
+        $this->assertEquals(-500000.0, $summaryWithOpex['net_profit']);
+        // Omzet 0 -> NPM WAJIB NULL (tidak boleh pembagian dengan nol)
+        $this->assertNull($summaryWithOpex['npm']);
+
+        $resWithOpex->assertSee('-Rp 500.000');
+        $resWithOpex->assertSee('Defisit / Rugi Bersih');
+
+        // Verifikasi pada Dashboard
+        $resDash = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'monthly',
+            'month' => 1,
+            'year' => 2026,
+        ]));
+        $resDash->assertOk();
+        $dashSummary = $resDash->viewData('periodSummary');
+        $this->assertEquals(-500000.0, $dashSummary['net_profit']);
+        $this->assertNull($dashSummary['npm']);
+        $resDash->assertSee('-Rp 500.000');
+    }
+
+    public function test_negative_net_profit_when_opex_exceeds_gross_profit(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        // Omzet 50.000, HPP 30.000 -> Gross Profit 20.000
+        $product = Product::create([
+            'sku' => 'DEFISIT-01',
+            'name' => 'Produk Defisit',
+            'category' => 'Testing',
+            'cost_price' => 30000,
+            'price' => 50000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'order_code' => 'ORD-DEF-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 50000,
+            'transaction_date' => '2026-05-10 10:00:00',
+            'paid_at' => '2026-05-10 10:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'qty' => 1,
+            'unit_price' => 50000,
+            'subtotal' => 50000,
+            'cost_price' => 30000,
+            'subtotal_cost' => 30000,
+        ]);
+
+        // OPEX = Rp 70.000 (melebihi Laba Kotor Rp 20.000)
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20260510-0001',
+            'name' => 'Beban Perbaikan Ac',
+            'category' => 'pemeliharaan',
+            'amount' => 70000,
+            'expense_date' => '2026-05-10',
+            'user_id' => $admin->id,
+        ]);
+
+        $res = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 5,
+            'year' => 2026,
+        ]));
+        $res->assertOk();
+        $summary = $res->viewData('summary');
+
+        // Net Profit = 20.000 - 70.000 = -50.000
+        // NPM = (-50.000 / 50.000) * 100 = -100.0%
+        $this->assertEquals(-50000.0, $summary['net_profit']);
+        $this->assertEquals(-100.0, $summary['npm']);
+        $this->assertFalse($summary['is_net_profit_provisional']);
+
+        $res->assertSee('-Rp 50.000');
+        $res->assertSee('-100%');
+        $res->assertSee('Defisit / Rugi Bersih');
+    }
+
+    public function test_incomplete_hpp_causes_net_profit_and_npm_to_inherit_provisional_status(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        // Order dengan HPP tidak tercatat (cost_price 0, subtotal_cost 0)
+        $product = Product::create([
+            'sku' => 'NO-HPP-01',
+            'name' => 'Produk Tanpa Modal',
+            'category' => 'Testing',
+            'cost_price' => 0,
+            'price' => 80000,
+            'stock' => 50,
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'order_code' => 'ORD-NOHPP-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'import_excel',
+            'status' => 'SELESAI',
+            'total_amount' => 80000,
+            'transaction_date' => '2026-04-12 10:00:00',
+            'paid_at' => '2026-04-12 10:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $product->id,
+            'qty' => 1,
+            'unit_price' => 80000,
+            'subtotal' => 80000,
+            'cost_price' => 0,
+            'subtotal_cost' => 0,
+        ]);
+
+        // Ada OPEX tercatat
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20260412-0001',
+            'name' => 'Beban Kuota Internet',
+            'category' => 'utilitas',
+            'amount' => 20000,
+            'expense_date' => '2026-04-12',
+            'user_id' => $admin->id,
+        ]);
+
+        $res = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 4,
+            'year' => 2026,
+        ]));
+        $res->assertOk();
+        $summary = $res->viewData('summary');
+
+        $this->assertTrue($summary['has_unrecorded_hpp']);
+        $this->assertTrue($summary['is_net_profit_provisional']);
+        $this->assertTrue($summary['provisional_reasons']['unrecorded_hpp']);
+        $this->assertFalse($summary['provisional_reasons']['no_opex']);
+
+        $res->assertSee('Net Profit provisional karena HPP belum lengkap');
+
+        // Verifikasi pada Dashboard
+        $resDash = $this->actingAs($admin)->get(route('admin.dashboard', [
+            'period' => 'monthly',
+            'month' => 4,
+            'year' => 2026,
+        ]));
+        $resDash->assertOk();
+        $dashSummary = $resDash->viewData('periodSummary');
+        $this->assertTrue($dashSummary['is_net_profit_provisional']);
+        $this->assertTrue($dashSummary['provisional_reasons']['unrecorded_hpp']);
+    }
+
+    public function test_excel_export_includes_opex_net_profit_and_npm_in_summary_sheet(): void
+    {
+        $summaryData = [
+            'total_omzet' => 300000.0,
+            'total_transactions' => 3,
+            'total_items_sold' => 10,
+            'avg_transaction' => 100000.0,
+            'total_hpp' => 180000.0,
+            'gross_profit' => 120000.0,
+            'gpm' => 40.0,
+            'markup' => 66.7,
+            'has_unrecorded_hpp' => false,
+            'unrecorded_items_count' => 0,
+            'unrecorded_orders_count' => 0,
+            'total_order_items_count' => 10,
+            'completeness_pct' => 100.0,
+            'total_opex' => 45000.0,
+            'opex_count' => 2,
+            'has_opex' => true,
+            'net_profit' => 75000.0,
+            'npm' => 25.0,
+            'is_net_profit_provisional' => false,
+        ];
+
+        $export = new \App\Exports\PeriodicReportExport(
+            collect(),
+            collect(),
+            $summaryData,
+            'Bulanan: Maret 2026',
+            ['web' => 3, 'manual_admin' => 0, 'import_excel' => 0, 'other' => 0]
+        );
+
+        $sheets = $export->sheets();
+        $this->assertCount(3, $sheets);
+        $summarySheetArray = $sheets[0]->array();
+
+        $this->assertContains(['Total Omzet Penjualan (Rp)', 'Rp 300.000'], $summarySheetArray);
+        $this->assertContains(['Total HPP Tercatat (Rp)', 'Rp 180.000'], $summarySheetArray);
+        $this->assertContains(['Laba Kotor (Rp)', 'Rp 120.000'], $summarySheetArray);
+        $this->assertContains(['Gross Profit Margin (GPM)', '40%'], $summarySheetArray);
+        $this->assertContains(['Total Beban Operasional / OPEX (Rp)', 'Rp 45.000'], $summarySheetArray);
+        $this->assertContains(['Laba Bersih / Net Profit (Rp)', 'Rp 75.000'], $summarySheetArray);
+        $this->assertContains(['Net Profit Margin (NPM)', '25%'], $summarySheetArray);
+        $this->assertContains(['Markup Penjualan (%)', '66.7%'], $summarySheetArray);
+        $this->assertContains(['Status Kelengkapan HPP', 'Lengkap (100% item memiliki catatan HPP)'], $summarySheetArray);
+        $this->assertContains(['Status Pencatatan OPEX', 'Ada catatan OPEX sebanyak 2 transaksi'], $summarySheetArray);
+
+        // Uji jika tanpa OPEX dan provisional
+        $provisionalSummary = array_merge($summaryData, [
+            'total_opex' => 0.0,
+            'opex_count' => 0,
+            'has_opex' => false,
+            'net_profit' => 120000.0,
+            'npm' => 40.0,
+            'is_net_profit_provisional' => true,
+        ]);
+        $exportProv = new \App\Exports\PeriodicReportExport(
+            collect(),
+            collect(),
+            $provisionalSummary,
+            'Bulanan: Maret 2026',
+            ['web' => 3, 'manual_admin' => 0, 'import_excel' => 0, 'other' => 0]
+        );
+        $provArray = $exportProv->sheets()[0]->array();
+        $this->assertContains(['Total Beban Operasional / OPEX (Rp)', 'Rp 0 (Belum ada catatan OPEX)'], $provArray);
+        $this->assertContains(['Laba Bersih / Net Profit (Rp)', 'Rp 120.000 (Provisional)'], $provArray);
+        $this->assertContains(['Net Profit Margin (NPM)', '40% (Provisional)'], $provArray);
+        $this->assertContains(['Status Pencatatan OPEX', 'Belum ada catatan OPEX'], $provArray);
+    }
+
+    public function test_opex_period_filters_daily_weekly_monthly_yearly_isolation(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // Biaya 1: 2026-03-02 (Senin)
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20260302-0001',
+            'name' => 'Biaya Senin',
+            'category' => 'utilitas',
+            'amount' => 15000,
+            'expense_date' => '2026-03-02',
+            'user_id' => $admin->id,
+        ]);
+
+        // Biaya 2: 2026-03-05 (Kamis pada minggu yang sama)
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20260305-0001',
+            'name' => 'Biaya Kamis',
+            'category' => 'perlengkapan',
+            'amount' => 25000,
+            'expense_date' => '2026-03-05',
+            'user_id' => $admin->id,
+        ]);
+
+        // Biaya 3: 2026-03-20 (Bulan yang sama, tapi minggu berbeda)
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20260320-0001',
+            'name' => 'Biaya Akhir Bulan',
+            'category' => 'administrasi',
+            'amount' => 40000,
+            'expense_date' => '2026-03-20',
+            'user_id' => $admin->id,
+        ]);
+
+        // Biaya 4: 2027-01-10 (Tahun berbeda)
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20270110-0001',
+            'name' => 'Biaya 2027',
+            'category' => 'lainnya',
+            'amount' => 90000,
+            'expense_date' => '2027-01-10',
+            'user_id' => $admin->id,
+        ]);
+
+        // 1. Filter Harian (2026-03-02): hanya Biaya 1 (15.000)
+        $resDaily = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-03-02',
+        ]));
+        $resDaily->assertOk();
+        $this->assertEquals(15000.0, $resDaily->viewData('summary')['total_opex']);
+        $this->assertEquals(1, $resDaily->viewData('summary')['opex_count']);
+
+        // 2. Filter Mingguan (2026-03-01 s/d 2026-03-07): Biaya 1 + Biaya 2 = 40.000
+        $resWeekly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'weekly',
+            'start_date' => '2026-03-01',
+            'end_date' => '2026-03-07',
+        ]));
+        $resWeekly->assertOk();
+        $this->assertEquals(40000.0, $resWeekly->viewData('summary')['total_opex']);
+        $this->assertEquals(2, $resWeekly->viewData('summary')['opex_count']);
+
+        // 3. Filter Bulanan (Maret 2026): Biaya 1 + Biaya 2 + Biaya 3 = 80.000
+        $resMonthly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 3,
+            'year' => 2026,
+        ]));
+        $resMonthly->assertOk();
+        $this->assertEquals(80000.0, $resMonthly->viewData('summary')['total_opex']);
+        $this->assertEquals(3, $resMonthly->viewData('summary')['opex_count']);
+
+        // 4. Filter Tahunan (2026): Biaya 1 + Biaya 2 + Biaya 3 = 80.000 (tidak termasuk 2027)
+        $resYearly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'yearly',
+            'year' => 2026,
+        ]));
+        $resYearly->assertOk();
+        $this->assertEquals(80000.0, $resYearly->viewData('summary')['total_opex']);
+        $this->assertEquals(3, $resYearly->viewData('summary')['opex_count']);
+    }
+
+    public function test_regression_profitability_and_hpp_features_remain_intact_with_opex(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        // Produk A: Qty 10, Omzet 100.000, Modal 60.000, Laba 40.000 (GPM 40%, Markup 66.7%)
+        $pA = Product::create([
+            'sku' => 'REG-A-01',
+            'name' => 'Produk A Regresi',
+            'category' => 'Testing',
+            'cost_price' => 6000,
+            'price' => 10000,
+            'stock' => 100,
+            'is_active' => true,
+        ]);
+
+        // Produk B: Qty 2, Omzet 160.000, Modal 100.000, Laba 60.000 (GPM 37.5%, Markup 60%)
+        // Lebih menguntungkan dari A meskipun qty lebih sedikit (60.000 > 40.000)
+        $pB = Product::create([
+            'sku' => 'REG-B-01',
+            'name' => 'Produk B Regresi',
+            'category' => 'Testing',
+            'cost_price' => 50000,
+            'price' => 80000,
+            'stock' => 100,
+            'is_active' => true,
+        ]);
+
+        $order = Order::create([
+            'order_code' => 'ORD-REG-01',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 260000,
+            'transaction_date' => '2026-08-15 10:00:00',
+            'paid_at' => '2026-08-15 10:00:00',
+        ]);
+        $order->items()->create([
+            'product_id' => $pA->id,
+            'qty' => 10,
+            'unit_price' => 10000,
+            'subtotal' => 100000,
+            'cost_price' => 6000,
+            'subtotal_cost' => 60000,
+        ]);
+        $order->items()->create([
+            'product_id' => $pB->id,
+            'qty' => 2,
+            'unit_price' => 80000,
+            'subtotal' => 160000,
+            'cost_price' => 50000,
+            'subtotal_cost' => 100000,
+        ]);
+
+        // Catat OPEX toko sebesar 50.000
+        OperatingExpense::create([
+            'expense_code' => 'OPX-20260815-0001',
+            'name' => 'Beban Kebersihan Toko',
+            'category' => 'pemeliharaan',
+            'amount' => 50000,
+            'expense_date' => '2026-08-15',
+            'user_id' => $admin->id,
+        ]);
+
+        $res = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => 8,
+            'year' => 2026,
+        ]));
+        $res->assertOk();
+
+        $summary = $res->viewData('summary');
+        $profitableProducts = $res->viewData('profitableProducts');
+
+        // 1. Verifikasi Ringkasan Finansial:
+        // Omzet = 260.000, HPP = 160.000, Laba Kotor = 100.000
+        // GPM = (100.000 / 260.000) * 100 = 38.5%
+        // Markup = (100.000 / 160.000) * 100 = 62.5%
+        // OPEX = 50.000
+        // Net Profit = 100.000 - 50.000 = 50.000
+        // NPM = (50.000 / 260.000) * 100 = 19.2%
+        $this->assertEquals(260000.0, $summary['total_omzet']);
+        $this->assertEquals(160000.0, $summary['total_hpp']);
+        $this->assertEquals(100000.0, $summary['gross_profit']);
+        $this->assertEquals(38.5, $summary['gpm']);
+        $this->assertEquals(62.5, $summary['markup']);
+        $this->assertEquals(50000.0, $summary['total_opex']);
+        $this->assertEquals(50000.0, $summary['net_profit']);
+        $this->assertEquals(19.2, $summary['npm']);
+        $this->assertEquals(100.0, $summary['completeness_pct']);
+        $this->assertFalse($summary['has_unrecorded_hpp']);
+        $this->assertFalse($summary['is_net_profit_provisional']);
+
+        // 2. Verifikasi Ranking Produk Paling Menguntungkan tidak terpengaruh OPEX toko:
+        // Peringkat 1 harus Produk B (total_profit: 60.000), Peringkat 2 Produk A (total_profit: 40.000)
+        $this->assertCount(2, $profitableProducts);
+        $this->assertEquals($pB->id, $profitableProducts[0]->id);
+        $this->assertEquals(60000.0, (float) $profitableProducts[0]->total_profit);
+        $this->assertEquals($pA->id, $profitableProducts[1]->id);
+        $this->assertEquals(40000.0, (float) $profitableProducts[1]->total_profit);
+    }
+}

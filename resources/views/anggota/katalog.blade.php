@@ -89,10 +89,10 @@
                             <h3 class="font-bold text-slate-900 mt-1 line-clamp-2">{{ $product->name }}</h3>
 
                             <div class="flex items-center justify-between mt-3">
-                                <span class="text-lg font-extrabold text-blue-700">
+                                <span class="text-lg font-extrabold text-slate-900">
                                     Rp {{ number_format($product->price, 0, ',', '.') }}
                                 </span>
-                                <span class="text-xs font-semibold {{ $product->stock <= 5 ? 'text-amber-600' : 'text-emerald-600' }}">
+                                <span class="text-xs font-semibold {{ $product->stock <= 5 ? 'text-amber-700' : 'text-slate-500' }}">
                                     Stok: {{ $product->stock }}
                                 </span>
                             </div>

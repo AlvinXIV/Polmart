@@ -40,40 +40,40 @@
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Siap Diambil</p>
-                    <p class="text-2xl font-extrabold text-emerald-600 mt-1">{{ $stats['ready_count'] }}</p>
-                    <p class="text-xs text-slate-400 mt-1">Tunjukkan kode di loket</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['ready_count'] }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Tunjukkan kode di loket</p>
                 </div>
-                <div class="polmart-stat-icon green"><x-icon name="hash" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="hash" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Menunggu Bayar</p>
-                    <p class="text-2xl font-extrabold text-amber-600 mt-1">{{ $stats['pending_count'] }}</p>
-                    <p class="text-xs text-slate-400 mt-1">Segera selesaikan QRIS</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['pending_count'] }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Segera selesaikan QRIS</p>
                 </div>
-                <div class="polmart-stat-icon amber"><x-icon name="clock" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="clock" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Isi Keranjang</p>
-                    <p class="text-2xl font-extrabold text-blue-600 mt-1">{{ $stats['cart_count'] }}</p>
-                    <p class="text-xs text-slate-400 mt-1">Item siap checkout</p>
+                    <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['cart_count'] }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Item siap checkout</p>
                 </div>
-                <div class="polmart-stat-icon blue"><x-icon name="shopping-basket" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-blue-50 text-blue-600"><x-icon name="shopping-basket" class="w-5 h-5" /></div>
             </div>
             <div class="polmart-stat-card">
                 <div>
                     <p class="text-xs font-semibold text-slate-500 uppercase">Pesanan Selesai</p>
                     <p class="text-2xl font-extrabold text-slate-900 mt-1">{{ $stats['completed_count'] }}</p>
-                    <p class="text-xs text-slate-400 mt-1">Telah diambil</p>
+                    <p class="text-xs text-slate-500 mt-1">Telah diambil</p>
                 </div>
-                <div class="polmart-stat-icon purple"><x-icon name="check-circle" class="w-5 h-5" /></div>
+                <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="check-circle" class="w-5 h-5" /></div>
             </div>
         </section>
 
         <!-- Highlight Pesanan Siap Diambil (Kode Pengambilan 4-Digit) -->
         @if ($readyOrders->isNotEmpty())
-            <section class="polmart-card border-l-4 border-l-emerald-500 space-y-4">
+            <section class="polmart-card space-y-4">
                 <div>
                     <h2 class="text-lg font-extrabold text-slate-900">Pesanan Siap Diambil di Loket</h2>
                     <p class="text-xs text-slate-500">Tunjukkan kode pengambilan 4-digit di bawah ini kepada petugas Polmart.</p>
@@ -81,22 +81,27 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @foreach ($readyOrders as $order)
-                        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-4">
+                        <div class="p-4 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center justify-between gap-4">
                             <div>
-                                <div class="font-mono text-xs font-bold text-emerald-700">{{ $order->order_code }}</div>
-                                <div class="text-sm font-bold text-slate-900 mt-1">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-mono text-xs font-bold text-blue-600">{{ $order->order_code }}</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                                        SIAP DIAMBIL
+                                    </span>
+                                </div>
+                                <div class="text-sm font-bold text-slate-900 mt-1.5">
                                     {{ $order->items->sum('qty') }} item • Rp {{ number_format($order->total_amount, 0, ',', '.') }}
                                 </div>
                                 <div class="text-xs text-slate-500 mt-1">
                                     Lunas: {{ $order->paid_at?->format('d/m/Y H:i') }}
                                 </div>
-                                <a href="{{ route('anggota.pesanan', ['order_code' => $order->order_code]) }}" class="inline-block mt-2 text-xs font-bold text-emerald-700 hover:underline">
+                                <a href="{{ route('anggota.pesanan', ['order_code' => $order->order_code]) }}" class="inline-block mt-2 text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
                                     Lihat Struk
                                 </a>
                             </div>
-                            <div class="text-center bg-white px-4 py-3 rounded-xl border border-emerald-200 shadow-sm">
+                            <div class="text-center bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm shrink-0">
                                 <span class="block text-[10px] font-bold uppercase text-slate-400">Kode Ambil</span>
-                                <span class="text-2xl font-extrabold font-mono tracking-widest text-emerald-700">
+                                <span class="text-2xl font-extrabold font-mono tracking-widest text-slate-900">
                                     #{{ $order->pickup_code }}
                                 </span>
                             </div>
@@ -108,20 +113,25 @@
 
         <!-- Pesanan Menunggu Pembayaran -->
         @if ($pendingOrders->isNotEmpty())
-            <section class="polmart-card border-l-4 border-l-amber-500 space-y-4">
+            <section class="polmart-card space-y-4">
                 <div>
                     <h2 class="text-lg font-extrabold text-slate-900">Menunggu Pembayaran QRIS</h2>
                     <p class="text-xs text-slate-500">Selesaikan pembayaran sebelum batas waktu 15 menit berakhir agar stok tidak dibatalkan.</p>
                 </div>
                 <div class="space-y-3">
                     @foreach ($pendingOrders as $order)
-                        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="p-4 rounded-xl bg-slate-50/70 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
-                                <div class="font-mono text-xs font-bold text-amber-800">{{ $order->order_code }}</div>
-                                <div class="text-sm font-bold text-slate-900 mt-0.5">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-mono text-xs font-bold text-blue-600">{{ $order->order_code }}</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/70">
+                                        MENUNGGU BAYAR
+                                    </span>
+                                </div>
+                                <div class="text-sm font-bold text-slate-900 mt-1">
                                     Total: Rp {{ number_format($order->total_amount, 0, ',', '.') }}
                                 </div>
-                                <div class="text-xs text-amber-700 mt-0.5">
+                                <div class="text-xs text-slate-500 mt-0.5">
                                     Batas bayar: {{ $order->expires_at?->format('d/m/Y H:i:s') }}
                                 </div>
                             </div>
@@ -154,7 +164,7 @@
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="font-mono text-sm font-bold text-blue-700">{{ $order->order_code }}</span>
                                 @if ($order->status === 'SIAP_DIAMBIL' && $order->pickup_code)
-                                    <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono text-xs font-extrabold">
+                                    <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-mono text-xs font-bold">
                                         Kode Ambil: #{{ $order->pickup_code }}
                                     </span>
                                 @endif

@@ -152,79 +152,87 @@
                 </form>
             </div>
 
-            <!-- Ringkasan Finansial: HPP & Laba Kotor -->
-            <div>
-                <h3 class="text-sm font-extrabold text-slate-900 mb-3">Ringkasan Finansial (HPP &amp; Laba Kotor)</h3>
+            <!-- Ringkasan Finansial: HPP, OPEX & Laba -->
+            <div class="space-y-3">
+                <h3 class="text-sm font-extrabold text-slate-900">Ringkasan Finansial (HPP &amp; Laba Kotor)</h3>
 
+                <!-- Baris 1: Arus Finansial Nominal (5 Kartu) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     <div class="polmart-stat-card" style="padding: 16px;">
                         <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Total Omzet</p>
-                            <p class="text-xl font-extrabold text-emerald-900 mt-1">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Omzet</p>
+                            <p class="text-xl font-extrabold text-slate-900 mt-1">
                                 Rp {{ number_format($periodSummary['total_omzet'], 0, ',', '.') }}
                             </p>
-                            <p class="text-[10px] text-emerald-600 mt-0.5">
-                                {{ number_format($periodSummary['total_transactions']) }} transaksi selesai
-                            </p>
                         </div>
                     </div>
 
                     <div class="polmart-stat-card" style="padding: 16px;">
                         <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-rose-700 uppercase tracking-wider">HPP Tercatat</p>
-                            <p class="text-xl font-extrabold text-rose-900 mt-1">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">HPP Tercatat</p>
+                            <p class="text-xl font-extrabold text-slate-900 mt-1">
                                 Rp {{ number_format($periodSummary['total_hpp'], 0, ',', '.') }}
                             </p>
-                            <p class="text-[10px] text-rose-600 mt-0.5">
-                                Snapshot modal barang terjual
-                            </p>
                         </div>
                     </div>
 
                     <div class="polmart-stat-card" style="padding: 16px;">
                         <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Laba Kotor</p>
-                            <p class="text-xl font-extrabold text-blue-900 mt-1">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Laba Kotor</p>
+                            <p class="text-xl font-extrabold text-slate-900 mt-1">
                                 Rp {{ number_format($periodSummary['gross_profit'], 0, ',', '.') }}
                             </p>
-                            <p class="text-[10px] text-blue-600 mt-0.5">
-                                @if ($periodSummary['has_unrecorded_hpp'])
-                                    <span class="text-amber-700 font-semibold">*Provisional (Omzet - HPP)</span>
-                                @else
-                                    <span>Omzet dikurangi HPP Tercatat</span>
-                                @endif
+                        </div>
+                    </div>
+
+                    <div class="polmart-stat-card" style="padding: 16px;">
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Beban Operasional (OPEX)</p>
+                            <p class="text-xl font-extrabold text-slate-900 mt-1">
+                                Rp {{ number_format($periodSummary['total_opex'], 0, ',', '.') }}
                             </p>
                         </div>
                     </div>
 
                     <div class="polmart-stat-card" style="padding: 16px;">
                         <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Gross Profit Margin</p>
-                            <p class="text-xl font-extrabold text-indigo-900 mt-1">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Laba Bersih (Net Profit)</p>
+                            <p class="text-xl font-extrabold {{ $periodSummary['net_profit'] < 0 ? 'text-rose-600' : 'text-slate-900' }} mt-1">
+                                @if ($periodSummary['net_profit'] < 0)
+                                    -Rp {{ number_format(abs($periodSummary['net_profit']), 0, ',', '.') }}
+                                @else
+                                    Rp {{ number_format($periodSummary['net_profit'], 0, ',', '.') }}
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Baris 2: Rasio & Analisis Profitabilitas (3 Kartu) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div class="polmart-stat-card" style="padding: 16px;">
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Gross Profit Margin (GPM)</p>
+                            <p class="text-xl font-extrabold text-slate-900 mt-1">
                                 {{ $periodSummary['gpm'] !== null ? $periodSummary['gpm'] . '%' : '—' }}
                             </p>
-                            <p class="text-[10px] text-indigo-600 mt-0.5">
-                                @if ($periodSummary['has_unrecorded_hpp'] && $periodSummary['gpm'] !== null)
-                                    <span class="text-amber-700 font-semibold">*Provisional (Laba / Omzet)</span>
-                                @else
-                                    <span>(Laba Kotor / Total Omzet)</span>
-                                @endif
+                        </div>
+                    </div>
+
+                    <div class="polmart-stat-card" style="padding: 16px;">
+                        <div class="min-w-0">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Net Profit Margin (NPM)</p>
+                            <p class="text-xl font-extrabold {{ $periodSummary['npm'] !== null && $periodSummary['npm'] < 0 ? 'text-rose-600' : 'text-slate-900' }} mt-1">
+                                {{ $periodSummary['npm'] !== null ? $periodSummary['npm'] . '%' : '—' }}
                             </p>
                         </div>
                     </div>
 
                     <div class="polmart-stat-card" style="padding: 16px;">
                         <div class="min-w-0">
-                            <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Markup Penjualan</p>
-                            <p class="text-xl font-extrabold text-amber-900 mt-1">
+                            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Markup Penjualan</p>
+                            <p class="text-xl font-extrabold text-slate-900 mt-1">
                                 {{ $periodSummary['markup'] !== null ? $periodSummary['markup'] . '%' : '—' }}
-                            </p>
-                            <p class="text-[10px] text-amber-600 mt-0.5">
-                                @if ($periodSummary['has_unrecorded_hpp'] && $periodSummary['markup'] !== null)
-                                    <span class="text-amber-700 font-semibold">*Provisional (Laba / HPP)</span>
-                                @else
-                                    <span>(Laba Kotor / HPP Tercatat)</span>
-                                @endif
                             </p>
                         </div>
                     </div>
@@ -235,50 +243,50 @@
             <div class="polmart-stats-horizontal">
                 <div class="polmart-stat-card">
                     <div class="min-w-0">
-                        <p class="text-[11px] font-bold text-blue-700 uppercase tracking-wider truncate">Jumlah Transaksi</p>
-                        <p class="text-xl font-extrabold text-blue-900 mt-1">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Jumlah Transaksi</p>
+                        <p class="text-xl font-extrabold text-slate-900 mt-1">
                             {{ number_format($periodSummary['total_transactions']) }}
                         </p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">
                             Pesanan status SELESAI
                         </p>
                     </div>
-                    <div class="polmart-stat-icon blue"><x-icon name="receipt" class="w-5 h-5" /></div>
+                    <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="receipt" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
                     <div class="min-w-0">
-                        <p class="text-[11px] font-bold text-purple-700 uppercase tracking-wider truncate">Produk Terjual</p>
-                        <p class="text-xl font-extrabold text-purple-900 mt-1">
-                            {{ number_format($periodSummary['total_items_sold']) }} <span class="text-xs font-semibold">pcs</span>
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Produk Terjual</p>
+                        <p class="text-xl font-extrabold text-slate-900 mt-1">
+                            {{ number_format($periodSummary['total_items_sold']) }} <span class="text-xs font-semibold text-slate-500">pcs</span>
                         </p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">
                             Total unit fisik keluar
                         </p>
                     </div>
-                    <div class="polmart-stat-icon purple"><x-icon name="package" class="w-5 h-5" /></div>
+                    <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="package" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
                     <div class="min-w-0">
-                        <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider truncate">Rata-rata Nilai Transaksi</p>
-                        <p class="text-xl font-extrabold text-amber-900 mt-1">
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Rata-rata Nilai Transaksi</p>
+                        <p class="text-xl font-extrabold text-slate-900 mt-1">
                             Rp {{ number_format($periodSummary['avg_transaction'], 0, ',', '.') }}
                         </p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">
                             Rata-rata per pesanan
                         </p>
                     </div>
-                    <div class="polmart-stat-icon amber"><x-icon name="bar-chart-3" class="w-5 h-5" /></div>
+                    <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="bar-chart-3" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
                     <div class="min-w-0">
                         <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Siap Diambil (Loket)</p>
-                        <p class="text-xl font-extrabold text-blue-600 mt-1">{{ $stats['ready_pickup_count'] }}</p>
+                        <p class="text-xl font-extrabold text-slate-900 mt-1">{{ $stats['ready_pickup_count'] }}</p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['pending_payment_count'] }} menunggu QRIS</p>
                     </div>
-                    <div class="polmart-stat-icon blue"><x-icon name="hash" class="w-5 h-5" /></div>
+                    <div class="polmart-stat-icon bg-blue-50 text-blue-600"><x-icon name="hash" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
@@ -287,16 +295,16 @@
                         <p class="text-xl font-extrabold text-slate-900 mt-1">{{ $stats['total_products'] }}</p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['active_products'] }} aktif • {{ $stats['categories_count'] }} kategori</p>
                     </div>
-                    <div class="polmart-stat-icon purple"><x-icon name="tag" class="w-5 h-5" /></div>
+                    <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="tag" class="w-5 h-5" /></div>
                 </div>
 
                 <div class="polmart-stat-card">
                     <div class="min-w-0">
                         <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Peringatan Stok</p>
-                        <p class="text-xl font-extrabold text-amber-600 mt-1">{{ $stats['low_stock_count'] }}</p>
+                        <p class="text-xl font-extrabold {{ $stats['low_stock_count'] > 0 ? 'text-amber-700' : 'text-slate-900' }} mt-1">{{ $stats['low_stock_count'] }}</p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['out_of_stock_count'] }} stok habis (0)</p>
                     </div>
-                    <div class="polmart-stat-icon amber"><x-icon name="alert-triangle" class="w-5 h-5" /></div>
+                    <div class="polmart-stat-icon bg-slate-100 text-slate-600"><x-icon name="alert-triangle" class="w-5 h-5" /></div>
                 </div>
             </div>
 
@@ -319,7 +327,7 @@
                                 Omzet (Rp)
                             </button>
                             <button type="button" @click="chartMetric = 'count'"
-                                    :class="chartMetric === 'count' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'"
+                                    :class="chartMetric === 'count' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'"
                                     class="px-3 py-1 rounded-md transition">
                                 Transaksi
                             </button>
@@ -371,7 +379,7 @@
                                                 <div class="w-full rounded-t-md transition-all duration-300 cursor-pointer"
                                                      x-show="chartMetric === 'count'"
                                                      title="{{ $pt['label'] }} - Transaksi: {{ number_format($valCount) }} pesanan (Omzet: Rp {{ number_format($valOmzet, 0, ',', '.') }})"
-                                                     style="height: {{ $hCountPx }}px; background: {{ $valCount > 0 ? 'linear-gradient(180deg, #10b981 0%, #047857 100%)' : '#e2e8f0' }};">
+                                                     style="height: {{ $hCountPx }}px; background: {{ $valCount > 0 ? 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)' : '#e2e8f0' }};">
                                                 </div>
                                             </div>
 
@@ -424,13 +432,13 @@
                             <div>
                                 <div class="flex items-center justify-between text-xs mb-1">
                                     <span class="font-semibold text-slate-700 flex items-center gap-1.5">
-                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                        <span class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
                                         Kasir Walk-in
                                     </span>
                                     <span class="font-bold text-slate-900">{{ $periodSourceCounts['manual_admin'] }} ({{ $pctWalkin }}%)</span>
                                 </div>
                                 <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                    <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: {{ $pctWalkin }}%"></div>
+                                    <div class="bg-slate-500 h-2 rounded-full transition-all duration-500" style="width: {{ $pctWalkin }}%"></div>
                                 </div>
                             </div>
                         </div>
@@ -448,11 +456,11 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
                     <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                         <span>Produk Paling Menguntungkan (Periode Aktif)</span>
-                        <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800">
+                        <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-600">
                             Berdasarkan Laba Kotor
                         </span>
                     </h3>
-                    <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-xs font-bold font-mono self-start sm:self-auto">
+                    <span class="px-2.5 py-0.5 rounded bg-slate-100 text-slate-700 text-xs font-bold font-mono self-start sm:self-auto">
                         Top {{ count($periodProfitableProducts) }}
                     </span>
                 </div>
@@ -491,20 +499,20 @@
                                             <div class="text-[11px] text-slate-400 font-mono">{{ $item->sku }} • {{ $item->category }}</div>
                                         </td>
                                         <td class="text-center">
-                                            <span class="polmart-badge polmart-badge-blue font-bold">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700">
                                                 {{ number_format($item->total_sold) }} pcs
                                             </span>
                                         </td>
-                                        <td class="text-right font-medium text-slate-900">
+                                        <td class="text-right font-medium text-slate-700">
                                             Rp {{ number_format($itemRev, 0, ',', '.') }}
                                         </td>
-                                        <td class="text-right font-medium text-rose-700">
+                                        <td class="text-right font-medium text-slate-500">
                                             Rp {{ number_format($itemCost, 0, ',', '.') }}
                                         </td>
-                                        <td class="text-right font-bold text-emerald-700">
+                                        <td class="text-right font-bold text-slate-900">
                                             Rp {{ number_format($itemProfit, 0, ',', '.') }}
                                         </td>
-                                        <td class="text-center font-bold text-blue-700">
+                                        <td class="text-center font-semibold text-slate-700">
                                             {{ $itemMargin }}%
                                         </td>
                                     </tr>
@@ -542,10 +550,10 @@
                                             </td>
                                             <td class="text-center">{{ number_format($item->total_sold) }} pcs</td>
                                             <td class="text-right">Rp {{ number_format($itemRev, 0, ',', '.') }}</td>
-                                            <td class="text-right text-rose-700">Rp {{ number_format($itemCost, 0, ',', '.') }}</td>
-                                            <td class="text-right font-semibold text-amber-700">Rp {{ number_format($itemProfit, 0, ',', '.') }}</td>
+                                            <td class="text-right text-slate-500">Rp {{ number_format($itemCost, 0, ',', '.') }}</td>
+                                            <td class="text-right font-bold text-slate-900">Rp {{ number_format($itemProfit, 0, ',', '.') }}</td>
                                             <td class="text-center">
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">
                                                     Provisional
                                                 </span>
                                             </td>
@@ -645,10 +653,10 @@
                         @php
                             $pctStock = min(100, max(6, round(((int) $product->stock / $maxHighStock) * 100)));
                             $barGrad = $product->stock > 10
-                                ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)'
+                                ? 'linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%)'
                                 : ($product->stock > 0
-                                    ? 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)'
-                                    : 'linear-gradient(90deg, #ef4444 0%, #dc2626 100%)');
+                                    ? 'linear-gradient(90deg, #94a3b8 0%, #64748b 100%)'
+                                    : 'linear-gradient(90deg, #e11d48 0%, #be123c 100%)');
                         @endphp
                         <div>
                             <div class="flex items-center justify-between gap-3 text-xs" style="margin-bottom: 6px;">
@@ -656,7 +664,7 @@
                                     <span class="font-semibold text-slate-800 truncate" title="{{ $product->name }}">{{ $product->name }}</span>
                                     <span class="text-[11px] text-slate-400 shrink-0">({{ $product->category }})</span>
                                 </div>
-                                <span class="shrink-0 font-bold {{ $product->stock > 10 ? 'text-emerald-700' : ($product->stock > 0 ? 'text-amber-700' : 'text-rose-600') }}">
+                                <span class="shrink-0 font-bold {{ $product->stock === 0 ? 'text-rose-600' : 'text-slate-900' }}">
                                     {{ number_format($product->stock) }} pcs
                                 </span>
                             </div>
