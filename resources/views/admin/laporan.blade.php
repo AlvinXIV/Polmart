@@ -68,6 +68,132 @@
             </div>
         </section>
 
+        <!-- Ringkasan Finansial & Snapshot HPP (Task 2B) -->
+        <section class="polmart-card space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>Ringkasan Finansial: Omzet, HPP &amp; Laba Kotor</span>
+                        @if ($summary['has_unrecorded_hpp'])
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200" title="Terdapat transaksi tanpa data HPP tercatat">
+                                <span>⚠️</span>
+                                <span>Laba Kotor Provisional</span>
+                            </span>
+                        @else
+                            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <span>✓</span>
+                                <span>Data HPP Lengkap (100%)</span>
+                            </span>
+                        @endif
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Agregasi keuangan berbasis snapshot biaya modal (HPP) riil pada saat transaksi dibuat (status SELESAI).
+                    </p>
+                </div>
+                <div class="text-xs text-slate-500">
+                    Kelengkapan HPP:
+                    @if ($summary['completeness_pct'] !== null)
+                        <strong class="{{ $summary['has_unrecorded_hpp'] ? 'text-amber-600' : 'text-emerald-600' }}">{{ $summary['completeness_pct'] }}%</strong>
+                        ({{ $summary['total_order_items_count'] - $summary['unrecorded_items_count'] }}/{{ $summary['total_order_items_count'] }} item tercatat)
+                    @else
+                        <strong class="text-slate-400">—</strong>
+                    @endif
+                </div>
+            </div>
+
+            <!-- 5 Kartu Metrik Finansial (Task 2C: Ditambahkan GPM & Markup) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                <div class="p-3.5 rounded-xl border border-emerald-200/80 bg-emerald-50/40">
+                    <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Total Omzet</p>
+                    <p class="text-xl font-extrabold text-emerald-900 mt-1">
+                        Rp {{ number_format($summary['total_omzet'], 0, ',', '.') }}
+                    </p>
+                    <p class="text-[10px] text-emerald-700 mt-0.5">
+                        Subtotal penjualan SELESAI
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-xl border border-rose-200/80 bg-rose-50/40">
+                    <p class="text-[11px] font-bold text-rose-700 uppercase tracking-wider">HPP Tercatat</p>
+                    <p class="text-xl font-extrabold text-rose-900 mt-1">
+                        Rp {{ number_format($summary['total_hpp'], 0, ',', '.') }}
+                    </p>
+                    <p class="text-[10px] text-rose-700 mt-0.5">
+                        Snapshot modal barang terjual
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-xl border border-blue-200/80 bg-blue-50/40">
+                    <p class="text-[11px] font-bold text-blue-700 uppercase tracking-wider">Laba Kotor</p>
+                    <p class="text-xl font-extrabold text-blue-900 mt-1">
+                        Rp {{ number_format($summary['gross_profit'], 0, ',', '.') }}
+                    </p>
+                    <p class="text-[10px] text-blue-700 mt-0.5">
+                        @if ($summary['has_unrecorded_hpp'])
+                            <span class="text-amber-700 font-semibold">*Provisional (Omzet - HPP)</span>
+                        @else
+                            <span>Omzet dikurangi HPP</span>
+                        @endif
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-xl border border-indigo-200/80 bg-indigo-50/40">
+                    <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Gross Profit Margin</p>
+                    <p class="text-xl font-extrabold text-indigo-900 mt-1">
+                        {{ $summary['gpm'] !== null ? $summary['gpm'] . '%' : '—' }}
+                    </p>
+                    <p class="text-[10px] text-indigo-700 mt-0.5">
+                        @if ($summary['has_unrecorded_hpp'] && $summary['gpm'] !== null)
+                            <span class="text-amber-700 font-semibold">*Provisional (Laba / Omzet)</span>
+                        @else
+                            <span>(Laba Kotor / Omzet)</span>
+                        @endif
+                    </p>
+                </div>
+
+                <div class="p-3.5 rounded-xl border border-amber-200/80 bg-amber-50/40">
+                    <p class="text-[11px] font-bold text-amber-700 uppercase tracking-wider">Markup Penjualan</p>
+                    <p class="text-xl font-extrabold text-amber-900 mt-1">
+                        {{ $summary['markup'] !== null ? $summary['markup'] . '%' : '—' }}
+                    </p>
+                    <p class="text-[10px] text-amber-700 mt-0.5">
+                        @if ($summary['has_unrecorded_hpp'] && $summary['markup'] !== null)
+                            <span class="text-amber-700 font-semibold">*Provisional (Laba / HPP)</span>
+                        @else
+                            <span>(Laba Kotor / HPP)</span>
+                        @endif
+                    </p>
+                </div>
+            </div>
+
+            <p class="text-[11px] text-slate-400">
+                *Catatan Analisis: <strong>GPM (Gross Profit Margin)</strong> dihitung terhadap Total Omzet Penjualan; <strong>Markup</strong> dihitung terhadap Total HPP Tercatat.
+            </p>
+
+            <!-- Keterangan Status HPP & Indikator Transaksi Belum Tercatat -->
+            @if ($summary['has_unrecorded_hpp'])
+                <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">
+                    <span class="text-base select-none mt-0.5">⚠️</span>
+                    <div class="space-y-1">
+                        <p class="font-bold">
+                            Pemberitahuan Data HPP Belum Lengkap:
+                        </p>
+                        <p class="leading-relaxed">
+                            Terdapat <strong>{{ $summary['unrecorded_orders_count'] }} transaksi</strong> (mencakup <strong>{{ $summary['unrecorded_items_count'] }} item</strong>) yang belum memiliki catatan HPP/harga modal (misal: riwayat impor Excel tanpa HPP atau transaksi sebelum sistem HPP aktif).
+                        </p>
+                        <p class="leading-relaxed text-amber-800">
+                            Angka <strong>Laba Kotor</strong> di atas bersifat <em>provisional / belum lengkap</em> karena sistem tidak mengasumsikan biaya modal transaksi lama bernilai nol secara riil dan tidak mengarang HPP historis dari harga modal produk saat ini.
+                        </p>
+                    </div>
+                </div>
+            @elseif ($summary['total_transactions'] > 0)
+                <div class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-center gap-2">
+                    <span class="text-emerald-600 font-bold">✓</span>
+                    <span><strong>Data HPP Lengkap:</strong> Seluruh item dari <strong>{{ $summary['total_transactions'] }} transaksi</strong> berstatus SELESAI pada periode ini memiliki snapshot HPP yang tercatat valid.</span>
+                </div>
+            @endif
+        </section>
+
         <!-- Ringkasan Statistik -->
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="polmart-stat-card">
@@ -261,6 +387,129 @@
             </div>
         </section>
 
+        <!-- Produk Paling Menguntungkan Berdasarkan Laba Kotor (Sheet 4) (Task 2C) -->
+        <section class="polmart-card">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                    <h2 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>Produk Paling Menguntungkan (Sheet 4)</span>
+                        <span class="px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">
+                            Berdasarkan Laba Kotor
+                        </span>
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Urutan produk yang menghasilkan total keuntungan kotor terbesar (Omzet - HPP Snapshot) pada periode transaksi SELESAI.
+                    </p>
+                </div>
+            </div>
+
+            @php
+                $completeProfitable = $profitableProducts->filter(fn ($p) => (int) ($p->unrecorded_items_count ?? 0) === 0);
+                $provisionalProfitable = $profitableProducts->filter(fn ($p) => (int) ($p->unrecorded_items_count ?? 0) > 0);
+            @endphp
+
+            @if ($completeProfitable->isNotEmpty())
+                <div class="overflow-x-auto">
+                    <table class="polmart-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>SKU</th>
+                                <th>Nama Barang</th>
+                                <th>Kategori</th>
+                                <th class="text-center">Terjual</th>
+                                <th class="text-right">Total Omzet</th>
+                                <th class="text-right">HPP Tercatat</th>
+                                <th class="text-right">Total Laba Kotor</th>
+                                <th class="text-center">Margin</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($completeProfitable as $idx => $item)
+                                @php
+                                    $itemRev = (float) ($item->total_revenue ?? 0);
+                                    $itemCost = (float) ($item->total_cost ?? 0);
+                                    $itemProfit = (float) ($item->total_profit ?? 0);
+                                    $itemMargin = $itemRev > 0 ? round(($itemProfit / $itemRev) * 100, 1) : 0.0;
+                                @endphp
+                                <tr>
+                                    <td class="font-bold text-slate-400">{{ $idx + 1 }}</td>
+                                    <td class="font-mono text-xs">{{ $item->sku }}</td>
+                                    <td class="font-semibold">{{ $item->name }}</td>
+                                    <td class="text-xs text-slate-600">{{ $item->category }}</td>
+                                    <td class="text-center">
+                                        <span class="polmart-badge polmart-badge-blue">{{ number_format($item->total_sold) }} pcs</span>
+                                    </td>
+                                    <td class="text-right font-medium">Rp {{ number_format($itemRev, 0, ',', '.') }}</td>
+                                    <td class="text-right text-rose-700 font-medium">Rp {{ number_format($itemCost, 0, ',', '.') }}</td>
+                                    <td class="text-right font-bold text-emerald-700">Rp {{ number_format($itemProfit, 0, ',', '.') }}</td>
+                                    <td class="text-center font-bold text-blue-700">{{ $itemMargin }}%</td>
+                                    <td class="text-center">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">
+                                            ✓ Lengkap
+                                        </span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="p-6 text-center border border-dashed border-slate-200 rounded-xl space-y-1">
+                    <p class="text-sm font-semibold text-slate-700">Belum ada produk dengan data HPP lengkap pada periode ini.</p>
+                    <p class="text-xs text-slate-400">
+                        {{ $profitableProducts->isEmpty()
+                            ? 'Tidak ada transaksi berstatus SELESAI pada periode yang dipilih.'
+                            : 'Seluruh transaksi periode ini berstatus provisional tanpa snapshot biaya modal, sehingga ranking profitabilitas akurat belum dapat ditentukan.' }}
+                    </p>
+                </div>
+            @endif
+
+            @if ($provisionalProfitable->isNotEmpty())
+                <div class="mt-4 pt-4 border-t border-slate-100 space-y-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-amber-800 bg-amber-100 px-2.5 py-0.5 rounded-full">
+                            ⚠️ Data Produk Provisional (HPP Belum Lengkap)
+                        </span>
+                        <span class="text-xs text-slate-500">
+                            Produk di bawah ini memiliki transaksi dengan HPP belum tercatat, sehingga angka labanya belum final:
+                        </span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="polmart-table text-xs">
+                            <thead>
+                                <tr class="bg-amber-50/50">
+                                    <th>SKU</th>
+                                    <th>Nama Barang</th>
+                                    <th class="text-center">Terjual</th>
+                                    <th class="text-right">Total Omzet</th>
+                                    <th class="text-right">HPP Tercatat</th>
+                                    <th class="text-right">Laba Kotor (Provisional)</th>
+                                    <th class="text-center">Keterangan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($provisionalProfitable as $pItem)
+                                    <tr>
+                                        <td class="font-mono">{{ $pItem->sku }}</td>
+                                        <td class="font-semibold">{{ $pItem->name }}</td>
+                                        <td class="text-center">{{ number_format($pItem->total_sold) }} pcs</td>
+                                        <td class="text-right">Rp {{ number_format($pItem->total_revenue, 0, ',', '.') }}</td>
+                                        <td class="text-right text-rose-700">Rp {{ number_format($pItem->total_cost, 0, ',', '.') }}</td>
+                                        <td class="text-right font-bold text-amber-800">Rp {{ number_format($pItem->total_profit, 0, ',', '.') }}*</td>
+                                        <td class="text-center text-amber-700 font-medium">
+                                            {{ $pItem->unrecorded_items_count }} item transaksi belum tercatat HPP
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
+        </section>
+
         <!-- Rekap Transaksi Periode -->
         <section class="polmart-card">
             <h2 class="text-base font-extrabold text-slate-900 mb-3">Rekap Transaksi Lengkap (Sheet 1)</h2>
@@ -274,10 +523,17 @@
                             <th>Sumber</th>
                             <th class="text-center">Total Item</th>
                             <th class="text-right">Nominal</th>
+                            <th class="text-right">HPP</th>
+                            <th class="text-right">Laba Kotor</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($orders as $order)
+                            @php
+                                $orderHpp = (float) $order->items->sum('subtotal_cost');
+                                $orderProfit = (float) $order->total_amount - $orderHpp;
+                                $orderHasZeroHpp = $order->items->contains(fn ($it) => (float)($it->cost_price ?? 0) <= 0 || (float)($it->subtotal_cost ?? 0) <= 0);
+                            @endphp
                             <tr>
                                 <td class="font-mono font-bold text-blue-700">{{ $order->order_code }}</td>
                                 <td class="text-xs text-slate-600">{{ $order->transaction_date?->format('d/m/Y H:i') }}</td>
@@ -292,10 +548,19 @@
                                 </td>
                                 <td class="text-center">{{ $order->items->sum('qty') }}</td>
                                 <td class="text-right font-bold">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</td>
+                                <td class="text-right font-semibold text-rose-700">
+                                    Rp {{ number_format($orderHpp, 0, ',', '.') }}
+                                    @if ($orderHasZeroHpp)
+                                        <span class="block text-[10px] text-amber-700 font-normal" title="Sebagian atau seluruh item pesanan ini belum tercatat HPP">*provisional</span>
+                                    @endif
+                                </td>
+                                <td class="text-right font-bold text-emerald-700">
+                                    Rp {{ number_format($orderProfit, 0, ',', '.') }}
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="text-center text-slate-400 py-6">Belum ada transaksi selesai pada periode ini.</td>
+                                <td colspan="8" class="text-center text-slate-400 py-6">Belum ada transaksi selesai pada periode ini.</td>
                             </tr>
                         @endforelse
                     </tbody>

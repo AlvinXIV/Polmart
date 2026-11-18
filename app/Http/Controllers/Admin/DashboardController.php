@@ -82,20 +82,57 @@ class DashboardController extends Controller
             ->where('status', 'SELESAI')
             ->whereBetween('transaction_date', [$start, $end]);
 
-        $periodTotalOmzet = (float) (clone $completedOrdersBase)->sum('total_amount');
-        $periodTotalTransactions = (int) (clone $completedOrdersBase)->count();
-        $periodTotalItemsSold = (int) DB::table('order_items')
+        $completedOrderItemsBase = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.id')
             ->where('orders.status', 'SELESAI')
-            ->whereBetween('orders.transaction_date', [$start, $end])
-            ->sum('order_items.qty');
+            ->whereBetween('orders.transaction_date', [$start, $end]);
+
+        $periodTotalOmzet = (float) (clone $completedOrdersBase)->sum('total_amount');
+        $periodTotalTransactions = (int) (clone $completedOrdersBase)->count();
+        $periodTotalItemsSold = (int) (clone $completedOrderItemsBase)->sum('order_items.qty');
         $periodAvgTransaction = $periodTotalTransactions > 0 ? $periodTotalOmzet / $periodTotalTransactions : 0.0;
+
+        $periodTotalHpp = (float) (clone $completedOrderItemsBase)->sum('order_items.subtotal_cost');
+        $periodGrossProfit = $periodTotalOmzet - $periodTotalHpp;
+
+        $periodUnrecordedItemsCount = (int) (clone $completedOrderItemsBase)
+            ->where(function ($q) {
+                $q->where('order_items.cost_price', '<=', 0)
+                  ->orWhere('order_items.subtotal_cost', '<=', 0);
+            })
+            ->count();
+
+        $periodUnrecordedOrdersCount = (int) (clone $completedOrderItemsBase)
+            ->where(function ($q) {
+                $q->where('order_items.cost_price', '<=', 0)
+                  ->orWhere('order_items.subtotal_cost', '<=', 0);
+            })
+            ->distinct('orders.id')
+            ->count('orders.id');
+
+        $periodTotalOrderItemsCount = (int) (clone $completedOrderItemsBase)->count();
+        $periodHasUnrecordedHpp = $periodUnrecordedItemsCount > 0;
+        $periodCompletenessPct = $periodTotalOrderItemsCount > 0
+            ? round((($periodTotalOrderItemsCount - $periodUnrecordedItemsCount) / $periodTotalOrderItemsCount) * 100, 1)
+            : null;
+
+        $periodGpm = $periodTotalOmzet > 0 ? round(($periodGrossProfit / $periodTotalOmzet) * 100, 1) : null;
+        $periodMarkup = $periodTotalHpp > 0 ? round(($periodGrossProfit / $periodTotalHpp) * 100, 1) : null;
 
         $periodSummary = [
             'total_omzet' => $periodTotalOmzet,
             'total_transactions' => $periodTotalTransactions,
             'total_items_sold' => $periodTotalItemsSold,
             'avg_transaction' => $periodAvgTransaction,
+            'total_hpp' => $periodTotalHpp,
+            'gross_profit' => $periodGrossProfit,
+            'gpm' => $periodGpm,
+            'markup' => $periodMarkup,
+            'has_unrecorded_hpp' => $periodHasUnrecordedHpp,
+            'unrecorded_items_count' => $periodUnrecordedItemsCount,
+            'unrecorded_orders_count' => $periodUnrecordedOrdersCount,
+            'total_order_items_count' => $periodTotalOrderItemsCount,
+            'completeness_pct' => $periodCompletenessPct,
         ];
 
         // 2. Agregasi Distribusi Sumber Transaksi via Group By (efisien & deteksi sumber tidak dikenal)
@@ -140,6 +177,35 @@ class DashboardController extends Controller
                 'products.stock'
             )
             ->orderByDesc('total_sold')
+            ->limit(10)
+            ->get();
+
+        // 3b. Produk Paling Menguntungkan Periode Aktif via Query Grouped (Task 2C)
+        $periodProfitableProducts = DB::table('order_items')
+            ->join('orders', 'order_items.order_id', '=', 'orders.id')
+            ->join('products', 'order_items.product_id', '=', 'products.id')
+            ->where('orders.status', 'SELESAI')
+            ->whereBetween('orders.transaction_date', [$start, $end])
+            ->select(
+                'products.id',
+                'products.sku',
+                'products.name',
+                'products.category',
+                'products.stock',
+                DB::raw('SUM(order_items.qty) as total_sold'),
+                DB::raw('SUM(order_items.subtotal) as total_revenue'),
+                DB::raw('SUM(order_items.subtotal_cost) as total_cost'),
+                DB::raw('SUM(order_items.subtotal - order_items.subtotal_cost) as total_profit'),
+                DB::raw('SUM(CASE WHEN order_items.cost_price <= 0 OR order_items.subtotal_cost <= 0 THEN 1 ELSE 0 END) as unrecorded_items_count')
+            )
+            ->groupBy(
+                'products.id',
+                'products.sku',
+                'products.name',
+                'products.category',
+                'products.stock'
+            )
+            ->orderByDesc('total_profit')
             ->limit(10)
             ->get();
 
@@ -257,6 +323,7 @@ class DashboardController extends Controller
             'periodSummary',
             'periodSourceCounts',
             'periodTopProducts',
+            'periodProfitableProducts',
             'chartData',
             'exportParams',
             'topFilter',

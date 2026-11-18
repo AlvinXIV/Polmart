@@ -46,6 +46,34 @@ class SummaryReportSheet implements FromArray, WithHeadings, ShouldAutoSize, Wit
         $totalItemsSold = (int) ($this->summary['total_items_sold'] ?? 0);
         $avgTransaction = (float) ($this->summary['avg_transaction'] ?? 0.0);
 
+        $totalHpp = (float) ($this->summary['total_hpp'] ?? 0.0);
+        $grossProfit = (float) ($this->summary['gross_profit'] ?? 0.0);
+        $hasUnrecorded = (bool) ($this->summary['has_unrecorded_hpp'] ?? false);
+        $unrecordedItems = (int) ($this->summary['unrecorded_items_count'] ?? 0);
+        $unrecordedOrders = (int) ($this->summary['unrecorded_orders_count'] ?? 0);
+
+        $gpm = isset($this->summary['gpm']) && $this->summary['gpm'] !== null
+            ? (float) $this->summary['gpm']
+            : ($totalOmzet > 0 ? round(($grossProfit / $totalOmzet) * 100, 1) : null);
+
+        $markup = isset($this->summary['markup']) && $this->summary['markup'] !== null
+            ? (float) $this->summary['markup']
+            : ($totalHpp > 0 ? round(($grossProfit / $totalHpp) * 100, 1) : null);
+
+        $gpmLabel = $gpm !== null ? $gpm . '%' : '—';
+        if ($gpm !== null && $hasUnrecorded) {
+            $gpmLabel .= ' (Provisional)';
+        }
+
+        $markupLabel = $markup !== null ? $markup . '%' : '—';
+        if ($markup !== null && $hasUnrecorded) {
+            $markupLabel .= ' (Provisional)';
+        }
+
+        $hppStatus = $hasUnrecorded
+            ? "Provisional ({$unrecordedOrders} pesanan / {$unrecordedItems} item belum tercatat HPP)"
+            : "Lengkap (100% item memiliki catatan HPP)";
+
         $webCount = (int) ($this->sourceCounts['web'] ?? 0);
         $walkinCount = (int) ($this->sourceCounts['manual_admin'] ?? 0);
         $importCount = (int) ($this->sourceCounts['import_excel'] ?? 0);
@@ -63,6 +91,11 @@ class SummaryReportSheet implements FromArray, WithHeadings, ShouldAutoSize, Wit
             ['Kriteria Data Transaksi', 'Hanya transaksi berstatus SELESAI'],
             ['-----------------------------------------', '-----------------------------------------'],
             ['Total Omzet Penjualan (Rp)', 'Rp ' . number_format($totalOmzet, 0, ',', '.')],
+            ['Total HPP Tercatat (Rp)', 'Rp ' . number_format($totalHpp, 0, ',', '.')],
+            ['Laba Kotor (Rp)', 'Rp ' . number_format($grossProfit, 0, ',', '.')],
+            ['Gross Profit Margin (GPM)', $gpmLabel],
+            ['Markup Penjualan (%)', $markupLabel],
+            ['Status Kelengkapan HPP', $hppStatus],
             ['Jumlah Transaksi Sukses', number_format($totalTransactions, 0, ',', '.') . ' Pesanan'],
             ['Total Produk Terjual (Qty)', number_format($totalItemsSold, 0, ',', '.') . ' Pcs'],
             ['Rata-rata Nilai Transaksi (Rp)', 'Rp ' . number_format($avgTransaction, 0, ',', '.')],
