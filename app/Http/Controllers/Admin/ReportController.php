@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
@@ -158,6 +159,8 @@ class ReportController extends Controller
             ->orderByDesc('total_sold')
             ->get();
 
+        $chartData = $this->buildChartDataFromDb($period, $start, $end, $orders);
+
         return [
             'period' => $period,
             'date' => $date,
@@ -168,6 +171,7 @@ class ReportController extends Controller
             'periodLabel' => $periodLabel,
             'orders' => $orders,
             'topProducts' => $topProducts,
+            'chartData' => $chartData,
             'summary' => [
                 'total_omzet' => $totalOmzet,
                 'total_transactions' => $totalTransactions,
@@ -175,6 +179,134 @@ class ReportController extends Controller
                 'avg_transaction' => $avgTransaction,
             ],
             'sourceCounts' => $sourceCounts,
+        ];
+    }
+
+    /**
+     * Membangun dataset deret waktu untuk grafik tren penjualan sesuai periode aktif.
+     *
+     * @param Collection<int, object> $orders
+     * @return array<string, mixed>
+     */
+    private function buildChartDataFromDb(string $period, Carbon $start, Carbon $end, Collection $orders): array
+    {
+        $items = [];
+
+        if ($period === 'daily') {
+            for ($h = 0; $h < 24; $h++) {
+                $hourKey = sprintf('%02d', $h);
+                $items[$hourKey] = [
+                    'label' => sprintf('%02d:00', $h),
+                    'short_label' => sprintf('%02d', $h),
+                    'omzet' => 0.0,
+                    'count' => 0,
+                ];
+            }
+
+            foreach ($orders as $order) {
+                if (! empty($order->transaction_date)) {
+                    $dt = Carbon::parse($order->transaction_date);
+                    $hourKey = $dt->format('H');
+                    if (isset($items[$hourKey])) {
+                        $items[$hourKey]['omzet'] += (float) $order->total_amount;
+                        $items[$hourKey]['count']++;
+                    }
+                }
+            }
+        } elseif ($period === 'weekly') {
+            $cursor = $start->copy();
+            while ($cursor->lte($end)) {
+                $dateKey = $cursor->toDateString();
+                $items[$dateKey] = [
+                    'label' => $cursor->translatedFormat('D, d M'),
+                    'short_label' => $cursor->translatedFormat('D'),
+                    'omzet' => 0.0,
+                    'count' => 0,
+                ];
+                $cursor->addDay();
+            }
+
+            foreach ($orders as $order) {
+                if (! empty($order->transaction_date)) {
+                    $dt = Carbon::parse($order->transaction_date);
+                    $dateKey = $dt->toDateString();
+                    if (isset($items[$dateKey])) {
+                        $items[$dateKey]['omzet'] += (float) $order->total_amount;
+                        $items[$dateKey]['count']++;
+                    }
+                }
+            }
+        } elseif ($period === 'yearly') {
+            for ($m = 1; $m <= 12; $m++) {
+                $monthKey = sprintf('%02d', $m);
+                $items[$monthKey] = [
+                    'label' => Carbon::create(null, $m, 1)->translatedFormat('F'),
+                    'short_label' => Carbon::create(null, $m, 1)->translatedFormat('M'),
+                    'omzet' => 0.0,
+                    'count' => 0,
+                ];
+            }
+
+            foreach ($orders as $order) {
+                if (! empty($order->transaction_date)) {
+                    $dt = Carbon::parse($order->transaction_date);
+                    $monthKey = $dt->format('m');
+                    if (isset($items[$monthKey])) {
+                        $items[$monthKey]['omzet'] += (float) $order->total_amount;
+                        $items[$monthKey]['count']++;
+                    }
+                }
+            }
+        } else {
+            // Default: monthly
+            $daysInMonth = (int) $start->daysInMonth;
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $dayKey = sprintf('%02d', $d);
+                $items[$dayKey] = [
+                    'label' => 'Tgl ' . $d . ' ' . $start->translatedFormat('M'),
+                    'short_label' => (string) $d,
+                    'omzet' => 0.0,
+                    'count' => 0,
+                ];
+            }
+
+            foreach ($orders as $order) {
+                if (! empty($order->transaction_date)) {
+                    $dt = Carbon::parse($order->transaction_date);
+                    $dayKey = $dt->format('d');
+                    if (isset($items[$dayKey])) {
+                        $items[$dayKey]['omzet'] += (float) $order->total_amount;
+                        $items[$dayKey]['count']++;
+                    }
+                }
+            }
+        }
+
+        $series = array_values($items);
+        $maxOmzet = 0.0;
+        $maxCount = 0;
+
+        foreach ($series as $point) {
+            if ($point['omzet'] > $maxOmzet) {
+                $maxOmzet = $point['omzet'];
+            }
+            if ($point['count'] > $maxCount) {
+                $maxCount = $point['count'];
+            }
+        }
+
+        return [
+            'period' => $period,
+            'unit_name' => match ($period) {
+                'daily' => 'Jam',
+                'weekly' => 'Hari',
+                'yearly' => 'Bulan',
+                default => 'Tanggal',
+            },
+            'series' => $series,
+            'max_omzet' => $maxOmzet > 0 ? $maxOmzet : 1.0,
+            'max_count' => $maxCount > 0 ? $maxCount : 1,
+            'has_data' => $orders->isNotEmpty(),
         ];
     }
 

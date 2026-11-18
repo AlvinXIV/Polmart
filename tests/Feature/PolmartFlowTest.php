@@ -496,5 +496,170 @@ class PolmartFlowTest extends TestCase
         $res->assertSee('Barang QC 2');
         $res->assertSee('Barang QC 1');
     }
+
+    public function test_admin_reports_chart_empty_state_when_no_transactions(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // Periode di masa depan yang tidak memiliki transaksi sama sekali
+        $res = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2035-01-01',
+        ]));
+
+        $res->assertOk();
+        $res->assertViewHas('chartData');
+
+        /** @var array<string, mixed> $chartData */
+        $chartData = $res->viewData('chartData');
+        $this->assertFalse($chartData['has_data']);
+        $this->assertSame('daily', $chartData['period']);
+        $this->assertSame('Jam', $chartData['unit_name']);
+        $this->assertCount(24, $chartData['series']);
+
+        // Pastikan pesan empty state muncul di antarmuka
+        $res->assertSee('Tidak ada transaksi SELESAI pada periode ini.');
+    }
+
+    public function test_admin_reports_chart_aggregation_daily_weekly_monthly_yearly_and_status_isolation(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create();
+
+        $product = Product::create([
+            'sku' => 'CHART-TEST-001',
+            'name' => 'Barang Chart Test',
+            'category' => 'Kategori Chart',
+            'price' => 20000,
+            'stock' => 100,
+            'is_active' => true,
+        ]);
+
+        // 1. Transaksi SELESAI Jam 09:00 (Omzet: 60.000)
+        Order::create([
+            'order_code' => 'ORD-CHART-001',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 60000,
+            'transaction_date' => '2026-08-10 09:30:00',
+            'paid_at' => '2026-08-10 09:30:00',
+        ]);
+
+        // 2. Transaksi SELESAI Jam 14:00 (Omzet: 40.000)
+        Order::create([
+            'order_code' => 'ORD-CHART-002',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'manual_admin',
+            'status' => 'SELESAI',
+            'total_amount' => 40000,
+            'transaction_date' => '2026-08-10 14:15:00',
+            'paid_at' => '2026-08-10 14:15:00',
+        ]);
+
+        // 3. Transaksi SELESAI di hari lain pada minggu yang sama (2026-08-12, Omzet: 100.000)
+        Order::create([
+            'order_code' => 'ORD-CHART-003',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'import_excel',
+            'status' => 'SELESAI',
+            'total_amount' => 100000,
+            'transaction_date' => '2026-08-12 11:00:00',
+            'paid_at' => '2026-08-12 11:00:00',
+        ]);
+
+        // 4. Transaksi BATAL Jam 10:00 (200.000) -> TIDAK BOLEH MASUK GRAFIK
+        Order::create([
+            'order_code' => 'ORD-CHART-004',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'BATAL',
+            'total_amount' => 200000,
+            'transaction_date' => '2026-08-10 10:00:00',
+        ]);
+
+        // 5. Transaksi DIPROSES Jam 11:00 (300.000) -> TIDAK BOLEH MASUK GRAFIK
+        Order::create([
+            'order_code' => 'ORD-CHART-005',
+            'user_id' => $member->id,
+            'customer_name' => $member->name,
+            'source' => 'web',
+            'status' => 'DIPROSES',
+            'total_amount' => 300000,
+            'transaction_date' => '2026-08-10 11:00:00',
+        ]);
+
+        // --- UJI PERIODE HARIAN ---
+        $resDaily = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'daily',
+            'date' => '2026-08-10',
+        ]));
+        $resDaily->assertOk();
+        $dailyChart = $resDaily->viewData('chartData');
+        $this->assertTrue($dailyChart['has_data']);
+        $this->assertSame('Jam', $dailyChart['unit_name']);
+
+        // Cari titik jam 09 dan 14
+        $seriesByLabel = collect($dailyChart['series'])->keyBy('short_label');
+        $this->assertEquals(60000, $seriesByLabel['09']['omzet']);
+        $this->assertEquals(1, $seriesByLabel['09']['count']);
+        $this->assertEquals(40000, $seriesByLabel['14']['omzet']);
+        $this->assertEquals(1, $seriesByLabel['14']['count']);
+        // Jam 10 dan 11 harus 0 karena bukan SELESAI
+        $this->assertEquals(0, $seriesByLabel['10']['omzet']);
+        $this->assertEquals(0, $seriesByLabel['11']['omzet']);
+
+        // UI Assertion Harian
+        $resDaily->assertSee('Grafik Tren Penjualan (Per Jam)');
+        $resDaily->assertSee('Omzet (Rp)');
+        $resDaily->assertSee('Jumlah Transaksi');
+
+        // --- UJI PERIODE MINGGUAN ---
+        $resWeekly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'weekly',
+            'start_date' => '2026-08-10',
+            'end_date' => '2026-08-16',
+        ]));
+        $resWeekly->assertOk();
+        $weeklyChart = $resWeekly->viewData('chartData');
+        $this->assertTrue($weeklyChart['has_data']);
+        $this->assertSame('Hari', $weeklyChart['unit_name']);
+        $this->assertCount(7, $weeklyChart['series']);
+        $totalWeeklyChartOmzet = collect($weeklyChart['series'])->sum('omzet');
+        $this->assertEquals(200000, $totalWeeklyChartOmzet); // 60k + 40k + 100k
+
+        // --- UJI PERIODE BULANAN ---
+        $resMonthly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'monthly',
+            'month' => '8',
+            'year' => '2026',
+        ]));
+        $resMonthly->assertOk();
+        $monthlyChart = $resMonthly->viewData('chartData');
+        $this->assertTrue($monthlyChart['has_data']);
+        $this->assertSame('Tanggal', $monthlyChart['unit_name']);
+        $this->assertCount(31, $monthlyChart['series']); // Agustus ada 31 hari
+        $totalMonthlyChartOmzet = collect($monthlyChart['series'])->sum('omzet');
+        $this->assertEquals(200000, $totalMonthlyChartOmzet);
+
+        // --- UJI PERIODE TAHUNAN ---
+        $resYearly = $this->actingAs($admin)->get(route('admin.reports.index', [
+            'period' => 'yearly',
+            'year' => '2026',
+        ]));
+        $resYearly->assertOk();
+        $yearlyChart = $resYearly->viewData('chartData');
+        $this->assertTrue($yearlyChart['has_data']);
+        $this->assertSame('Bulan', $yearlyChart['unit_name']);
+        $this->assertCount(12, $yearlyChart['series']);
+        $totalYearlyChartOmzet = collect($yearlyChart['series'])->sum('omzet');
+        $this->assertEquals(200000, $totalYearlyChartOmzet);
+        $totalYearlyChartCount = collect($yearlyChart['series'])->sum('count');
+        $this->assertEquals(3, $totalYearlyChartCount);
+    }
 }
 
