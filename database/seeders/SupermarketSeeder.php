@@ -44,7 +44,7 @@ class SupermarketSeeder extends Seeder
             if ($existing) {
                 if (Schema::hasColumn('users', 'member_code') && empty($existing->member_code)) {
                     DB::table('users')->where('id', $existing->id)->update([
-                        'member_code' => $u['member_number'],
+                        'member_code' => $u['member_code'],
                         'phone' => $u['phone'],
                     ]);
                 }
@@ -57,9 +57,9 @@ class SupermarketSeeder extends Seeder
                 'email' => $u['email'],
                 'password' => $defaultPassword,
                 'role' => $u['role'],
-                'member_code' => $u['member_number'],
-                'member_number' => $u['member_number'],
-                'nomor_anggota' => $u['member_number'],
+                'member_code' => $u['member_code'],
+                'member_number' => $u['member_code'],
+                'nomor_anggota' => $u['member_code'],
                 'phone' => $u['phone'],
                 'email_verified_at' => $now,
                 'created_at' => $now,
