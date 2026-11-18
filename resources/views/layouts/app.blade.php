@@ -521,6 +521,12 @@
                         <span>Validasi Loket Ambil</span>
                     </a>
 
+                    <a href="{{ route('admin.operating-expenses.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.operating-expenses.*') ? 'active' : '' }}">
+                        <span class="menu-icon">💸</span>
+                        <span>Biaya Operasional</span>
+                    </a>
+
                     <div class="menu-label">Data & Laporan</div>
 
                     <a href="{{ route('admin.order-imports.index') }}"

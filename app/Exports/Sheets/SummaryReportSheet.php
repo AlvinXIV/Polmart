@@ -70,9 +70,38 @@ class SummaryReportSheet implements FromArray, WithHeadings, ShouldAutoSize, Wit
             $markupLabel .= ' (Provisional)';
         }
 
+        $totalOpex = (float) ($this->summary['total_opex'] ?? 0.0);
+        $opexCount = (int) ($this->summary['opex_count'] ?? 0);
+        $netProfit = (float) ($this->summary['net_profit'] ?? 0.0);
+        $npm = array_key_exists('npm', $this->summary) ? $this->summary['npm'] : null;
+        $isNetProfitProvisional = (bool) ($this->summary['is_net_profit_provisional'] ?? false);
+
+        $opexLabel = $totalOpex < 0
+            ? '-Rp ' . number_format(abs($totalOpex), 0, ',', '.')
+            : 'Rp ' . number_format($totalOpex, 0, ',', '.');
+        if ($opexCount === 0) {
+            $opexLabel .= ' (Belum ada catatan OPEX)';
+        }
+
+        $netProfitLabel = $netProfit < 0
+            ? '-Rp ' . number_format(abs($netProfit), 0, ',', '.')
+            : 'Rp ' . number_format($netProfit, 0, ',', '.');
+        if ($isNetProfitProvisional) {
+            $netProfitLabel .= ' (Provisional)';
+        }
+
+        $npmLabel = $npm !== null ? $npm . '%' : '—';
+        if ($npm !== null && $isNetProfitProvisional) {
+            $npmLabel .= ' (Provisional)';
+        }
+
         $hppStatus = $hasUnrecorded
             ? "Provisional ({$unrecordedOrders} pesanan / {$unrecordedItems} item belum tercatat HPP)"
-            : "Lengkap (100% item memiliki catatan HPP)";
+            : ($totalTransactions > 0 ? "Lengkap (100% item memiliki catatan HPP)" : "—");
+
+        $opexStatus = $opexCount > 0
+            ? "Ada catatan OPEX sebanyak {$opexCount} transaksi"
+            : "Belum ada catatan OPEX";
 
         $webCount = (int) ($this->sourceCounts['web'] ?? 0);
         $walkinCount = (int) ($this->sourceCounts['manual_admin'] ?? 0);
@@ -94,8 +123,12 @@ class SummaryReportSheet implements FromArray, WithHeadings, ShouldAutoSize, Wit
             ['Total HPP Tercatat (Rp)', 'Rp ' . number_format($totalHpp, 0, ',', '.')],
             ['Laba Kotor (Rp)', 'Rp ' . number_format($grossProfit, 0, ',', '.')],
             ['Gross Profit Margin (GPM)', $gpmLabel],
+            ['Total Beban Operasional / OPEX (Rp)', $opexLabel],
+            ['Laba Bersih / Net Profit (Rp)', $netProfitLabel],
+            ['Net Profit Margin (NPM)', $npmLabel],
             ['Markup Penjualan (%)', $markupLabel],
             ['Status Kelengkapan HPP', $hppStatus],
+            ['Status Pencatatan OPEX', $opexStatus],
             ['Jumlah Transaksi Sukses', number_format($totalTransactions, 0, ',', '.') . ' Pesanan'],
             ['Total Produk Terjual (Qty)', number_format($totalItemsSold, 0, ',', '.') . ' Pcs'],
             ['Rata-rata Nilai Transaksi (Rp)', 'Rp ' . number_format($avgTransaction, 0, ',', '.')],

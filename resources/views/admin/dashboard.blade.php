@@ -210,6 +210,7 @@
                     </div>
                 </div>
 
+                <!-- Baris 1: Arus Finansial Nominal (5 Kartu) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                     <div class="p-3.5 rounded-lg border border-emerald-200 bg-white shadow-sm">
                         <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Total Omzet</p>
@@ -245,16 +246,79 @@
                         </p>
                     </div>
 
+                    <div class="p-3.5 rounded-lg border border-orange-200 bg-white shadow-sm">
+                        <p class="text-[11px] font-bold text-orange-700 uppercase tracking-wider">Beban Operasional (OPEX)</p>
+                        <p class="text-xl font-extrabold text-orange-900 mt-1">
+                            Rp {{ number_format($periodSummary['total_opex'], 0, ',', '.') }}
+                        </p>
+                        <p class="text-[10px] text-orange-600 mt-0.5">
+                            @if ($periodSummary['opex_count'] > 0)
+                                <span>Ada catatan OPEX sebanyak {{ $periodSummary['opex_count'] }} transaksi</span>
+                            @else
+                                <span class="text-amber-700 font-semibold">Belum ada catatan OPEX</span>
+                            @endif
+                        </p>
+                    </div>
+
+                    <div class="p-3.5 rounded-lg border {{ $periodSummary['net_profit'] < 0 ? 'border-rose-300 bg-rose-50/20' : 'border-teal-200 bg-white' }} shadow-sm">
+                        <p class="text-[11px] font-bold {{ $periodSummary['net_profit'] < 0 ? 'text-rose-700' : 'text-teal-700' }} uppercase tracking-wider">Laba Bersih (Net Profit)</p>
+                        <p class="text-xl font-extrabold {{ $periodSummary['net_profit'] < 0 ? 'text-rose-700' : 'text-teal-900' }} mt-1">
+                            @if ($periodSummary['net_profit'] < 0)
+                                -Rp {{ number_format(abs($periodSummary['net_profit']), 0, ',', '.') }}
+                            @else
+                                Rp {{ number_format($periodSummary['net_profit'], 0, ',', '.') }}
+                            @endif
+                        </p>
+                        <p class="text-[10px] mt-0.5">
+                            @if ($periodSummary['net_profit'] < 0)
+                                <span class="text-rose-600 font-semibold">Defisit / Rugi Bersih</span>
+                            @elseif ($periodSummary['is_net_profit_provisional'])
+                                @if ($periodSummary['has_unrecorded_hpp'] && $periodSummary['opex_count'] === 0)
+                                    <span class="text-amber-700 font-semibold">*Provisional (HPP & OPEX)</span>
+                                @elseif ($periodSummary['has_unrecorded_hpp'])
+                                    <span class="text-amber-700 font-semibold">*Provisional (HPP belum lengkap)</span>
+                                @else
+                                    <span class="text-amber-700 font-semibold">*Provisional (OPEX belum dicatat)</span>
+                                @endif
+                            @else
+                                <span class="text-teal-700">Laba Kotor dikurangi OPEX</span>
+                            @endif
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Baris 2: Rasio & Analisis Profitabilitas (3 Kartu) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div class="p-3.5 rounded-lg border border-indigo-200 bg-white shadow-sm">
-                        <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Gross Profit Margin</p>
+                        <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Gross Profit Margin (GPM)</p>
                         <p class="text-xl font-extrabold text-indigo-900 mt-1">
                             {{ $periodSummary['gpm'] !== null ? $periodSummary['gpm'] . '%' : '—' }}
                         </p>
                         <p class="text-[10px] text-indigo-600 mt-0.5">
                             @if ($periodSummary['has_unrecorded_hpp'] && $periodSummary['gpm'] !== null)
-                                <span class="text-amber-700 font-semibold">*Provisional (Laba / Omzet)</span>
+                                <span class="text-amber-700 font-semibold">*Provisional (Laba Kotor / Omzet)</span>
                             @else
                                 <span>(Laba Kotor / Total Omzet)</span>
+                            @endif
+                        </p>
+                    </div>
+
+                    <div class="p-3.5 rounded-lg border border-cyan-200 bg-white shadow-sm">
+                        <p class="text-[11px] font-bold text-cyan-700 uppercase tracking-wider">Net Profit Margin (NPM)</p>
+                        <p class="text-xl font-extrabold {{ $periodSummary['npm'] !== null && $periodSummary['npm'] < 0 ? 'text-rose-700' : 'text-cyan-900' }} mt-1">
+                            {{ $periodSummary['npm'] !== null ? $periodSummary['npm'] . '%' : '—' }}
+                        </p>
+                        <p class="text-[10px] text-cyan-600 mt-0.5">
+                            @if ($periodSummary['npm'] !== null && $periodSummary['is_net_profit_provisional'])
+                                @if ($periodSummary['has_unrecorded_hpp'] && $periodSummary['opex_count'] === 0)
+                                    <span class="text-amber-700 font-semibold">*Provisional (Laba Bersih / Omzet)</span>
+                                @elseif ($periodSummary['has_unrecorded_hpp'])
+                                    <span class="text-amber-700 font-semibold">*Provisional (HPP belum lengkap)</span>
+                                @else
+                                    <span class="text-amber-700 font-semibold">*Provisional (OPEX belum dicatat)</span>
+                                @endif
+                            @else
+                                <span>(Laba Bersih / Total Omzet)</span>
                             @endif
                         </p>
                     </div>
@@ -275,14 +339,30 @@
                 </div>
 
                 <p class="text-[11px] text-slate-500">
-                    *Catatan Metrik: <strong>GPM (Gross Profit Margin)</strong> dihitung terhadap Total Omzet Penjualan; <strong>Markup</strong> dihitung terhadap Total HPP Tercatat.
+                    *Catatan Metrik: <strong>GPM (Gross Profit Margin)</strong> dihitung terhadap Total Omzet Penjualan; <strong>NPM (Net Profit Margin)</strong> dihitung dari Laba Bersih terhadap Total Omzet; <strong>Markup</strong> dihitung terhadap Total HPP Tercatat. Pembelian stok barang tidak termasuk OPEX (masuk ke HPP saat barang terjual).
                 </p>
 
                 @if ($periodSummary['has_unrecorded_hpp'])
                     <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2">
                         <span class="text-sm select-none">⚠️</span>
                         <div class="leading-relaxed">
-                            <strong>Perhatian Data HPP:</strong> Terdapat <strong>{{ $periodSummary['unrecorded_orders_count'] }} transaksi</strong> (<strong>{{ $periodSummary['unrecorded_items_count'] }} item</strong>) dengan HPP belum tercatat. Nilai laba kotor di atas bersifat <em>provisional</em> dan tidak mengasumsikan biaya modal historis bernilai nol.
+                            <strong>Perhatian Data HPP:</strong> Terdapat <strong>{{ $periodSummary['unrecorded_orders_count'] }} transaksi</strong> (<strong>{{ $periodSummary['unrecorded_items_count'] }} item</strong>) dengan HPP belum tercatat. Nilai laba kotor di atas bersifat <em>provisional</em> dan tidak mengasumsikan biaya modal historis bernilai nol (Net Profit provisional karena HPP belum lengkap).
+                        </div>
+                    </div>
+                @endif
+
+                @if ($periodSummary['opex_count'] === 0 && ($periodSummary['total_transactions'] > 0 || $periodSummary['total_omzet'] > 0))
+                    <div class="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2">
+                        <span class="text-sm select-none">ℹ️</span>
+                        <div class="leading-relaxed">
+                            <strong>Perhatian Beban Operasional:</strong> Belum ada catatan OPEX untuk periode ini. Nilai laba bersih di atas mengasumsikan beban operasional Rp 0 sehingga bersifat <em>provisional</em> (Net Profit provisional karena belum ada catatan OPEX).
+                        </div>
+                    </div>
+                @elseif ($periodSummary['opex_count'] > 0)
+                    <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-xs flex items-start gap-2">
+                        <span class="text-sm select-none">📋</span>
+                        <div class="leading-relaxed">
+                            <strong>Status Beban Operasional:</strong> Ada catatan OPEX sebanyak <strong>{{ $periodSummary['opex_count'] }} transaksi</strong> (Total Rp {{ number_format($periodSummary['total_opex'], 0, ',', '.') }}) yang diperhitungkan ke dalam laba bersih periode ini.
                         </div>
                     </div>
                 @endif

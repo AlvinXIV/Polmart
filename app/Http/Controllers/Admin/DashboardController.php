@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\StockMutation;
+use App\Services\FinancialSummaryService;
 use App\Services\OrderService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -15,6 +16,11 @@ use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
+    public function __construct(
+        private readonly FinancialSummaryService $financialSummaryService = new FinancialSummaryService()
+    ) {
+    }
+
     public function index(Request $request, OrderService $orderService): View
     {
         $orderService->cancelExpiredOrders();
@@ -119,6 +125,16 @@ class DashboardController extends Controller
         $periodGpm = $periodTotalOmzet > 0 ? round(($periodGrossProfit / $periodTotalOmzet) * 100, 1) : null;
         $periodMarkup = $periodTotalHpp > 0 ? round(($periodGrossProfit / $periodTotalHpp) * 100, 1) : null;
 
+        $opexSummary = $this->financialSummaryService->getOpexSummary($start, $end);
+        $netProfitData = $this->financialSummaryService->calculateNetProfit(
+            grossProfit: $periodGrossProfit,
+            totalOmzet: $periodTotalOmzet,
+            totalOpex: $opexSummary['total_opex'],
+            opexCount: $opexSummary['opex_count'],
+            hasUnrecordedHpp: $periodHasUnrecordedHpp,
+            totalTransactions: $periodTotalTransactions
+        );
+
         $periodSummary = [
             'total_omzet' => $periodTotalOmzet,
             'total_transactions' => $periodTotalTransactions,
@@ -133,6 +149,13 @@ class DashboardController extends Controller
             'unrecorded_orders_count' => $periodUnrecordedOrdersCount,
             'total_order_items_count' => $periodTotalOrderItemsCount,
             'completeness_pct' => $periodCompletenessPct,
+            'total_opex' => $opexSummary['total_opex'],
+            'opex_count' => $opexSummary['opex_count'],
+            'has_opex' => $opexSummary['has_opex'],
+            'net_profit' => $netProfitData['net_profit'],
+            'npm' => $netProfitData['npm'],
+            'is_net_profit_provisional' => $netProfitData['is_net_profit_provisional'],
+            'provisional_reasons' => $netProfitData['provisional_reasons'],
         ];
 
         // 2. Agregasi Distribusi Sumber Transaksi via Group By (efisien & deteksi sumber tidak dikenal)

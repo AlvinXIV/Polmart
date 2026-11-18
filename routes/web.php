@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ManualOrderController;
+use App\Http\Controllers\Admin\OperatingExpenseController;
 use App\Http\Controllers\Admin\OrderImportController;
 use App\Http\Controllers\Admin\PickupController;
 use App\Http\Controllers\Admin\ProductController;
@@ -65,6 +66,12 @@ Route::middleware(['auth', 'role:admin'])
             ->name('products.restock');
         Route::get('stock-mutations', [ProductController::class, 'mutations'])
             ->name('stock-mutations.index');
+
+        // Modul Biaya Operasional / OPEX (Task 2D)
+        Route::get('operating-expenses/{operatingExpense}/receipt', [OperatingExpenseController::class, 'receipt'])
+            ->name('operating-expenses.receipt');
+        Route::resource('operating-expenses', OperatingExpenseController::class)
+            ->except(['show']);
 
         // Transaksi Walk-in / Input Pesanan Manual (FR-09)
         Route::resource('manual-orders', ManualOrderController::class)
