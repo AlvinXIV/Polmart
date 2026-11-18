@@ -25,12 +25,26 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
+            'member_code' => fake()->unique()->numerify('MBR-######'),
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'phone' => fake()->numerify('0812########'),
+            'role' => 'member',
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
         ];
+    }
+
+    /**
+     * Indicate that the user is an admin.
+     */
+    public function admin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'member_code' => fake()->unique()->numerify('ADM-###'),
+            'role' => 'admin',
+        ]);
     }
 
     /**

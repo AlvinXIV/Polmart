@@ -31,14 +31,19 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
+            'member_code' => ['required', 'string', 'max:30', 'unique:'.User::class],
+            'name' => ['required', 'string', 'max:120'],
+            'phone' => ['required', 'string', 'max:20'],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:120', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
         $user = User::create([
+            'member_code' => $request->member_code,
             'name' => $request->name,
+            'phone' => $request->phone,
             'email' => $request->email,
+            'role' => 'member',
             'password' => Hash::make($request->password),
         ]);
 
@@ -46,6 +51,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        return redirect(route('anggota.dashboard', absolute: false));
     }
 }

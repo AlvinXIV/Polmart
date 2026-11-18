@@ -1,0 +1,8 @@
+.git
+node_modules
+storage/logs/*
+storage/framework/views/*
+storage/framework/sessions/*
+storage/framework/cache/data/*
+database/database.sqlite
+
