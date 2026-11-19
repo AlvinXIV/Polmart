@@ -333,12 +333,12 @@
 
         <div class="landing-nav-links">
             @if (Route::has('login'))
+                <a href="{{ route('login') }}" class="landing-nav-link" style="color: #2563eb;">Login</a>
                 @auth
                     <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('anggota.dashboard') }}" class="btn-hero-primary" style="padding: 9px 18px; font-size: 13px;">
                         Dashboard Saya
                     </a>
                 @else
-                    <a href="{{ route('login') }}" class="landing-nav-link" style="color: #2563eb;">Masuk</a>
                     <a href="{{ route('register') }}" class="btn-hero-primary" style="padding: 9px 18px; font-size: 13px;">
                         Daftar Anggota
                     </a>
@@ -362,9 +362,12 @@
                 <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('anggota.dashboard') }}" class="btn-hero-primary">
                     Buka Dashboard Saya
                 </a>
+                <a href="{{ route('login') }}" class="btn-hero-secondary">
+                    Login
+                </a>
             @else
                 <a href="{{ route('login') }}" class="btn-hero-primary">
-                    Masuk Akun
+                    Login
                 </a>
                 <a href="{{ route('register') }}" class="btn-hero-secondary">
                     Daftar Anggota Baru

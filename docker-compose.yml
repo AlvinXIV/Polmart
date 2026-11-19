@@ -39,7 +39,7 @@ services:
     image: dpage/pgadmin4:latest
     container_name: polmart_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@polmart.local
+      PGADMIN_DEFAULT_EMAIL: admin@polmart.com
       PGADMIN_DEFAULT_PASSWORD: adminpassword
     ports:
       - "5050:80"
