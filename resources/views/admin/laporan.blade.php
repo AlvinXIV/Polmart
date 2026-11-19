@@ -17,7 +17,7 @@
 
         <!-- Filter Periode -->
         <section class="polmart-card">
-            <form method="GET" action="{{ route('admin.reports.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <form method="GET" action="{{ route('admin.reports.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-end">
                 <div>
                     <label for="period" class="polmart-label">Jenis Periode</label>
                     <select id="period" name="period" x-model="period" class="polmart-select">
@@ -97,13 +97,13 @@
                         <strong class="{{ $summary['has_unrecorded_hpp'] ? 'text-amber-600' : 'text-emerald-600' }}">{{ $summary['completeness_pct'] }}%</strong>
                         ({{ $summary['total_order_items_count'] - $summary['unrecorded_items_count'] }}/{{ $summary['total_order_items_count'] }} item tercatat)
                     @else
-                        <strong class="text-slate-400">—</strong>
+                        <strong class="text-slate-400">â€”</strong>
                     @endif
                 </div>
             </div>
 
             <!-- Baris 1: Arus Finansial Nominal (5 Kartu) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
                 <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Omzet</p>
                     <p class="text-xl font-extrabold text-slate-900 mt-1">
@@ -184,7 +184,7 @@
                 <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Gross Profit Margin (GPM)</p>
                     <p class="text-xl font-extrabold text-slate-900 mt-1">
-                        {{ $summary['gpm'] !== null ? $summary['gpm'] . '%' : '—' }}
+                        {{ $summary['gpm'] !== null ? $summary['gpm'] . '%' : 'â€”' }}
                     </p>
                     <p class="text-[11px] text-slate-500 mt-1">
                         @if ($summary['has_unrecorded_hpp'] && $summary['gpm'] !== null)
@@ -198,7 +198,7 @@
                 <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Net Profit Margin (NPM)</p>
                     <p class="text-xl font-extrabold {{ $summary['npm'] !== null && $summary['npm'] < 0 ? 'text-rose-600' : 'text-slate-900' }} mt-1">
-                        {{ $summary['npm'] !== null ? $summary['npm'] . '%' : '—' }}
+                        {{ $summary['npm'] !== null ? $summary['npm'] . '%' : 'â€”' }}
                     </p>
                     <p class="text-[11px] text-slate-500 mt-1">
                         @if ($summary['npm'] !== null && $summary['is_net_profit_provisional'])
@@ -218,7 +218,7 @@
                 <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Markup Penjualan</p>
                     <p class="text-xl font-extrabold text-slate-900 mt-1">
-                        {{ $summary['markup'] !== null ? $summary['markup'] . '%' : '—' }}
+                        {{ $summary['markup'] !== null ? $summary['markup'] . '%' : 'â€”' }}
                     </p>
                     <p class="text-[11px] text-slate-500 mt-1">
                         @if ($summary['has_unrecorded_hpp'] && $summary['markup'] !== null)

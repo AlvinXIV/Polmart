@@ -693,7 +693,7 @@
                             {{ $currentUser->name ?? 'Pengguna' }}
                         </div>
                         <div class="profile-role">
-                            {{ $isAdmin ? 'Admin / Pengurus' : ('Anggota • ' . ($currentUser->member_code ?? '-')) }}
+                            {{ $isAdmin ? 'Admin / Pengurus' : ('Anggota â€¢ ' . ($currentUser->member_code ?? '-')) }}
                         </div>
                     </div>
                 </a>
