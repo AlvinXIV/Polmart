@@ -59,12 +59,12 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
     /** @var array<string, array<int, string>> */
     private const HEADER_ALIASES = [
         'tanggal_transaksi' => ['tanggal_transaksi', 'tanggal', 'tgl', 'tgl_transaksi', 'date', 'transaction_date', 'waktu', 'created_at'],
-        'kode_pesanan_lama' => ['kode_pesanan_lama', 'kode_pesanan', 'kode_transaksi', 'no_nota', 'nota', 'no_invoice', 'invoice', 'invoice_number', 'order_code', 'id_pesanan', 'no_transaksi'],
-        'nama_pemesan' => ['nama_pemesan', 'nama_pembeli', 'pembeli', 'pelanggan', 'customer', 'customer_name', 'nama_pelanggan', 'pemesan', 'nama'],
+        'kode_pesanan_lama' => ['kode_pesanan_lama', 'kode_pesanan', 'kode_transaksi', 'no_nota', 'nota', 'no_invoice', 'invoice', 'invoice_number', 'order_code', 'id_pesanan', 'no_transaksi', 'transaction_id', 'txn_id'],
+        'nama_pemesan' => ['nama_pemesan', 'nama_pembeli', 'pembeli', 'pelanggan', 'customer', 'customer_name', 'nama_pelanggan', 'pemesan', 'nama', 'customer_id', 'cust_id'],
         'kode_barang' => ['kode_barang', 'sku', 'kode_produk', 'barcode', 'kode', 'product_code', 'id_barang'],
         'nama_barang' => ['nama_barang', 'nama_produk', 'produk', 'barang', 'item', 'product_name', 'deskripsi'],
         'qty' => ['qty', 'jumlah', 'jumlah_beli', 'kuantitas', 'quantity', 'jml'],
-        'harga_satuan' => ['harga_satuan', 'harga', 'harga_jual', 'unit_price', 'price', 'tarif'],
+        'harga_satuan' => ['harga_satuan', 'harga', 'harga_jual', 'unit_price', 'price', 'tarif', 'price_per_unit'],
         'harga_modal' => ['harga_modal', 'cost_price', 'hpp', 'modal', 'harga_beli', 'beli'],
     ];
 
@@ -119,7 +119,6 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
             $this->currentRowNumber++;
             $rawArr = $row->toArray();
 
-            // Lewati baris yang benar-benar kosong
             $nonEmpty = array_filter($rawArr, fn ($val) => $val !== null && trim((string) $val) !== '');
             if (empty($nonEmpty)) {
                 continue;
@@ -128,12 +127,10 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
             $hasStringKeys = count(array_filter(array_keys($rawArr), 'is_string')) > 0;
 
             if ($hasStringKeys) {
-                // Mendukung pemanggilan langsung dengan associative array (mis. unit/feature test)
                 $mappedRaw = $this->mapAssociativeRow($rawArr);
                 $this->hasOrderCodeCol = array_key_exists('kode_pesanan_lama', $mappedRaw);
                 $this->hasCustomerCol = array_key_exists('nama_pemesan', $mappedRaw);
             } else {
-                // Membaca baris mentah dari file Excel/CSV (indeks numerik 0, 1, 2, ...)
                 $cells = array_values($rawArr);
 
                 if (! $this->headerDetected) {
@@ -146,12 +143,10 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
                         continue;
                     }
 
-                    // Lewati baris judul/kop laporan di bagian atas sebelum header ditemukan
                     if ($this->currentRowNumber <= 15) {
                         continue;
                     }
 
-                    // Fallback positional jika file sama sekali tidak memiliki baris header
                     $this->headerDetected = true;
                     $this->headerMap = [
                         0 => 'tanggal_transaksi',
