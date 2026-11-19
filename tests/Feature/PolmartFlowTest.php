@@ -3329,4 +3329,32 @@ class PolmartFlowTest extends TestCase
             'reference' => $order->order_code,
         ]);
     }
+
+    public function test_admin_can_restock_product_without_notes_input(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $product = Product::create([
+            'sku' => 'RST-001',
+            'name' => 'Produk Uji Restock',
+            'category' => 'Minuman',
+            'cost_price' => 3000,
+            'price' => 5000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $res = $this->actingAs($admin)->post(route('admin.products.restock', $product), [
+            'qty' => 1,
+        ]);
+
+        $res->assertRedirect(route('admin.products.index'));
+        $this->assertSame(11, $product->fresh()->stock);
+        $this->assertDatabaseHas('stock_mutations', [
+            'product_id' => $product->id,
+            'type' => 'in',
+            'qty' => 1,
+            'notes' => 'Penambahan stok masuk manual oleh admin',
+        ]);
+    }
 }

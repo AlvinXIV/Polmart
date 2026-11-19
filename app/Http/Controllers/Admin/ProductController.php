@@ -184,7 +184,7 @@ class ProductController extends Controller
             qty: (int) $validated['qty'],
             userId: $request->user()->id,
             reference: 'RESTOCK-' . now()->format('YmdHis'),
-            notes: $validated['notes'] ?: 'Penambahan stok masuk manual oleh admin'
+            notes: ($validated['notes'] ?? null) ?: 'Penambahan stok masuk manual oleh admin'
         );
 
         return redirect()
