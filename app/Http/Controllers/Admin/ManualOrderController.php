@@ -34,7 +34,7 @@ class ManualOrderController extends Controller
         $products = Product::where('is_active', true)
             ->where('stock', '>', 0)
             ->orderBy('name')
-            ->get(['id', 'sku', 'name', 'price', 'stock']);
+            ->get(['id', 'sku', 'barcode', 'name', 'price', 'stock']);
 
         return view('admin.manual-orders.create', compact('members', 'products'));
     }

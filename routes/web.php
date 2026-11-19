@@ -82,8 +82,10 @@ Route::middleware(['auth', 'role:admin'])
             ->name('order-imports.index');
         Route::get('order-imports/template', [OrderImportController::class, 'downloadTemplate'])
             ->name('order-imports.template');
+        Route::get('order-imports/preview', fn () => redirect()->route('admin.order-imports.index'));
         Route::post('order-imports/preview', [OrderImportController::class, 'preview'])
             ->name('order-imports.preview');
+        Route::get('order-imports/store', fn () => redirect()->route('admin.order-imports.index'));
         Route::post('order-imports/store', [OrderImportController::class, 'store'])
             ->name('order-imports.store');
 

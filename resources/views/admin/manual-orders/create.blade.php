@@ -81,10 +81,45 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                                 <h2 class="text-base font-extrabold text-slate-900">2. Pilih Barang Aktif</h2>
-                                <p class="text-xs text-slate-500">Klik barang untuk menambahkan ke daftar transaksi.</p>
+                                <p class="text-xs text-slate-500">Klik barang atau scan barcode EAN-13 lewat webcam untuk menambahkan ke transaksi.</p>
                             </div>
-                            <input type="text" x-model="searchQuery" placeholder="Cari SKU atau nama barang..."
-                                   class="polmart-input sm:w-64">
+                            <div class="flex items-center gap-2">
+                                <input type="text" x-model="searchQuery"
+                                       @keydown.enter.prevent="scanFromInput()"
+                                       placeholder="Cari SKU, barcode, atau nama..."
+                                       class="polmart-input sm:w-56">
+                                <button type="button" @click="toggleScanner()"
+                                        :class="scannerOpen ? 'polmart-btn-secondary' : 'polmart-btn-primary'"
+                                        class="polmart-btn shrink-0 inline-flex items-center gap-1.5">
+                                    <x-icon name="scan-barcode" class="w-4 h-4" />
+                                    <span x-text="scannerOpen ? 'Tutup Kamera' : 'Scan Webcam'"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div x-show="scanMessage && !scannerOpen" x-text="scanMessage"
+                             :class="scanStatus === 'error' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'"
+                             class="px-3 py-2 rounded-lg border text-xs font-semibold">
+                        </div>
+
+                        <!-- Panel Scanner Webcam EAN-13 -->
+                        <div x-show="scannerOpen" x-transition class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                            <div class="flex items-center justify-between gap-2">
+                                <div>
+                                    <p class="text-xs font-bold text-slate-800">Pemindai Barcode EAN-13 (Webcam Laptop)</p>
+                                    <p class="text-[11px] text-slate-500">Arahkan barcode kemasan ke kamera dengan jarak sekitar 15–25 cm.</p>
+                                </div>
+                                <span x-show="scannerReady" class="polmart-badge polmart-badge-green">
+                                    Kamera Aktif
+                                </span>
+                            </div>
+
+                            <div id="walkin-barcode-reader" class="w-full max-w-md mx-auto rounded-lg overflow-hidden bg-slate-900"></div>
+
+                            <div x-show="scanMessage" x-text="scanMessage"
+                                 :class="scanStatus === 'error' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'"
+                                 class="px-3 py-2 rounded-lg border text-xs font-semibold text-center">
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1">
@@ -190,6 +225,7 @@
         </form>
     </div>
 
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script>
         function walkinCashier(products, members) {
             return {
@@ -200,6 +236,13 @@
                 memberDropdownOpen: false,
                 searchQuery: '',
                 rows: [],
+                scannerOpen: false,
+                scannerReady: false,
+                html5QrCode: null,
+                lastScannedCode: '',
+                lastScannedAt: 0,
+                scanMessage: '',
+                scanStatus: 'success',
                 init() {
                     if (this.selectedUserId) {
                         const m = this.members.find(item => String(item.id) === String(this.selectedUserId));
@@ -228,8 +271,127 @@
                     const q = this.searchQuery.toLowerCase().trim();
                     if (!q) return this.products;
                     return this.products.filter(p =>
-                        p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
+                        p.name.toLowerCase().includes(q) ||
+                        p.sku.toLowerCase().includes(q) ||
+                        (p.barcode && p.barcode.toLowerCase().includes(q))
                     );
+                },
+                scanFromInput() {
+                    const code = this.searchQuery.trim();
+                    if (!code) return;
+                    const found = this.findProductByCode(code);
+                    if (found) {
+                        this.addProduct(found);
+                        this.playBeep();
+                        this.scanStatus = 'success';
+                        this.scanMessage = 'Ditambahkan: ' + found.name + ' (' + code + ')';
+                        this.searchQuery = '';
+                    } else {
+                        this.scanStatus = 'error';
+                        this.scanMessage = 'Barcode ' + code + ' belum terdaftar di Master Barang.';
+                    }
+                },
+                findProductByCode(code) {
+                    const normalized = String(code).trim().toLowerCase();
+                    return this.products.find(p =>
+                        (p.barcode && p.barcode.toLowerCase() === normalized) ||
+                        p.sku.toLowerCase() === normalized
+                    );
+                },
+                async toggleScanner() {
+                    if (this.scannerOpen) {
+                        await this.stopScanner();
+                    } else {
+                        await this.startScanner();
+                    }
+                },
+                async startScanner() {
+                    if (typeof Html5Qrcode === 'undefined') {
+                        this.scanStatus = 'error';
+                        this.scanMessage = 'Library scanner gagal dimuat. Pastikan koneksi internet tersedia.';
+                        this.scannerOpen = true;
+                        return;
+                    }
+
+                    this.scannerOpen = true;
+                    this.scannerReady = false;
+                    this.scanMessage = 'Membuka webcam laptop...';
+                    this.scanStatus = 'success';
+
+                    await this.$nextTick();
+
+                    try {
+                        const formats = typeof Html5QrcodeSupportedFormats !== 'undefined'
+                            ? [
+                                Html5QrcodeSupportedFormats.EAN_13,
+                                Html5QrcodeSupportedFormats.EAN_8,
+                                Html5QrcodeSupportedFormats.CODE_128,
+                            ]
+                            : undefined;
+
+                        this.html5QrCode = new Html5Qrcode('walkin-barcode-reader', formats ? { formatsToSupport: formats, verbose: false } : false);
+                        await this.html5QrCode.start(
+                            { facingMode: 'environment' },
+                            { fps: 10, qrbox: { width: 280, height: 140 } },
+                            (decodedText) => this.handleBarcodeDetected(decodedText),
+                            () => {}
+                        );
+                        this.scannerReady = true;
+                        this.scanMessage = 'Siap memindai barcode EAN-13.';
+                    } catch (err) {
+                        this.scannerReady = false;
+                        this.scanStatus = 'error';
+                        this.scanMessage = 'Tidak dapat mengakses webcam. Pastikan izin kamera diaktifkan di browser.';
+                    }
+                },
+                async stopScanner() {
+                    if (this.html5QrCode) {
+                        try {
+                            await this.html5QrCode.stop();
+                            this.html5QrCode.clear();
+                        } catch (e) {}
+                        this.html5QrCode = null;
+                    }
+                    this.scannerReady = false;
+                    this.scannerOpen = false;
+                    this.scanMessage = '';
+                },
+                handleBarcodeDetected(decodedText) {
+                    const code = String(decodedText || '').trim();
+                    if (!code) return;
+
+                    const now = Date.now();
+                    if (code === this.lastScannedCode && (now - this.lastScannedAt) < 1500) {
+                        return;
+                    }
+                    this.lastScannedCode = code;
+                    this.lastScannedAt = now;
+
+                    const product = this.findProductByCode(code);
+                    if (!product) {
+                        this.scanStatus = 'error';
+                        this.scanMessage = 'Barcode ' + code + ' belum terdaftar di Master Barang.';
+                        return;
+                    }
+
+                    this.addProduct(product);
+                    this.playBeep();
+                    this.scanStatus = 'success';
+                    this.scanMessage = 'Ditambahkan: ' + product.name + ' (' + code + ')';
+                },
+                playBeep() {
+                    try {
+                        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(1046.5, ctx.currentTime);
+                        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.09);
+                    } catch (e) {}
                 },
                 addProduct(product) {
                     const existing = this.rows.find(r => r.product_id === product.id);

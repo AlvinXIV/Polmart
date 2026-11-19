@@ -68,7 +68,7 @@
         <section class="polmart-card">
             <form method="GET" action="{{ route('admin.products.index') }}" class="flex flex-wrap items-center gap-3">
                 <input type="text" name="search" value="{{ request('search') }}"
-                       placeholder="Cari SKU, nama barang, atau kategori..."
+                       placeholder="Cari SKU, barcode, nama barang, atau kategori..."
                        class="polmart-input sm:w-80">
 
                 <select name="category" class="polmart-select sm:w-48">
@@ -123,7 +123,12 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="font-mono text-xs font-bold text-blue-700">{{ $product->sku }}</td>
+                            <td class="font-mono text-xs font-bold text-blue-700">
+                                <div>{{ $product->sku }}</div>
+                                @if ($product->barcode)
+                                    <div class="text-[11px] font-normal text-slate-400">{{ $product->barcode }}</div>
+                                @endif
+                            </td>
                             <td class="font-semibold text-slate-900">{{ $product->name }}</td>
                             <td>
                                 <span class="polmart-badge polmart-badge-blue">{{ $product->category }}</span>

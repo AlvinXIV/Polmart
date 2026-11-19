@@ -19,6 +19,12 @@
                     </div>
 
                     <div>
+                        <x-input-label for="barcode" value="Barcode EAN-13 (Opsional)" />
+                        <x-text-input id="barcode" name="barcode" type="text" class="mt-1 block w-full font-mono" :value="old('barcode')" placeholder="Contoh: 8996001300015" />
+                        <x-input-error :messages="$errors->get('barcode')" class="mt-1" />
+                    </div>
+
+                    <div>
                         <x-input-label for="name" value="Nama Barang" />
                         <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name')" required />
                         <x-input-error :messages="$errors->get('name')" class="mt-1" />

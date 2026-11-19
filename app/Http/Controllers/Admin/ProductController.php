@@ -24,6 +24,7 @@ class ProductController extends Controller
             $pattern = '%' . mb_strtolower($search) . '%';
             $query->where(function ($q) use ($pattern) {
                 $q->whereRaw('LOWER(sku) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(COALESCE(barcode, \'\')) LIKE ?', [$pattern])
                     ->orWhereRaw('LOWER(name) LIKE ?', [$pattern])
                     ->orWhereRaw('LOWER(category) LIKE ?', [$pattern]);
             });
@@ -72,6 +73,7 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'sku' => ['required', 'string', 'max:50', 'unique:products,sku'],
+            'barcode' => ['nullable', 'string', 'max:32', 'unique:products,barcode'],
             'name' => ['required', 'string', 'max:150'],
             'category' => ['required', 'string', 'max:80'],
             'cost_price' => ['required', 'numeric', 'min:0'],
@@ -90,6 +92,7 @@ class ProductController extends Controller
 
             $product = Product::create([
                 'sku' => strtoupper(trim($validated['sku'])),
+                'barcode' => ($b = trim((string) ($validated['barcode'] ?? ''))) !== '' ? $b : null,
                 'name' => trim($validated['name']),
                 'category' => trim($validated['category']),
                 'cost_price' => $validated['cost_price'],
@@ -125,6 +128,7 @@ class ProductController extends Controller
     {
         $validated = $request->validate([
             'sku' => ['required', 'string', 'max:50', Rule::unique('products', 'sku')->ignore($product->id)],
+            'barcode' => ['nullable', 'string', 'max:32', Rule::unique('products', 'barcode')->ignore($product->id)],
             'name' => ['required', 'string', 'max:150'],
             'category' => ['required', 'string', 'max:80'],
             'cost_price' => ['required', 'numeric', 'min:0'],
@@ -141,6 +145,7 @@ class ProductController extends Controller
         }
 
         $product->sku = strtoupper(trim($validated['sku']));
+        $product->barcode = ($b = trim((string) ($validated['barcode'] ?? ''))) !== '' ? $b : null;
         $product->name = trim($validated['name']);
         $product->category = trim($validated['category']);
         $product->cost_price = $validated['cost_price'];

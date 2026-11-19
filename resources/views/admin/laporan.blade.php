@@ -104,7 +104,7 @@
 
             <!-- Baris 1: Arus Finansial Nominal (5 Kartu) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Omzet</p>
                     <p class="text-xl font-extrabold text-slate-900 mt-1">
                         Rp {{ number_format($summary['total_omzet'], 0, ',', '.') }}
@@ -114,7 +114,7 @@
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">HPP Tercatat</p>
                     <p class="text-xl font-extrabold text-slate-900 mt-1">
                         Rp {{ number_format($summary['total_hpp'], 0, ',', '.') }}
@@ -124,21 +124,21 @@
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Laba Kotor</p>
                     <p class="text-xl font-extrabold text-slate-900 mt-1">
                         Rp {{ number_format($summary['gross_profit'], 0, ',', '.') }}
                     </p>
                     <p class="text-[11px] text-slate-500 mt-1">
                         @if ($summary['has_unrecorded_hpp'])
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (Omzet - HPP)</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">*Provisional (Omzet - HPP)</span>
                         @else
                             <span>Omzet dikurangi HPP</span>
                         @endif
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Beban Operasional (OPEX)</p>
                     <p class="text-xl font-extrabold text-slate-900 mt-1">
                         Rp {{ number_format($summary['total_opex'], 0, ',', '.') }}
@@ -147,12 +147,12 @@
                         @if ($summary['opex_count'] > 0)
                             <span>Ada catatan OPEX sebanyak {{ $summary['opex_count'] }} transaksi</span>
                         @else
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">Belum ada catatan OPEX</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">Belum ada catatan OPEX</span>
                         @endif
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Laba Bersih (Net Profit)</p>
                     <p class="text-xl font-extrabold {{ $summary['net_profit'] < 0 ? 'text-rose-600' : 'text-slate-900' }} mt-1">
                         @if ($summary['net_profit'] < 0)
@@ -166,11 +166,11 @@
                             <span class="text-rose-600 font-semibold">Defisit / Rugi Bersih</span>
                         @elseif ($summary['is_net_profit_provisional'])
                             @if ($summary['has_unrecorded_hpp'] && $summary['opex_count'] === 0)
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (HPP &amp; OPEX)</span>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">*Provisional (HPP &amp; OPEX)</span>
                             @elseif ($summary['has_unrecorded_hpp'])
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (HPP belum lengkap)</span>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">*Provisional (HPP belum lengkap)</span>
                             @else
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (OPEX belum dicatat)</span>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">*Provisional (OPEX belum dicatat)</span>
                             @endif
                         @else
                             <span>Laba Kotor dikurangi OPEX</span>
@@ -180,22 +180,22 @@
             </div>
 
             <!-- Baris 2: Rasio & Analisis Profitabilitas (3 Kartu) -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Gross Profit Margin (GPM)</p>
                     <p class="text-xl font-extrabold text-slate-900 mt-1">
                         {{ $summary['gpm'] !== null ? $summary['gpm'] . '%' : '—' }}
                     </p>
                     <p class="text-[11px] text-slate-500 mt-1">
                         @if ($summary['has_unrecorded_hpp'] && $summary['gpm'] !== null)
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (Laba / Omzet)</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">*Provisional (Laba / Omzet)</span>
                         @else
                             <span>(Laba Kotor / Total Omzet)</span>
                         @endif
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Net Profit Margin (NPM)</p>
                     <p class="text-xl font-extrabold {{ $summary['npm'] !== null && $summary['npm'] < 0 ? 'text-rose-600' : 'text-slate-900' }} mt-1">
                         {{ $summary['npm'] !== null ? $summary['npm'] . '%' : '—' }}
@@ -203,11 +203,11 @@
                     <p class="text-[11px] text-slate-500 mt-1">
                         @if ($summary['npm'] !== null && $summary['is_net_profit_provisional'])
                             @if ($summary['has_unrecorded_hpp'] && $summary['opex_count'] === 0)
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (Laba Bersih / Omzet)</span>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">*Provisional (Laba Bersih / Omzet)</span>
                             @elseif ($summary['has_unrecorded_hpp'])
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (HPP belum lengkap)</span>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">*Provisional (HPP belum lengkap)</span>
                             @else
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (OPEX belum dicatat)</span>
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">*Provisional (OPEX belum dicatat)</span>
                             @endif
                         @else
                             <span>(Laba Bersih / Total Omzet)</span>
@@ -215,14 +215,14 @@
                     </p>
                 </div>
 
-                <div class="p-3.5 rounded-xl border border-slate-200/80 bg-white shadow-sm">
+                <div class="p-3.5 rounded-xl border border-slate-200 bg-white shadow-sm">
                     <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Markup Penjualan</p>
                     <p class="text-xl font-extrabold text-slate-900 mt-1">
                         {{ $summary['markup'] !== null ? $summary['markup'] . '%' : '—' }}
                     </p>
                     <p class="text-[11px] text-slate-500 mt-1">
                         @if ($summary['has_unrecorded_hpp'] && $summary['markup'] !== null)
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200/60">*Provisional (Laba / HPP)</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">*Provisional (Laba / HPP)</span>
                         @else
                             <span>(Laba Kotor / HPP)</span>
                         @endif

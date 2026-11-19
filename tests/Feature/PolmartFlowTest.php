@@ -3186,4 +3186,60 @@ class PolmartFlowTest extends TestCase
         $this->assertEquals($pA->id, $profitableProducts[1]->id);
         $this->assertEquals(40000.0, (float) $profitableProducts[1]->total_profit);
     }
+
+    public function test_product_barcode_crud_search_and_sample_seeder(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Store product with valid EAN-13 barcode
+        $storeRes = $this->actingAs($admin)->post(route('admin.products.store'), [
+            'sku' => 'BAR-001',
+            'barcode' => '8996001300992',
+            'name' => 'Produk Uji Barcode',
+            'category' => 'Minuman',
+            'cost_price' => 3000,
+            'price' => 4500,
+            'stock' => 10,
+        ]);
+        $storeRes->assertRedirect(route('admin.products.index'));
+
+        $product = Product::where('sku', 'BAR-001')->firstOrFail();
+        $this->assertSame('8996001300992', $product->barcode);
+
+        // 2. Reject duplicate barcode
+        $dupRes = $this->actingAs($admin)->post(route('admin.products.store'), [
+            'sku' => 'BAR-002',
+            'barcode' => '8996001300992',
+            'name' => 'Produk Duplikat',
+            'category' => 'Minuman',
+            'cost_price' => 3000,
+            'price' => 4500,
+            'stock' => 5,
+        ]);
+        $dupRes->assertSessionHasErrors(['barcode']);
+
+        // 3. Search product by barcode in Master Barang
+        $searchRes = $this->actingAs($admin)->get(route('admin.products.index', ['search' => '8996001300992']));
+        $searchRes->assertOk();
+        $searchRes->assertSee('BAR-001');
+        $searchRes->assertSee('Produk Uji Barcode');
+
+        // 4. SampleProductBarcodeSeeder sets 5 sample EAN-13 barcodes idempotently
+        $this->seed(\Database\Seeders\SupermarketSeeder::class);
+        $this->seed(\Database\Seeders\SampleProductBarcodeSeeder::class);
+        $this->seed(\Database\Seeders\SampleProductBarcodeSeeder::class);
+
+        $this->assertDatabaseHas('products', ['sku' => 'MNM-001', 'barcode' => '8996001300015']);
+        $this->assertDatabaseHas('products', ['sku' => 'MNM-003', 'barcode' => '8996001300039']);
+        $this->assertDatabaseHas('products', ['sku' => 'SNK-001', 'barcode' => '8996001300114']);
+        $this->assertDatabaseHas('products', ['sku' => 'SNK-008', 'barcode' => '8996001300183']);
+        $this->assertDatabaseHas('products', ['sku' => 'MIE-001', 'barcode' => '8996001300213']);
+
+        // 5. Walk-in Cashier create page exposes barcode and webcam scanner UI
+        $walkinRes = $this->actingAs($admin)->get(route('admin.manual-orders.create'));
+        $walkinRes->assertOk();
+        $walkinRes->assertSee('Scan Webcam');
+        $walkinRes->assertSee('walkin-barcode-reader');
+        $walkinRes->assertSee('8996001300015');
+    }
 }

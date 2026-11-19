@@ -81,11 +81,11 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @foreach ($readyOrders as $order)
-                        <div class="p-4 rounded-xl bg-slate-50/70 border border-slate-200 flex items-center justify-between gap-4">
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-4">
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <span class="font-mono text-xs font-bold text-blue-600">{{ $order->order_code }}</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                                    <span class="polmart-badge polmart-badge-blue">
                                         SIAP DIAMBIL
                                     </span>
                                 </div>
@@ -120,11 +120,11 @@
                 </div>
                 <div class="space-y-3">
                     @foreach ($pendingOrders as $order)
-                        <div class="p-4 rounded-xl bg-slate-50/70 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <span class="font-mono text-xs font-bold text-blue-600">{{ $order->order_code }}</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/70">
+                                    <span class="polmart-badge polmart-badge-amber">
                                         MENUNGGU BAYAR
                                     </span>
                                 </div>

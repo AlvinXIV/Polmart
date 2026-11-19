@@ -72,30 +72,30 @@
             </div>
 
             <!-- Filter Bar Periode (Harian, Mingguan, Bulanan, Tahunan) -->
-            <div class="p-4 rounded-xl bg-slate-50/90 border border-slate-200">
-                <form method="GET" action="{{ route('admin.dashboard') }}#sales-analytics" class="space-y-4">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <form x-ref="periodForm" method="GET" action="{{ route('admin.dashboard') }}#sales-analytics" class="space-y-4">
                     <div class="flex flex-wrap items-center" style="gap: 10px;">
                         <span class="text-xs font-bold text-slate-600 uppercase tracking-wider mr-1">Pilih Periode:</span>
                         <input type="hidden" name="period" :value="currentPeriod">
-                        <button type="button" @click="currentPeriod = 'daily'"
+                        <button type="button" @click="if (currentPeriod !== 'daily') { currentPeriod = 'daily'; $nextTick(() => $refs.periodForm.submit()); }"
                                 :class="currentPeriod === 'daily' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
                                 style="padding: 8px 16px;"
                                 class="text-xs rounded-lg transition flex items-center gap-1.5">
                             <x-icon name="calendar" class="w-4 h-4" /> Harian
                         </button>
-                        <button type="button" @click="currentPeriod = 'weekly'"
+                        <button type="button" @click="if (currentPeriod !== 'weekly') { currentPeriod = 'weekly'; $nextTick(() => $refs.periodForm.submit()); }"
                                 :class="currentPeriod === 'weekly' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
                                 style="padding: 8px 16px;"
                                 class="text-xs rounded-lg transition flex items-center gap-1.5">
                             <x-icon name="calendar-days" class="w-4 h-4" /> Mingguan
                         </button>
-                        <button type="button" @click="currentPeriod = 'monthly'"
+                        <button type="button" @click="if (currentPeriod !== 'monthly') { currentPeriod = 'monthly'; $nextTick(() => $refs.periodForm.submit()); }"
                                 :class="currentPeriod === 'monthly' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
                                 style="padding: 8px 16px;"
                                 class="text-xs rounded-lg transition flex items-center gap-1.5">
                             <x-icon name="bar-chart-3" class="w-4 h-4" /> Bulanan
                         </button>
-                        <button type="button" @click="currentPeriod = 'yearly'"
+                        <button type="button" @click="if (currentPeriod !== 'yearly') { currentPeriod = 'yearly'; $nextTick(() => $refs.periodForm.submit()); }"
                                 :class="currentPeriod === 'yearly' ? 'bg-blue-600 text-white font-bold shadow' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'"
                                 style="padding: 8px 16px;"
                                 class="text-xs rounded-lg transition flex items-center gap-1.5">
@@ -103,28 +103,28 @@
                         </button>
                     </div>
 
-                    <!-- Contextual Input Sesuai Periode yang Dipilih (hanya input aktif yang disubmit) -->
+                    <!-- Contextual Input Sesuai Periode yang Dipilih (otomatis terapkan saat diubah) -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 items-end pt-1">
                         <!-- Harian -->
                         <div x-show="currentPeriod === 'daily'" class="sm:col-span-2">
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Tanggal</label>
-                            <input type="date" name="date" value="{{ $date }}" :disabled="currentPeriod !== 'daily'" class="polmart-input text-xs py-2">
+                            <input type="date" name="date" value="{{ $date }}" :disabled="currentPeriod !== 'daily'" @change="$refs.periodForm.submit()" class="polmart-input text-xs py-2">
                         </div>
 
                         <!-- Mingguan -->
                         <div x-show="currentPeriod === 'weekly'" class="sm:col-span-1">
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Dari Tanggal</label>
-                            <input type="date" name="start_date" value="{{ $startDateInput }}" :disabled="currentPeriod !== 'weekly'" class="polmart-input text-xs py-2">
+                            <input type="date" name="start_date" value="{{ $startDateInput }}" :disabled="currentPeriod !== 'weekly'" @change="$refs.periodForm.submit()" class="polmart-input text-xs py-2">
                         </div>
                         <div x-show="currentPeriod === 'weekly'" class="sm:col-span-1">
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Sampai Tanggal</label>
-                            <input type="date" name="end_date" value="{{ $endDateInput }}" :disabled="currentPeriod !== 'weekly'" class="polmart-input text-xs py-2">
+                            <input type="date" name="end_date" value="{{ $endDateInput }}" :disabled="currentPeriod !== 'weekly'" @change="$refs.periodForm.submit()" class="polmart-input text-xs py-2">
                         </div>
 
                         <!-- Bulanan -->
                         <div x-show="currentPeriod === 'monthly'" class="sm:col-span-1">
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Pilih Bulan</label>
-                            <select name="month" :disabled="currentPeriod !== 'monthly'" class="polmart-select text-xs py-2">
+                            <select name="month" :disabled="currentPeriod !== 'monthly'" @change="$refs.periodForm.submit()" class="polmart-select text-xs py-2">
                                 @for ($m = 1; $m <= 12; $m++)
                                     <option value="{{ $m }}" {{ (int) $month === $m ? 'selected' : '' }}>
                                         {{ \Carbon\Carbon::create(null, $m, 1)->translatedFormat('F') }}
@@ -134,15 +134,11 @@
                         </div>
                         <div x-show="currentPeriod === 'monthly' || currentPeriod === 'yearly'" class="sm:col-span-1">
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Tahun</label>
-                            <input type="number" name="year" min="2000" max="2100" value="{{ $year }}" :disabled="currentPeriod !== 'monthly' && currentPeriod !== 'yearly'" class="polmart-input text-xs py-2">
+                            <input type="number" name="year" min="2000" max="2100" value="{{ $year }}" :disabled="currentPeriod !== 'monthly' && currentPeriod !== 'yearly'" @change="$refs.periodForm.submit()" class="polmart-input text-xs py-2">
                         </div>
 
-                        <!-- Tombol Aksi Filter -->
+                        <!-- Tombol Reset Filter -->
                         <div class="flex items-center gap-2 sm:col-span-2">
-                            <button type="submit" class="polmart-btn polmart-btn-primary polmart-btn-sm whitespace-nowrap">
-                                <x-icon name="search" class="w-4 h-4" />
-                                <span>Tampilkan Analisis</span>
-                            </button>
                             <a href="{{ route('admin.dashboard') }}#sales-analytics" class="polmart-btn polmart-btn-secondary polmart-btn-sm whitespace-nowrap" title="Reset ke Bulan Berjalan">
                                 <x-icon name="rotate-ccw" class="w-4 h-4" />
                                 <span>Reset</span>
@@ -209,7 +205,7 @@
                 </div>
 
                 <!-- Baris 2: Rasio & Analisis Profitabilitas (3 Kartu) -->
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div class="polmart-stat-card" style="padding: 16px;">
                         <div class="min-w-0">
                             <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Gross Profit Margin (GPM)</p>
