@@ -251,7 +251,6 @@ class MemberExcelChunkImport implements ToCollection, WithChunkReading, WithMult
         $phone = $this->normalizePhone($raw['no_hp'] ?? null);
         $passwordRaw = trim((string) ($raw['password'] ?? ''));
 
-        // Jika file tidak punya kolom kode anggota/NIM sama sekali, buatkan kode unik otomatis
         if ($memberCode === '' && ! $this->hasMemberCodeCol && $name !== '') {
             $memberCode = $this->generateUniqueMemberCode();
         }
@@ -272,7 +271,6 @@ class MemberExcelChunkImport implements ToCollection, WithChunkReading, WithMult
             $errors[] = 'nama maksimal 255 karakter';
         }
 
-        // Jika file mentah (misal daftar NIM + Nama + WA) tidak punya kolom email, buat email fallback
         if ($email === '' && ! $this->hasEmailCol && $memberCode !== '') {
             $safeSlug = mb_strtolower(preg_replace('/[^a-z0-9]/i', '', $memberCode) ?? 'member');
             $email = "{$safeSlug}@member.polmart.local";
@@ -332,7 +330,6 @@ class MemberExcelChunkImport implements ToCollection, WithChunkReading, WithMult
         if (str_starts_with($cleaned, '62') && strlen($cleaned) >= 10) {
             $cleaned = '0' . substr($cleaned, 2);
         } elseif (preg_match('/^8\d{8,12}$/', $cleaned)) {
-            // Kembalikan angka 0 di depan yang terpotong otomatis oleh Excel
             $cleaned = '0' . $cleaned;
         }
 
