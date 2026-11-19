@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Imports;
 
@@ -9,21 +9,36 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use Throwable;
 
-class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkReading
+class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMultipleSheets
 {
     private bool $commit;
 
-    /** @var array<string, int> */
-    private array $skuToProductId = [];
+    /** @var array<string, array{id: int, sku: string, price: float}> */
+    private array $skuToProduct = [];
+
+    /** @var array<string, array{id: int, sku: string, price: float}> */
+    private array $barcodeToProduct = [];
+
+    /** @var array<string, array{id: int, sku: string, price: float}> */
+    private array $nameToProduct = [];
 
     /** @var array<string, bool> */
     private array $existingOrderCodes = [];
 
-    private int $currentRowNumber = 1; // Baris 1 adalah header
+    private int $currentRowNumber = 0;
+
+    private bool $headerDetected = false;
+
+    /** @var array<int, string> */
+    private array $headerMap = [];
+
+    private bool $hasOrderCodeCol = false;
+
+    private bool $hasCustomerCol = false;
 
     public int $totalRows = 0;
 
@@ -41,19 +56,55 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
     /** @var array<string, bool> */
     private array $seenNewOrderCodes = [];
 
+    /** @var array<string, array<int, string>> */
+    private const HEADER_ALIASES = [
+        'tanggal_transaksi' => ['tanggal_transaksi', 'tanggal', 'tgl', 'tgl_transaksi', 'date', 'transaction_date', 'waktu', 'created_at'],
+        'kode_pesanan_lama' => ['kode_pesanan_lama', 'kode_pesanan', 'kode_transaksi', 'no_nota', 'nota', 'no_invoice', 'invoice', 'invoice_number', 'order_code', 'id_pesanan', 'no_transaksi'],
+        'nama_pemesan' => ['nama_pemesan', 'nama_pembeli', 'pembeli', 'pelanggan', 'customer', 'customer_name', 'nama_pelanggan', 'pemesan', 'nama'],
+        'kode_barang' => ['kode_barang', 'sku', 'kode_produk', 'barcode', 'kode', 'product_code', 'id_barang'],
+        'nama_barang' => ['nama_barang', 'nama_produk', 'produk', 'barang', 'item', 'product_name', 'deskripsi'],
+        'qty' => ['qty', 'jumlah', 'jumlah_beli', 'kuantitas', 'quantity', 'jml'],
+        'harga_satuan' => ['harga_satuan', 'harga', 'harga_jual', 'unit_price', 'price', 'tarif'],
+        'harga_modal' => ['harga_modal', 'cost_price', 'hpp', 'modal', 'harga_beli', 'beli'],
+    ];
+
     public function __construct(bool $commit = false)
     {
         $this->commit = $commit;
 
-        // Cache daftar SKU produk aktif/nonaktif ke memori agar tidak N+1 query per baris
-        $this->skuToProductId = Product::pluck('id', 'sku')
-            ->mapWithKeys(fn ($id, $sku) => [strtoupper(trim((string) $sku)) => (int) $id])
-            ->all();
+        $products = Product::all();
+        foreach ($products as $product) {
+            $skuKey = strtoupper(trim((string) $product->sku));
+            $entry = [
+                'id' => (int) $product->id,
+                'sku' => $skuKey,
+                'price' => (float) $product->price,
+            ];
 
-        // Cache kode pesanan yang sudah ada sebelumnya di database
+            if ($skuKey !== '') {
+                $this->skuToProduct[$skuKey] = $entry;
+            }
+
+            $barcodeKey = strtoupper(trim((string) ($product->barcode ?? '')));
+            if ($barcodeKey !== '') {
+                $this->barcodeToProduct[$barcodeKey] = $entry;
+            }
+
+            $nameKey = $this->normalizeText((string) $product->name);
+            if ($nameKey !== '') {
+                $this->nameToProduct[$nameKey] = $entry;
+            }
+        }
+
         $this->existingOrderCodes = Order::pluck('order_code')
             ->mapWithKeys(fn ($code) => [strtoupper(trim((string) $code)) => true])
             ->all();
+    }
+
+    public function sheets(): array
+    {
+        // Hanya proses sheet utama (pertama) agar sheet catatan/ringkasan tambahan tidak ikut terbaca
+        return [0 => $this];
     }
 
     public function chunkSize(): int
@@ -67,14 +118,48 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
 
         foreach ($rows as $row) {
             $this->currentRowNumber++;
+            $cells = $row->values()->all();
 
             // Lewati baris yang benar-benar kosong
-            if ($row->filter(fn ($val) => $val !== null && trim((string) $val) !== '')->isEmpty()) {
+            $nonEmpty = array_filter($cells, fn ($val) => $val !== null && trim((string) $val) !== '');
+            if (empty($nonEmpty)) {
                 continue;
             }
 
+            // Deteksi baris header otomatis pada 15 baris pertama
+            if (! $this->headerDetected) {
+                $detectedMap = $this->detectHeaderMap($cells);
+                if (count($detectedMap) >= 2) {
+                    $this->headerDetected = true;
+                    $this->headerMap = $detectedMap;
+                    $this->hasOrderCodeCol = in_array('kode_pesanan_lama', $detectedMap, true);
+                    $this->hasCustomerCol = in_array('nama_pemesan', $detectedMap, true);
+                    continue;
+                }
+
+                // Lewati baris judul/kop laporan sebelum header ditemukan
+                if ($this->currentRowNumber <= 15) {
+                    continue;
+                }
+
+                // Fallback positional jika file sama sekali tidak memiliki baris header
+                $this->headerDetected = true;
+                $this->headerMap = [
+                    0 => 'tanggal_transaksi',
+                    1 => 'kode_pesanan_lama',
+                    2 => 'nama_pemesan',
+                    3 => 'kode_barang',
+                    4 => 'qty',
+                    5 => 'harga_satuan',
+                    6 => 'harga_modal',
+                ];
+                $this->hasOrderCodeCol = true;
+                $this->hasCustomerCol = true;
+            }
+
+            $mappedRaw = $this->mapCellsToFields($cells);
             $this->totalRows++;
-            $evaluated = $this->evaluateRow($row->toArray(), $this->currentRowNumber);
+            $evaluated = $this->evaluateRow($mappedRaw, $this->currentRowNumber);
 
             if ($evaluated['is_valid']) {
                 $this->validCount++;
@@ -84,7 +169,6 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
                 $this->invalidCount++;
             }
 
-            // Simpan maksimal 100 baris contoh untuk ditampilkan di tabel pratinjau UI
             if (! $this->commit && count($this->previewRows) < 100) {
                 $this->previewRows[] = $evaluated;
             }
@@ -93,6 +177,50 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
         if ($this->commit && ! empty($parsedChunk)) {
             $this->persistChunk($parsedChunk);
         }
+    }
+
+    /**
+     * @param  array<int, mixed>  $cells
+     * @return array<int, string>
+     */
+    private function detectHeaderMap(array $cells): array
+    {
+        $map = [];
+        $usedCanonical = [];
+
+        foreach ($cells as $colIndex => $cellValue) {
+            $slug = $this->normalizeHeaderSlug((string) $cellValue);
+            if ($slug === '') {
+                continue;
+            }
+
+            foreach (self::HEADER_ALIASES as $canonical => $aliases) {
+                if (isset($usedCanonical[$canonical])) {
+                    continue;
+                }
+                if (in_array($slug, $aliases, true)) {
+                    $map[(int) $colIndex] = $canonical;
+                    $usedCanonical[$canonical] = true;
+                    break;
+                }
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * @param  array<int, mixed>  $cells
+     * @return array<string, mixed>
+     */
+    private function mapCellsToFields(array $cells): array
+    {
+        $result = [];
+        foreach ($this->headerMap as $colIndex => $canonical) {
+            $result[$canonical] = $cells[$colIndex] ?? null;
+        }
+
+        return $result;
     }
 
     /**
@@ -106,14 +234,20 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
         $rawDate = $raw['tanggal_transaksi'] ?? null;
         $orderCode = strtoupper(trim((string) ($raw['kode_pesanan_lama'] ?? '')));
         $customerName = trim((string) ($raw['nama_pemesan'] ?? ''));
-        $sku = strtoupper(trim((string) ($raw['kode_barang'] ?? '')));
+        $skuInput = strtoupper(trim((string) ($raw['kode_barang'] ?? '')));
         $productName = trim((string) ($raw['nama_barang'] ?? ''));
-        $qty = $raw['qty'] ?? null;
-        $unitPrice = $raw['harga_satuan'] ?? null;
+        $qty = $this->parseCleanNumber($raw['qty'] ?? null);
+        $unitPriceRaw = $raw['harga_satuan'] ?? null;
+        $unitPrice = $this->parseCleanNumber($unitPriceRaw);
 
         $parsedDate = $this->parseTransactionDate($rawDate);
         if (! $parsedDate) {
             $errors[] = 'Format tanggal_transaksi tidak valid';
+        }
+
+        // Jika file minimalis tidak punya kolom kode pesanan, buat kode otomatis berbasis tanggal & baris
+        if ($orderCode === '' && ! $this->hasOrderCodeCol && $parsedDate) {
+            $orderCode = 'IMP-' . $parsedDate->format('Ymd') . '-R' . $rowNumber;
         }
 
         if ($orderCode === '') {
@@ -124,23 +258,37 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
             $errors[] = "Kode pesanan '{$orderCode}' sudah pernah diimpor / terdaftar";
         }
 
+        // Jika file minimalis tidak punya kolom nama pembeli, gunakan default 'Pelanggan Umum'
+        if ($customerName === '' && ! $this->hasCustomerCol) {
+            $customerName = 'Pelanggan Umum';
+        }
+
         if ($customerName === '') {
             $errors[] = 'nama_pemesan wajib diisi';
         } elseif (mb_strlen($customerName) > 120) {
             $errors[] = 'nama_pemesan maksimal 120 karakter';
         }
 
-        $productId = null;
-        if ($sku === '') {
+        // Resolusi produk via SKU -> Barcode -> Nama Barang
+        $matchedProduct = $this->resolveProduct($skuInput, $productName);
+        $productId = $matchedProduct['id'] ?? null;
+        $resolvedSku = $matchedProduct['sku'] ?? $skuInput;
+
+        if ($skuInput === '' && $productName === '') {
             $errors[] = 'kode_barang (SKU) wajib diisi';
-        } elseif (! isset($this->skuToProductId[$sku])) {
-            $errors[] = "SKU '{$sku}' tidak ditemukan di Master Barang";
-        } else {
-            $productId = $this->skuToProductId[$sku];
+        } elseif (! $matchedProduct) {
+            $label = $skuInput !== '' ? "SKU '{$skuInput}'" : "Barang '{$productName}'";
+            $errors[] = "{$label} tidak ditemukan di Master Barang";
         }
 
         if (! is_numeric($qty) || (int) $qty < 1 || (int) $qty != $qty) {
             $errors[] = 'qty harus bilangan bulat minimal 1';
+        }
+
+        // Jika harga_satuan dikosongkan dan produk cocok, ambil dari harga jual Master Barang
+        $isPriceBlank = $unitPriceRaw === null || trim((string) $unitPriceRaw) === '';
+        if ($isPriceBlank && $matchedProduct) {
+            $unitPrice = $matchedProduct['price'];
         }
 
         if (! is_numeric($unitPrice) || (float) $unitPrice < 0) {
@@ -151,7 +299,7 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
         $cleanPrice = is_numeric($unitPrice) ? (float) $unitPrice : 0.0;
         $subtotal = $cleanQty * $cleanPrice;
 
-        $rawCost = $raw['harga_modal'] ?? $raw['cost_price'] ?? null;
+        $rawCost = $this->parseCleanNumber($raw['harga_modal'] ?? $raw['cost_price'] ?? $raw['hpp'] ?? null);
         $cleanCost = is_numeric($rawCost) && (float) $rawCost >= 0 ? (float) $rawCost : 0.0;
         $subtotalCost = $cleanQty * $cleanCost;
 
@@ -163,7 +311,7 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
             'transaction_date_display' => $parsedDate ? $parsedDate->format('Y-m-d H:i:s') : (string) $rawDate,
             'order_code' => $orderCode,
             'customer_name' => $customerName,
-            'sku' => $sku,
+            'sku' => $resolvedSku,
             'product_name' => $productName,
             'product_id' => $productId,
             'qty' => $cleanQty,
@@ -172,6 +320,84 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
             'cost_price' => $cleanCost,
             'subtotal_cost' => $subtotalCost,
         ];
+    }
+
+    /**
+     * @return array{id: int, sku: string, price: float}|null
+     */
+    private function resolveProduct(string $skuOrBarcode, string $productName): ?array
+    {
+        if ($skuOrBarcode !== '') {
+            if (isset($this->skuToProduct[$skuOrBarcode])) {
+                return $this->skuToProduct[$skuOrBarcode];
+            }
+            if (isset($this->barcodeToProduct[$skuOrBarcode])) {
+                return $this->barcodeToProduct[$skuOrBarcode];
+            }
+        }
+
+        $normalizedName = $this->normalizeText($productName);
+        if ($normalizedName !== '') {
+            if (isset($this->nameToProduct[$normalizedName])) {
+                return $this->nameToProduct[$normalizedName];
+            }
+
+            // Pencocokan sebagian jika kata kunci >= 4 huruf dan hanya cocok dengan 1 produk unik
+            if (mb_strlen($normalizedName) >= 4) {
+                $partialMatches = [];
+                foreach ($this->nameToProduct as $catalogName => $entry) {
+                    if (str_contains($catalogName, $normalizedName)) {
+                        $partialMatches[] = $entry;
+                    }
+                }
+                if (count($partialMatches) === 1) {
+                    return $partialMatches[0];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function parseCleanNumber(mixed $value): mixed
+    {
+        if ($value === null || is_int($value) || is_float($value)) {
+            return $value;
+        }
+
+        $str = trim((string) $value);
+        if ($str === '') {
+            return null;
+        }
+
+        // Bersihkan awalan mata uang (Rp) dan spasi
+        $cleaned = preg_replace('/^rp\.?\s*/i', '', $str) ?? $str;
+        $cleaned = str_replace(' ', '', $cleaned);
+
+        // Tangani pemisah ribuan format Indonesia (contoh: 10.500 -> 10500)
+        if (preg_match('/^-?\d{1,3}(\.\d{3})+$/', $cleaned)) {
+            $cleaned = str_replace('.', '', $cleaned);
+        } elseif (preg_match('/^-?\d{1,3}(,\d{3})+$/', $cleaned)) {
+            $cleaned = str_replace(',', '', $cleaned);
+        }
+
+        return $cleaned;
+    }
+
+    private function normalizeHeaderSlug(string $header): string
+    {
+        $slug = mb_strtolower(trim($header));
+        $slug = preg_replace('/[^a-z0-9]+/', '_', $slug) ?? '';
+
+        return trim($slug, '_');
+    }
+
+    private function normalizeText(string $text): string
+    {
+        $clean = mb_strtolower(trim($text));
+        $clean = preg_replace('/\s+/', ' ', $clean) ?? '';
+
+        return $clean;
     }
 
     private function parseTransactionDate(mixed $value): ?Carbon
@@ -185,7 +411,14 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
                 return Carbon::instance(ExcelDate::excelToDateTimeObject((float) $value));
             }
 
-            return Carbon::parse(trim((string) $value));
+            $str = trim((string) $value);
+            // Dukung format tanggal Indonesia DD/MM/YYYY atau DD-MM-YYYY
+            if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}:\d{2}(?::\d{2})?))?$/', $str, $m)) {
+                $timePart = $m[4] ?? '00:00:00';
+                return Carbon::parse("{$m[3]}-{$m[2]}-{$m[1]} {$timePart}");
+            }
+
+            return Carbon::parse($str);
         } catch (Throwable) {
             return null;
         }
@@ -218,8 +451,6 @@ class OrderExcelChunkImport implements ToCollection, WithHeadingRow, WithChunkRe
                     $this->importedOrdersCount++;
                 }
 
-                // Simpan detail item pesanan historis tanpa memotong stok fisik gudang (FR-10).
-                // HPP historis bernilai 0 jika tidak ada pada file Excel impor (tidak mengambil cost_price aktif produk).
                 $order->items()->create([
                     'product_id' => $row['product_id'],
                     'qty' => $row['qty'],
