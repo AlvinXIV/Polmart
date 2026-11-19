@@ -3357,4 +3357,80 @@ class PolmartFlowTest extends TestCase
             'notes' => 'Penambahan stok masuk manual oleh admin',
         ]);
     }
+
+    public function test_admin_can_import_members_via_excel_and_reject_member_role(): void
+    {
+        Storage::fake('local');
+
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create([
+            'role' => 'member',
+            'member_code' => '224443001',
+            'email' => 'existing@polmart.test',
+        ]);
+
+        // Member tidak dapat mengakses halaman impor anggota
+        $this->actingAs($member)->get(route('admin.member-imports.index'))->assertForbidden();
+
+        // Admin dapat membuka halaman & mengunduh template Excel
+        $this->actingAs($admin)->get(route('admin.member-imports.index'))->assertOk()->assertSee('Impor Data Anggota Excel');
+        $this->actingAs($admin)->get(route('admin.member-imports.template'))->assertOk();
+
+        // Buat CSV sementara berisi 1 baris valid + 1 baris duplikat email
+        $csvContent = "kode_anggota,nama,email,no_hp,password\n"
+            . "224443888,Budi Anggota Baru,budi.baru@polmart.test,081234567899,rahasia123\n"
+            . "224443889,Duplikat Email,existing@polmart.test,081234567800,\n";
+
+        $file = UploadedFile::fake()->createWithContent('anggota.csv', $csvContent);
+
+        $previewRes = $this->actingAs($admin)->post(route('admin.member-imports.preview'), [
+            'file' => $file,
+        ]);
+        $previewRes->assertOk();
+        $previewRes->assertSee('Budi Anggota Baru');
+        $previewRes->assertSee('sudah terdaftar');
+
+        $previewData = $previewRes->viewData('preview');
+        $this->assertSame(2, $previewData['total_rows']);
+        $this->assertSame(1, $previewData['valid_count']);
+        $this->assertSame(1, $previewData['invalid_count']);
+
+        // Konfirmasi impor
+        $storeRes = $this->actingAs($admin)->post(route('admin.member-imports.store'), [
+            'temp_path' => $previewData['temp_path'],
+        ]);
+        $storeRes->assertRedirect(route('admin.member-imports.index'));
+
+        $this->assertDatabaseHas('users', [
+            'member_code' => '224443888',
+            'name' => 'Budi Anggota Baru',
+            'email' => 'budi.baru@polmart.test',
+            'phone' => '081234567899',
+            'role' => 'member',
+        ]);
+    }
+
+    public function test_admin_can_view_and_search_members_directory(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member1 = User::factory()->create([
+            'role' => 'member',
+            'member_code' => '224443111',
+            'name' => 'Anggota Satu',
+            'email' => 'satu@polmart.test',
+        ]);
+        $member2 = User::factory()->create([
+            'role' => 'member',
+            'member_code' => '224443222',
+            'name' => 'Anggota Dua',
+            'email' => 'dua@polmart.test',
+        ]);
+
+        $this->actingAs($member1)->get(route('admin.members.index'))->assertForbidden();
+
+        $res = $this->actingAs($admin)->get(route('admin.members.index', ['search' => '224443111']));
+        $res->assertOk();
+        $res->assertSee('Anggota Satu');
+        $res->assertDontSee('Anggota Dua');
+    }
 }

@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\ManualOrderController;
+use App\Http\Controllers\Admin\MemberController;
+use App\Http\Controllers\Admin\MemberImportController;
 use App\Http\Controllers\Admin\OperatingExpenseController;
 use App\Http\Controllers\Admin\OrderImportController;
 use App\Http\Controllers\Admin\PickupController;
@@ -88,6 +90,22 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('order-imports/store', fn () => redirect()->route('admin.order-imports.index'));
         Route::post('order-imports/store', [OrderImportController::class, 'store'])
             ->name('order-imports.store');
+
+        // Daftar Anggota Koperasi
+        Route::get('members', [MemberController::class, 'index'])
+            ->name('members.index');
+
+        // Impor Data Anggota Excel
+        Route::get('member-imports', [MemberImportController::class, 'index'])
+            ->name('member-imports.index');
+        Route::get('member-imports/template', [MemberImportController::class, 'downloadTemplate'])
+            ->name('member-imports.template');
+        Route::get('member-imports/preview', fn () => redirect()->route('admin.member-imports.index'));
+        Route::post('member-imports/preview', [MemberImportController::class, 'preview'])
+            ->name('member-imports.preview');
+        Route::get('member-imports/store', fn () => redirect()->route('admin.member-imports.index'));
+        Route::post('member-imports/store', [MemberImportController::class, 'store'])
+            ->name('member-imports.store');
 
         // Validasi Loket Pengambilan & Riwayat Transaksi
         Route::get('pickup', [PickupController::class, 'index'])

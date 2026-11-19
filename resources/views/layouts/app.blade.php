@@ -620,12 +620,24 @@
                         <span>Biaya Operasional</span>
                     </a>
 
+                    <a href="{{ route('admin.members.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.members.*') ? 'active' : '' }}">
+                        <span class="menu-icon"><x-icon name="users" class="w-5 h-5" /></span>
+                        <span>Daftar Anggota</span>
+                    </a>
+
                     <div class="menu-label">Data & Laporan</div>
 
                     <a href="{{ route('admin.order-imports.index') }}"
                        class="menu-link {{ request()->routeIs('admin.order-imports.*') ? 'active' : '' }}">
                         <span class="menu-icon"><x-icon name="file-spreadsheet" class="w-5 h-5" /></span>
                         <span>Impor Data Excel</span>
+                    </a>
+
+                    <a href="{{ route('admin.member-imports.index') }}"
+                       class="menu-link {{ request()->routeIs('admin.member-imports.*') ? 'active' : '' }}">
+                        <span class="menu-icon"><x-icon name="users" class="w-5 h-5" /></span>
+                        <span>Impor Data Anggota</span>
                     </a>
 
                     <a href="{{ route('admin.transactions.index') }}"
