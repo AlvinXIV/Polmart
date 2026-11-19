@@ -54,6 +54,8 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    'qris_public_url' => env('QRIS_PUBLIC_URL'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

@@ -1,3 +1,375 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ==========================================================================
+   POLMART UNIFIED DESIGN SYSTEM
+   Theme: Elegant Blue & Crisp White
+   ========================================================================== */
+
+:root {
+    --polmart-primary: #2563eb;
+    --polmart-primary-hover: #1d4ed8;
+    --polmart-primary-dark: #1e40af;
+    --polmart-primary-light: #60a5fa;
+    --polmart-primary-subtle: #eff6ff;
+
+    --polmart-gradient: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #3b82f6 100%);
+    --polmart-gradient-subtle: linear-gradient(135deg, #f0f7ff 0%, #e0effe 100%);
+    --polmart-gradient-emerald: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    --polmart-gradient-amber: linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+    --polmart-gradient-rose: linear-gradient(135deg, #e11d48 0%, #f43f5e 100%);
+
+    --polmart-bg: #f8fafc;
+    --polmart-surface: #ffffff;
+    --polmart-border: #edf2f7;
+    --polmart-border-focus: #bfdbfe;
+
+    --polmart-text-main: #0f172a;
+    --polmart-text-secondary: #475569;
+    --polmart-text-muted: #94a3b8;
+
+    --polmart-shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+    --polmart-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+    --polmart-shadow-md: 0 10px 25px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+    --polmart-shadow-lg: 0 20px 35px -5px rgba(15, 23, 42, 0.12), 0 8px 10px -6px rgba(15, 23, 42, 0.06);
+
+    --polmart-radius-sm: 8px;
+    --polmart-radius: 14px;
+    --polmart-radius-lg: 18px;
+    --polmart-radius-full: 9999px;
+}
+
+/* Typography Base */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--polmart-bg);
+    color: var(--polmart-text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --------------------------------------------------------------------------
+   SHARED UI COMPONENTS
+   -------------------------------------------------------------------------- */
+
+/* Buttons */
+.polmart-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 10px 18px;
+    border-radius: var(--polmart-radius-sm);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: 1px solid transparent;
+    text-decoration: none;
+    line-height: 1.25;
+}
+
+.polmart-btn:active {
+    transform: scale(0.98);
+}
+
+.polmart-btn-primary {
+    background: var(--polmart-gradient);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.polmart-btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    color: #ffffff;
+}
+
+.polmart-btn-secondary {
+    background: #ffffff;
+    border-color: #e2e8f0;
+    color: #334155;
+    box-shadow: var(--polmart-shadow-sm);
+}
+
+.polmart-btn-secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: #1e293b;
+}
+
+.polmart-btn-success {
+    background: var(--polmart-gradient-emerald);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.polmart-btn-success:hover {
+    filter: brightness(0.95);
+    color: #ffffff;
+}
+
+.polmart-btn-danger {
+    background: var(--polmart-gradient-rose);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(244, 63, 94, 0.25);
+}
+
+.polmart-btn-danger:hover {
+    filter: brightness(0.95);
+    color: #ffffff;
+}
+
+.polmart-btn-sm {
+    padding: 6px 12px;
+    font-size: 0.785rem;
+    border-radius: 6px;
+}
+
+/* Cards */
+.polmart-card {
+    background: var(--polmart-surface);
+    border: 1px solid var(--polmart-border);
+    border-radius: var(--polmart-radius);
+    padding: 24px;
+    box-shadow: var(--polmart-shadow);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.polmart-card:hover {
+    box-shadow: var(--polmart-shadow-md);
+}
+
+/* Stat Cards */
+.polmart-stat-card {
+    background: var(--polmart-surface);
+    border: 1px solid var(--polmart-border);
+    border-radius: var(--polmart-radius);
+    padding: 22px;
+    box-shadow: var(--polmart-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.polmart-stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--polmart-shadow-md);
+}
+
+.polmart-stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.polmart-stat-icon.blue {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.polmart-stat-icon.green {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.polmart-stat-icon.amber {
+    background: #fffbeb;
+    color: #d97706;
+}
+
+.polmart-stat-icon.purple {
+    background: #f5f3ff;
+    color: #7c3aed;
+}
+
+/* Inputs & Form Controls */
+.polmart-input,
+.polmart-select,
+.polmart-textarea {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 0.875rem;
+    color: var(--polmart-text-main);
+    background-color: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: var(--polmart-radius-sm);
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.polmart-input:focus,
+.polmart-select:focus,
+.polmart-textarea:focus {
+    border-color: var(--polmart-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.polmart-label {
+    display: block;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+/* Badges */
+.polmart-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    line-height: 1;
+}
+
+.polmart-badge-blue {
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #dbeafe;
+}
+
+.polmart-badge-green {
+    background: #f4f7f5;
+    color: #166534;
+    border: 1px solid #d1e7dd;
+}
+
+.polmart-badge-amber {
+    background: #fefce8;
+    color: #854d0e;
+    border: 1px solid #fef08a;
+}
+
+.polmart-badge-red {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.polmart-badge-slate {
+    background: #f8fafc;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+/* Modern Tables */
+.polmart-table-wrapper {
+    background: #ffffff;
+    border: 1px solid var(--polmart-border);
+    border-radius: var(--polmart-radius);
+    overflow: hidden;
+    box-shadow: var(--polmart-shadow);
+}
+
+.polmart-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.polmart-table thead th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--polmart-border);
+}
+
+.polmart-table tbody td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #f1f5f9;
+    color: var(--polmart-text-main);
+    vertical-align: middle;
+}
+
+.polmart-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.polmart-table tbody tr:hover {
+    background: #f8faff;
+}
+
+/* Gradient Welcome Banner */
+.polmart-banner {
+    background: var(--polmart-gradient);
+    color: #ffffff;
+    border-radius: var(--polmart-radius-lg);
+    padding: 32px 36px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.3);
+}
+
+.polmart-banner::before {
+    content: '';
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    right: 80px;
+    top: -100px;
+    pointer-events: none;
+}
+
+.polmart-banner::after {
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    right: -40px;
+    bottom: -80px;
+    pointer-events: none;
+}
+
+/* Modal Dialog */
+.polmart-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.polmart-modal-card {
+    background: #ffffff;
+    border-radius: var(--polmart-radius-lg);
+    border: 1px solid var(--polmart-border);
+    box-shadow: var(--polmart-shadow-lg);
+    width: 100%;
+    max-width: 580px;
+    overflow: hidden;
+    animation: polmartModalFade 0.2s ease-out;
+}
+
+@keyframes polmartModalFade {
+    from {
+        opacity: 0;
+        transform: scale(0.96) translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
