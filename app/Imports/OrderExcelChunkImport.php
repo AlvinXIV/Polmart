@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Imports;
 
@@ -103,7 +103,6 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
 
     public function sheets(): array
     {
-        // Hanya proses sheet utama (pertama) agar sheet catatan/ringkasan tambahan tidak ikut terbaca
         return [0 => $this];
     }
 
@@ -118,46 +117,58 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
 
         foreach ($rows as $row) {
             $this->currentRowNumber++;
-            $cells = $row->values()->all();
+            $rawArr = $row->toArray();
 
             // Lewati baris yang benar-benar kosong
-            $nonEmpty = array_filter($cells, fn ($val) => $val !== null && trim((string) $val) !== '');
+            $nonEmpty = array_filter($rawArr, fn ($val) => $val !== null && trim((string) $val) !== '');
             if (empty($nonEmpty)) {
                 continue;
             }
 
-            // Deteksi baris header otomatis pada 15 baris pertama
-            if (! $this->headerDetected) {
-                $detectedMap = $this->detectHeaderMap($cells);
-                if (count($detectedMap) >= 2) {
+            $hasStringKeys = count(array_filter(array_keys($rawArr), 'is_string')) > 0;
+
+            if ($hasStringKeys) {
+                // Mendukung pemanggilan langsung dengan associative array (mis. unit/feature test)
+                $mappedRaw = $this->mapAssociativeRow($rawArr);
+                $this->hasOrderCodeCol = array_key_exists('kode_pesanan_lama', $mappedRaw);
+                $this->hasCustomerCol = array_key_exists('nama_pemesan', $mappedRaw);
+            } else {
+                // Membaca baris mentah dari file Excel/CSV (indeks numerik 0, 1, 2, ...)
+                $cells = array_values($rawArr);
+
+                if (! $this->headerDetected) {
+                    $detectedMap = $this->detectHeaderMap($cells);
+                    if (count($detectedMap) >= 2) {
+                        $this->headerDetected = true;
+                        $this->headerMap = $detectedMap;
+                        $this->hasOrderCodeCol = in_array('kode_pesanan_lama', $detectedMap, true);
+                        $this->hasCustomerCol = in_array('nama_pemesan', $detectedMap, true);
+                        continue;
+                    }
+
+                    // Lewati baris judul/kop laporan di bagian atas sebelum header ditemukan
+                    if ($this->currentRowNumber <= 15) {
+                        continue;
+                    }
+
+                    // Fallback positional jika file sama sekali tidak memiliki baris header
                     $this->headerDetected = true;
-                    $this->headerMap = $detectedMap;
-                    $this->hasOrderCodeCol = in_array('kode_pesanan_lama', $detectedMap, true);
-                    $this->hasCustomerCol = in_array('nama_pemesan', $detectedMap, true);
-                    continue;
+                    $this->headerMap = [
+                        0 => 'tanggal_transaksi',
+                        1 => 'kode_pesanan_lama',
+                        2 => 'nama_pemesan',
+                        3 => 'kode_barang',
+                        4 => 'qty',
+                        5 => 'harga_satuan',
+                        6 => 'harga_modal',
+                    ];
+                    $this->hasOrderCodeCol = true;
+                    $this->hasCustomerCol = true;
                 }
 
-                // Lewati baris judul/kop laporan sebelum header ditemukan
-                if ($this->currentRowNumber <= 15) {
-                    continue;
-                }
-
-                // Fallback positional jika file sama sekali tidak memiliki baris header
-                $this->headerDetected = true;
-                $this->headerMap = [
-                    0 => 'tanggal_transaksi',
-                    1 => 'kode_pesanan_lama',
-                    2 => 'nama_pemesan',
-                    3 => 'kode_barang',
-                    4 => 'qty',
-                    5 => 'harga_satuan',
-                    6 => 'harga_modal',
-                ];
-                $this->hasOrderCodeCol = true;
-                $this->hasCustomerCol = true;
+                $mappedRaw = $this->mapCellsToFields($cells);
             }
 
-            $mappedRaw = $this->mapCellsToFields($cells);
             $this->totalRows++;
             $evaluated = $this->evaluateRow($mappedRaw, $this->currentRowNumber);
 
@@ -177,6 +188,32 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
         if ($this->commit && ! empty($parsedChunk)) {
             $this->persistChunk($parsedChunk);
         }
+    }
+
+    /**
+     * @param  array<string, mixed>  $rawArr
+     * @return array<string, mixed>
+     */
+    private function mapAssociativeRow(array $rawArr): array
+    {
+        $mapped = [];
+        foreach ($rawArr as $key => $val) {
+            $slug = $this->normalizeHeaderSlug((string) $key);
+            $canonical = $slug;
+
+            foreach (self::HEADER_ALIASES as $target => $aliases) {
+                if (in_array($slug, $aliases, true)) {
+                    $canonical = $target;
+                    break;
+                }
+            }
+
+            if (! array_key_exists($canonical, $mapped)) {
+                $mapped[$canonical] = $val;
+            }
+        }
+
+        return $mapped;
     }
 
     /**
@@ -245,7 +282,6 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
             $errors[] = 'Format tanggal_transaksi tidak valid';
         }
 
-        // Jika file minimalis tidak punya kolom kode pesanan, buat kode otomatis berbasis tanggal & baris
         if ($orderCode === '' && ! $this->hasOrderCodeCol && $parsedDate) {
             $orderCode = 'IMP-' . $parsedDate->format('Ymd') . '-R' . $rowNumber;
         }
@@ -258,7 +294,6 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
             $errors[] = "Kode pesanan '{$orderCode}' sudah pernah diimpor / terdaftar";
         }
 
-        // Jika file minimalis tidak punya kolom nama pembeli, gunakan default 'Pelanggan Umum'
         if ($customerName === '' && ! $this->hasCustomerCol) {
             $customerName = 'Pelanggan Umum';
         }
@@ -269,7 +304,6 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
             $errors[] = 'nama_pemesan maksimal 120 karakter';
         }
 
-        // Resolusi produk via SKU -> Barcode -> Nama Barang
         $matchedProduct = $this->resolveProduct($skuInput, $productName);
         $productId = $matchedProduct['id'] ?? null;
         $resolvedSku = $matchedProduct['sku'] ?? $skuInput;
@@ -285,7 +319,6 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
             $errors[] = 'qty harus bilangan bulat minimal 1';
         }
 
-        // Jika harga_satuan dikosongkan dan produk cocok, ambil dari harga jual Master Barang
         $isPriceBlank = $unitPriceRaw === null || trim((string) $unitPriceRaw) === '';
         if ($isPriceBlank && $matchedProduct) {
             $unitPrice = $matchedProduct['price'];
@@ -342,7 +375,6 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
                 return $this->nameToProduct[$normalizedName];
             }
 
-            // Pencocokan sebagian jika kata kunci >= 4 huruf dan hanya cocok dengan 1 produk unik
             if (mb_strlen($normalizedName) >= 4) {
                 $partialMatches = [];
                 foreach ($this->nameToProduct as $catalogName => $entry) {
@@ -370,11 +402,9 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
             return null;
         }
 
-        // Bersihkan awalan mata uang (Rp) dan spasi
         $cleaned = preg_replace('/^rp\.?\s*/i', '', $str) ?? $str;
         $cleaned = str_replace(' ', '', $cleaned);
 
-        // Tangani pemisah ribuan format Indonesia (contoh: 10.500 -> 10500)
         if (preg_match('/^-?\d{1,3}(\.\d{3})+$/', $cleaned)) {
             $cleaned = str_replace('.', '', $cleaned);
         } elseif (preg_match('/^-?\d{1,3}(,\d{3})+$/', $cleaned)) {
@@ -412,7 +442,6 @@ class OrderExcelChunkImport implements ToCollection, WithChunkReading, WithMulti
             }
 
             $str = trim((string) $value);
-            // Dukung format tanggal Indonesia DD/MM/YYYY atau DD-MM-YYYY
             if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:\s+(\d{1,2}:\d{2}(?::\d{2})?))?$/', $str, $m)) {
                 $timePart = $m[4] ?? '00:00:00';
                 return Carbon::parse("{$m[3]}-{$m[2]}-{$m[1]} {$timePart}");
