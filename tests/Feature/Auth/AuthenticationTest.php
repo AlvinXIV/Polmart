@@ -64,4 +64,9 @@ class AuthenticationTest extends TestCase
         $this->assertGuest();
         $response->assertRedirect('/');
     }
+
+    public function test_forgot_password_feature_is_disabled(): void
+    {
+        $this->get('/forgot-password')->assertNotFound();
+    }
 }
