@@ -1,13 +1,13 @@
 <x-app-layout>
-    @section('title', 'Master Barang & Inventaris - Polmart')
-    @section('page_title', 'Master Barang & Inventaris')
+    @section('title', 'Stok Barang & Inventaris - Polmart')
+    @section('page_title', 'Stok Barang & Inventaris')
 
     <div class="space-y-6">
         <!-- Hero Header -->
         <section class="polmart-banner flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="relative z-10">
-                <h1 class="text-2xl font-extrabold">Master Barang & Inventaris</h1>
-                <p class="text-blue-100 text-sm mt-1">Kelola katalog master barang, SKU, harga satuan, status aktif, restock, dan mutasi stok.</p>
+                <h1 class="text-2xl font-extrabold">Stok Barang & Inventaris</h1>
+                <p class="text-blue-100 text-sm mt-1">Kelola katalog stok barang, SKU, harga satuan, status aktif, restock, dan mutasi stok.</p>
             </div>
             <div class="relative z-10 flex flex-wrap gap-2">
                 <a href="{{ route('admin.stock-mutations.index') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white rounded-lg text-sm font-semibold hover:bg-white/25 inline-flex items-center gap-2">

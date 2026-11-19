@@ -1,9 +1,9 @@
 <x-app-layout>
     @section('title', 'Tambah Barang - Polmart')
-    @section('page_title', 'Tambah Master Barang')
+    @section('page_title', 'Tambah Stok Barang')
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Tambah Master Barang Baru</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Tambah Stok Barang Baru</h2>
     </x-slot>
 
     <div class="py-8">

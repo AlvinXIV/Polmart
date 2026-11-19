@@ -140,6 +140,8 @@ Route::middleware(['auth', 'role:member'])
             ->name('checkout.store');
         Route::get('/pembayaran/{order_code?}', [CheckoutController::class, 'payment'])
             ->name('pembayaran');
+        Route::post('/pembayaran/{order_code}/cancel', [CheckoutController::class, 'cancel'])
+            ->name('pembayaran.cancel');
 
         // Riwayat & Status Pesanan Anggota
         Route::get('/pesanan', [CheckoutController::class, 'orders'])

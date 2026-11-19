@@ -57,12 +57,12 @@ class PolmartFlowTest extends TestCase
         $memberDash = $this->actingAs($member)->get(route('anggota.dashboard'));
         $memberDash->assertOk();
         $memberDash->assertSee('Katalog Belanja');
-        $memberDash->assertDontSee('Master Barang');
+        $memberDash->assertDontSee('Stok Barang');
         $memberDash->assertDontSee('Validasi Loket Ambil');
 
         $adminDash = $this->actingAs($admin)->get(route('admin.dashboard'));
         $adminDash->assertOk();
-        $adminDash->assertSee('Master Barang');
+        $adminDash->assertSee('Stok Barang');
         $adminDash->assertSee('Barang Terlaris');
         $adminDash->assertSee('Stok Terbanyak');
         $adminDash->assertDontSee('Keranjang Belanja');
@@ -3241,5 +3241,92 @@ class PolmartFlowTest extends TestCase
         $walkinRes->assertSee('Scan Webcam');
         $walkinRes->assertSee('walkin-barcode-reader');
         $walkinRes->assertSee('8996001300015');
+    }
+
+    public function test_admin_transactions_history_filters_by_date_range(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $member = User::factory()->create(['role' => 'member']);
+
+        Order::create([
+            'order_code' => 'PLM-20261010-0001',
+            'user_id' => $member->id,
+            'customer_name' => 'Pembeli Oktober',
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 15000,
+            'transaction_date' => '2026-10-10 10:00:00',
+            'paid_at' => '2026-10-10 10:00:00',
+        ]);
+
+        Order::create([
+            'order_code' => 'PLM-20261115-0001',
+            'user_id' => $member->id,
+            'customer_name' => 'Pembeli November',
+            'source' => 'web',
+            'status' => 'SELESAI',
+            'total_amount' => 25000,
+            'transaction_date' => '2026-11-15 11:00:00',
+            'paid_at' => '2026-11-15 11:00:00',
+        ]);
+
+        $res = $this->actingAs($admin)->get(route('admin.transactions.index', [
+            'start_date' => '2026-11-01',
+            'end_date' => '2026-11-30',
+        ]));
+
+        $res->assertOk();
+        $res->assertSee('PLM-20261115-0001');
+        $res->assertDontSee('PLM-20261010-0001');
+    }
+
+    public function test_member_can_cancel_pending_qris_order_and_restore_stock(): void
+    {
+        $member = User::factory()->create(['role' => 'member']);
+        $otherMember = User::factory()->create(['role' => 'member']);
+
+        $product = Product::create([
+            'sku' => 'CNC-001',
+            'name' => 'Produk Uji Batal QRIS',
+            'category' => 'Minuman',
+            'cost_price' => 3000,
+            'price' => 5000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($member)->post(route('anggota.keranjang.add'), [
+            'product_id' => $product->id,
+            'qty' => 3,
+        ]);
+        $this->actingAs($member)->post(route('anggota.checkout.store'));
+
+        $order = Order::where('user_id', $member->id)->firstOrFail();
+        $this->assertSame('MENUNGGU_BAYAR', $order->status);
+        $this->assertSame(7, $product->fresh()->stock);
+
+        // Halaman QRIS menampilkan tombol Batalkan Pesanan
+        $payPage = $this->actingAs($member)->get(route('anggota.pembayaran', ['order_code' => $order->order_code]));
+        $payPage->assertOk();
+        $payPage->assertSee('Batalkan Pesanan');
+
+        // Member lain tidak dapat membatalkan pesanan ini
+        $this->actingAs($otherMember)
+            ->post(route('anggota.pembayaran.cancel', ['order_code' => $order->order_code]))
+            ->assertNotFound();
+
+        // Pemilik pesanan membatalkan pesanan -> status DIBATALKAN dan stok kembali ke 10
+        $cancelRes = $this->actingAs($member)
+            ->post(route('anggota.pembayaran.cancel', ['order_code' => $order->order_code]));
+        $cancelRes->assertRedirect(route('anggota.pembayaran', ['order_code' => $order->order_code]));
+
+        $this->assertSame('DIBATALKAN', $order->fresh()->status);
+        $this->assertSame(10, $product->fresh()->stock);
+        $this->assertDatabaseHas('stock_mutations', [
+            'product_id' => $product->id,
+            'type' => 'return',
+            'qty' => 3,
+            'reference' => $order->order_code,
+        ]);
     }
 }

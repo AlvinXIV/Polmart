@@ -593,7 +593,7 @@
                     <a href="{{ route('admin.products.index') }}"
                        class="menu-link {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
                         <span class="menu-icon"><x-icon name="package" class="w-5 h-5" /></span>
-                        <span>Master Barang</span>
+                        <span>Stok Barang</span>
                     </a>
 
                     <a href="{{ route('admin.stock-mutations.index') }}"

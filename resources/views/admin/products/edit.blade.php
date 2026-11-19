@@ -1,6 +1,6 @@
 <x-app-layout>
     @section('title', 'Edit Barang - Polmart')
-    @section('page_title', 'Edit Master Barang')
+    @section('page_title', 'Edit Stok Barang')
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">Edit Barang: {{ $product->name }}</h2>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\OrderService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -123,6 +124,8 @@ class PickupController extends Controller
         $statusFilter = $request->string('status')->trim()->value();
         $sourceFilter = $request->string('source')->trim()->value();
         $search = $request->string('search')->trim()->value();
+        $startDateInput = trim((string) $request->input('start_date', ''));
+        $endDateInput = trim((string) $request->input('end_date', ''));
 
         $query = Order::with(['user', 'items.product'])
             ->latest('transaction_date');
@@ -133,6 +136,24 @@ class PickupController extends Controller
 
         if ($sourceFilter !== '') {
             $query->where('source', $sourceFilter);
+        }
+
+        if ($startDateInput !== '') {
+            try {
+                $startDate = Carbon::createFromFormat('Y-m-d', $startDateInput)->startOfDay();
+                $query->where('transaction_date', '>=', $startDate);
+            } catch (\Throwable) {
+                $startDateInput = '';
+            }
+        }
+
+        if ($endDateInput !== '') {
+            try {
+                $endDate = Carbon::createFromFormat('Y-m-d', $endDateInput)->endOfDay();
+                $query->where('transaction_date', '<=', $endDate);
+            } catch (\Throwable) {
+                $endDateInput = '';
+            }
         }
 
         if ($search !== '') {
@@ -153,7 +174,15 @@ class PickupController extends Controller
             'cancelled' => Order::where('status', 'DIBATALKAN')->count(),
         ];
 
-        return view('admin.riwayat-transaksi', compact('orders', 'stats', 'statusFilter', 'sourceFilter', 'search'));
+        return view('admin.riwayat-transaksi', compact(
+            'orders',
+            'stats',
+            'statusFilter',
+            'sourceFilter',
+            'search',
+            'startDateInput',
+            'endDateInput'
+        ));
     }
 }
 

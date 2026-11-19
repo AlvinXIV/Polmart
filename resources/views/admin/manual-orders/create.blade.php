@@ -288,7 +288,7 @@
                         this.searchQuery = '';
                     } else {
                         this.scanStatus = 'error';
-                        this.scanMessage = 'Barcode ' + code + ' belum terdaftar di Master Barang.';
+                        this.scanMessage = 'Barcode ' + code + ' belum terdaftar di Stok Barang.';
                     }
                 },
                 findProductByCode(code) {
@@ -370,7 +370,7 @@
                     const product = this.findProductByCode(code);
                     if (!product) {
                         this.scanStatus = 'error';
-                        this.scanMessage = 'Barcode ' + code + ' belum terdaftar di Master Barang.';
+                        this.scanMessage = 'Barcode ' + code + ' belum terdaftar di Stok Barang.';
                         return;
                     }
 

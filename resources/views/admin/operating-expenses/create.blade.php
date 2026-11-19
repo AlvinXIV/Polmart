@@ -22,7 +22,7 @@
             <div class="text-xs text-amber-900 leading-relaxed">
                 <p class="font-bold">Jangan Mencampur Pembelian Stok (Kulakan) ke OPEX!</p>
                 <p class="mt-0.5">
-                    Pembelian stok barang dagangan sudah dihitung melalui <strong>HPP (Harga Pokok Penjualan)</strong> di Master Barang.
+                    Pembelian stok barang dagangan sudah dihitung melalui <strong>HPP (Harga Pokok Penjualan)</strong> di Stok Barang.
                     Masukkan hanya biaya di luar harga pokok barang seperti gaji, listrik, air, sewa, kemasan/plastik, atau perawatan toko.
                 </p>
             </div>

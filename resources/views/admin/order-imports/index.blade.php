@@ -21,7 +21,7 @@
             <div class="bg-white p-6 shadow-sm sm:rounded-lg">
                 <h3 class="font-semibold text-gray-800 mb-2">1. Unggah File Excel / CSV Sistem Lama</h3>
                 <p class="text-xs text-gray-500 mb-4">
-                    Pastikan kolom <code>kode_barang</code> cocok dengan SKU pada Master Barang. Data hasil impor tercatat dengan status <strong>SELESAI</strong> dan <strong>tidak memotong stok fisik gudang saat ini</strong>.
+                    Pastikan kolom <code>kode_barang</code> cocok dengan SKU pada Stok Barang. Data hasil impor tercatat dengan status <strong>SELESAI</strong> dan <strong>tidak memotong stok fisik gudang saat ini</strong>.
                 </p>
 
                 <form method="POST" action="{{ route('admin.order-imports.preview') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-3">

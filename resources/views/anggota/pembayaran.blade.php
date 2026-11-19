@@ -68,6 +68,15 @@
                             <span>Buka Halaman Simulasi QRIS (/qris/pay/{{ $order->order_code }})</span>
                             <x-icon name="external-link" class="w-3.5 h-3.5" />
                         </a>
+                        <form method="POST" action="{{ route('anggota.pembayaran.cancel', ['order_code' => $order->order_code]) }}"
+                              onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan {{ $order->order_code }}?')">
+                            @csrf
+                            <button type="submit"
+                                    class="polmart-btn w-full py-2.5 text-xs bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100">
+                                <x-icon name="x-circle" class="w-4 h-4" />
+                                <span>Batalkan Pesanan</span>
+                            </button>
+                        </form>
                         <p id="paymentFeedback" class="text-xs text-slate-500"></p>
                     </div>
                 </section>
@@ -158,9 +167,9 @@
 
         <!-- SECTION: DIBATALKAN / KEDALUWARSA -->
         <div id="cancelledSection" class="{{ $order->status === 'DIBATALKAN' ? '' : 'hidden' }} polmart-card border-l-4 border-l-rose-500 space-y-4">
-            <h2 class="text-lg font-extrabold text-rose-700">Pesanan Dibatalkan (Batas Waktu 15 Menit Habis)</h2>
+            <h2 class="text-lg font-extrabold text-rose-700">Pesanan Dibatalkan</h2>
             <p class="text-sm text-slate-600">
-                Pesanan <strong class="font-mono">{{ $order->order_code }}</strong> melewati batas waktu pembayaran QRIS 15 menit dan stok barang telah dikembalikan ke katalog.
+                Pesanan <strong class="font-mono">{{ $order->order_code }}</strong> telah dibatalkan atau melewati batas waktu pembayaran QRIS 15 menit, dan stok barang telah dikembalikan ke katalog.
             </p>
             <div>
                 <a href="{{ route('anggota.katalog') }}" class="polmart-btn polmart-btn-primary">

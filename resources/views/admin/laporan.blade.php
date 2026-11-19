@@ -230,10 +230,6 @@
                 </div>
             </div>
 
-            <p class="text-[11px] text-slate-400">
-                *Catatan Analisis: <strong>GPM (Gross Profit Margin)</strong> dihitung terhadap Total Omzet Penjualan; <strong>NPM (Net Profit Margin)</strong> dihitung dari Laba Bersih terhadap Total Omzet; <strong>Markup</strong> dihitung terhadap Total HPP Tercatat. Pembelian stok barang tidak termasuk OPEX (masuk ke HPP saat barang terjual).
-            </p>
-
             <!-- Keterangan Status HPP & Indikator Transaksi Belum Tercatat -->
             @if ($summary['has_unrecorded_hpp'])
                 <div class="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5">

@@ -160,6 +160,25 @@ class CheckoutController extends Controller
         return view('anggota.pembayaran', compact('order', 'qrisUrl', 'qrCodeSvg'));
     }
 
+    public function cancel(Request $request, string $order_code, OrderService $orderService): RedirectResponse
+    {
+        $order = Order::where('user_id', $request->user()->id)
+            ->where('order_code', $order_code)
+            ->firstOrFail();
+
+        try {
+            $orderService->cancelMemberOrder($order, $request->user()->id);
+        } catch (RuntimeException $e) {
+            return redirect()
+                ->route('anggota.pembayaran', ['order_code' => $order->order_code])
+                ->withErrors(['order' => $e->getMessage()]);
+        }
+
+        return redirect()
+            ->route('anggota.pembayaran', ['order_code' => $order->order_code])
+            ->with('success', "Pesanan {$order->order_code} berhasil dibatalkan dan stok barang telah dikembalikan.");
+    }
+
     public function orders(Request $request, OrderService $orderService): View
     {
         $orderService->cancelExpiredOrders();

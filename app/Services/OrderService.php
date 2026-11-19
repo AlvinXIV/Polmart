@@ -121,5 +121,50 @@ class OrderService
             return $lockedOrder->fresh(['items.product', 'user']);
         });
     }
+
+    /**
+     * Membatalkan pesanan QRIS yang masih MENUNGGU_BAYAR oleh anggota pemiliknya
+     * dan mengembalikan stok barang ke katalog.
+     */
+    public function cancelMemberOrder(Order $order, int $userId): Order
+    {
+        return DB::transaction(function () use ($order, $userId) {
+            $lockedOrder = Order::with('items.product')
+                ->whereKey($order->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ((int) $lockedOrder->user_id !== $userId) {
+                throw new RuntimeException('Anda tidak berhak membatalkan pesanan ini.');
+            }
+
+            if ($lockedOrder->status === 'DIBATALKAN') {
+                return $lockedOrder;
+            }
+
+            if ($lockedOrder->status !== 'MENUNGGU_BAYAR') {
+                throw new RuntimeException('Pesanan yang sudah dibayar atau selesai tidak dapat dibatalkan.');
+            }
+
+            $lockedOrder->update([
+                'status' => 'DIBATALKAN',
+            ]);
+
+            foreach ($lockedOrder->items as $item) {
+                if ($item->product) {
+                    $this->stockService->recordMutation(
+                        product: $item->product,
+                        type: 'return',
+                        qty: $item->qty,
+                        userId: $userId,
+                        reference: $lockedOrder->order_code,
+                        notes: 'Pembatalan pesanan QRIS oleh anggota sebelum dibayar'
+                    );
+                }
+            }
+
+            return $lockedOrder->fresh(['items.product', 'user']);
+        });
+    }
 }
 

@@ -21,7 +21,7 @@
                             {{ __('Dashboard Admin') }}
                         </x-nav-link>
                         <x-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
-                            {{ __('Master Barang') }}
+                            {{ __('Stok Barang') }}
                         </x-nav-link>
                         <x-nav-link :href="route('admin.manual-orders.index')" :active="request()->routeIs('admin.manual-orders.*')">
                             {{ __('Walk-in') }}
@@ -103,7 +103,7 @@
                     {{ __('Dashboard Admin') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.products.index')" :active="request()->routeIs('admin.products.*')">
-                    {{ __('Master Barang') }}
+                    {{ __('Stok Barang') }}
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.manual-orders.index')" :active="request()->routeIs('admin.manual-orders.*')">
                     {{ __('Transaksi Walk-in') }}

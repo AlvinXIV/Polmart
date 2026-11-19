@@ -55,30 +55,51 @@
 
         <!-- Filter & Tabel -->
         <section class="polmart-card space-y-4">
-            <form method="GET" action="{{ route('admin.transactions.index') }}" class="flex flex-wrap items-center gap-3">
-                <input type="text" name="search" value="{{ $search }}"
-                       placeholder="Cari kode pesanan atau nama pemesan..."
-                       class="polmart-input sm:w-72">
+            <form method="GET" action="{{ route('admin.transactions.index') }}" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
+                <div class="lg:col-span-2">
+                    <label for="search" class="block text-xs font-semibold text-slate-600 mb-1">Cari Transaksi</label>
+                    <input id="search" type="text" name="search" value="{{ $search }}"
+                           placeholder="Cari kode pesanan atau nama pemesan..."
+                           class="polmart-input">
+                </div>
 
-                <select name="status" class="polmart-select sm:w-48">
-                    <option value="">Semua Status</option>
-                    <option value="SELESAI" {{ $statusFilter === 'SELESAI' ? 'selected' : '' }}>SELESAI</option>
-                    <option value="SIAP_DIAMBIL" {{ $statusFilter === 'SIAP_DIAMBIL' ? 'selected' : '' }}>SIAP DIAMBIL</option>
-                    <option value="MENUNGGU_BAYAR" {{ $statusFilter === 'MENUNGGU_BAYAR' ? 'selected' : '' }}>MENUNGGU BAYAR</option>
-                    <option value="DIBATALKAN" {{ $statusFilter === 'DIBATALKAN' ? 'selected' : '' }}>DIBATALKAN</option>
-                </select>
+                <div>
+                    <label for="status" class="block text-xs font-semibold text-slate-600 mb-1">Status</label>
+                    <select id="status" name="status" class="polmart-select">
+                        <option value="">Semua Status</option>
+                        <option value="SELESAI" {{ $statusFilter === 'SELESAI' ? 'selected' : '' }}>SELESAI</option>
+                        <option value="SIAP_DIAMBIL" {{ $statusFilter === 'SIAP_DIAMBIL' ? 'selected' : '' }}>SIAP DIAMBIL</option>
+                        <option value="MENUNGGU_BAYAR" {{ $statusFilter === 'MENUNGGU_BAYAR' ? 'selected' : '' }}>MENUNGGU BAYAR</option>
+                        <option value="DIBATALKAN" {{ $statusFilter === 'DIBATALKAN' ? 'selected' : '' }}>DIBATALKAN</option>
+                    </select>
+                </div>
 
-                <select name="source" class="polmart-select sm:w-48">
-                    <option value="">Semua Sumber</option>
-                    <option value="web" {{ $sourceFilter === 'web' ? 'selected' : '' }}>Portal Anggota (web)</option>
-                    <option value="manual_admin" {{ $sourceFilter === 'manual_admin' ? 'selected' : '' }}>Kasir Walk-in</option>
-                    <option value="import_excel" {{ $sourceFilter === 'import_excel' ? 'selected' : '' }}>Impor Excel</option>
-                </select>
+                <div>
+                    <label for="source" class="block text-xs font-semibold text-slate-600 mb-1">Sumber</label>
+                    <select id="source" name="source" class="polmart-select">
+                        <option value="">Semua Sumber</option>
+                        <option value="web" {{ $sourceFilter === 'web' ? 'selected' : '' }}>Portal Anggota (web)</option>
+                        <option value="manual_admin" {{ $sourceFilter === 'manual_admin' ? 'selected' : '' }}>Kasir Walk-in</option>
+                        <option value="import_excel" {{ $sourceFilter === 'import_excel' ? 'selected' : '' }}>Impor Excel</option>
+                    </select>
+                </div>
 
-                <button type="submit" class="polmart-btn polmart-btn-primary">Filter</button>
-                @if ($search !== '' || $statusFilter !== '' || $sourceFilter !== '')
-                    <a href="{{ route('admin.transactions.index') }}" class="polmart-btn polmart-btn-secondary">Reset</a>
-                @endif
+                <div>
+                    <label for="start_date" class="block text-xs font-semibold text-slate-600 mb-1">Dari Tanggal</label>
+                    <input id="start_date" type="date" name="start_date" value="{{ $startDateInput }}" class="polmart-input">
+                </div>
+
+                <div>
+                    <label for="end_date" class="block text-xs font-semibold text-slate-600 mb-1">Sampai Tanggal</label>
+                    <input id="end_date" type="date" name="end_date" value="{{ $endDateInput }}" class="polmart-input">
+                </div>
+
+                <div class="sm:col-span-2 lg:col-span-6 flex items-center justify-end gap-2 pt-1">
+                    @if ($search !== '' || $statusFilter !== '' || $sourceFilter !== '' || $startDateInput !== '' || $endDateInput !== '')
+                        <a href="{{ route('admin.transactions.index') }}" class="polmart-btn polmart-btn-secondary">Reset</a>
+                    @endif
+                    <button type="submit" class="polmart-btn polmart-btn-primary">Filter</button>
+                </div>
             </form>
 
             <div class="overflow-x-auto">

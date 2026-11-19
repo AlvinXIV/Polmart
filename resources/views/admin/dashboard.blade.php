@@ -24,7 +24,7 @@
                 <div class="flex flex-wrap gap-3 mt-5">
                     <a href="{{ route('admin.products.index') }}" class="px-4 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-lg shadow hover:bg-blue-50 transition inline-flex items-center gap-2">
                         <x-icon name="package" class="w-4 h-4" />
-                        <span>Master Barang</span>
+                        <span>Stok Barang</span>
                     </a>
                     <a href="{{ route('admin.manual-orders.create') }}" class="px-4 py-2.5 bg-white/15 border border-white/30 text-white font-semibold text-sm rounded-lg hover:bg-white/25 transition inline-flex items-center gap-2">
                         <x-icon name="shopping-cart" class="w-4 h-4" />
@@ -287,7 +287,7 @@
 
                 <div class="polmart-stat-card">
                     <div class="min-w-0">
-                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Master Barang</p>
+                        <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wider truncate">Stok Barang</p>
                         <p class="text-xl font-extrabold text-slate-900 mt-1">{{ $stats['total_products'] }}</p>
                         <p class="text-[11px] text-slate-400 mt-0.5 truncate">{{ $stats['active_products'] }} aktif • {{ $stats['categories_count'] }} kategori</p>
                     </div>
